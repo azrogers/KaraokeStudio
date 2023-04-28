@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace KaraokeLib.Video
 {
-	internal class VideoStyle
+	public class VideoStyle
 	{
 		private static readonly char[] ALPHABET = new char[] {
 			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 
@@ -47,39 +47,38 @@ namespace KaraokeLib.Video
 		}
 
 
-		public VideoStyle()
+		public VideoStyle(KaraokeConfig config)
 		{
-			var typeface = SKTypeface.FromFamilyName(
-				"Arial",
-				SKFontStyleWeight.Bold,
-				SKFontStyleWidth.Normal,
-				SKFontStyleSlant.Upright);
-			_font = new SKFont(typeface, 200);
+			var typeface = SKTypeface.FromFamilyName(config.FontFamily, config.FontWeight, config.FontWidth, config.FontSlant);
+			_font = new SKFont(typeface, config.FontSize);
 
 			_normalPaint = new SKPaint(_font)
 			{
 				IsAntialias = true,
-				TextSize = 200,
-				Color = new SKColor(255, 255, 255),
+				TextSize = config.FontSize,
+				Color = config.NormalColor,
 				Style = SKPaintStyle.Fill
 			};
 
 			_highlightedPaint = new SKPaint(_font)
 			{
 				IsAntialias = true,
-				TextSize = 200,
-				Color = new SKColor(70, 175, 90),
+				TextSize = config.FontSize,
+				Color = config.HighlightColor,
 				Style = SKPaintStyle.Fill
 			};
 
 			_strokePaint = new SKPaint(_font)
 			{
 				IsAntialias = true,
-				TextSize = 200,
-				Color = new SKColor(0, 0, 0),
+				TextSize = config.FontSize,
+				Color = config.StrokeColor,
 				Style = SKPaintStyle.Stroke,
-				StrokeWidth = 3
+				StrokeJoin = SKStrokeJoin.Miter,
+				StrokeWidth = config.StrokeWidth
 			};
+
+			_padding = config.FramePaddingPercent;
 		}
 
 		public SKRect GetSafeArea(SKSize size)
@@ -95,7 +94,7 @@ namespace KaraokeLib.Video
 			);
 		}
 
-		public float GetTextWidth(string text, SKPaint paint = null)
+		public float GetTextWidth(string text, SKPaint? paint = null)
 		{
 			return _font.MeasureText(text.ToCharArray().Select(c => _font.GetGlyph(c)).ToArray(), paint ?? NormalPaint);
 		}

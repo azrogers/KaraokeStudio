@@ -71,10 +71,10 @@ namespace KaraokeLib.Lyrics
 		ulong GetTimeMilliseconds();
 	}
 
-	public enum LyricsEventType
+	public enum LyricsEventType : byte
 	{
-		Lyric,
-		ParagraphBreak,
-		LineBreak
+		Lyric = 0,
+		ParagraphBreak = 1,
+		LineBreak = 2
 	}
 }

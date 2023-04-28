@@ -11,5 +11,7 @@ namespace KaraokeLib.Lyrics.Providers
 		IEnumerable<LyricsTrack> GetTracks();
 
         double GetLengthSeconds();
+
+        void Save(Stream outStream);
     }
 }

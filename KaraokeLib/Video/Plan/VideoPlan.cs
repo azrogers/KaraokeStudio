@@ -10,7 +10,7 @@ namespace KaraokeLib.Video.Plan
 	/// <summary>
 	///	Records when each element starts and stops being displayed for an entire video.
 	/// </summary>
-	internal class VideoPlan
+	public class VideoPlan
 	{
 		private Dictionary<IVideoElement, (uint StartFrame, uint EndFrame)> _videoElementLookup = new Dictionary<IVideoElement, (uint, uint)>();
 
@@ -22,7 +22,7 @@ namespace KaraokeLib.Video.Plan
 		/// <summary>
 		/// Records the given element as visible on the specified timecode.
 		/// </summary>
-		public void RecordElementFrame(IVideoElement element, VideoTimecode videoTimecode)
+		internal void RecordElementFrame(IVideoElement element, VideoTimecode videoTimecode)
 		{
 			_finalized = false;
 
@@ -41,7 +41,7 @@ namespace KaraokeLib.Video.Plan
 		/// <summary>
 		/// Finalizes this video plan, readying it for use in rendering a video.
 		/// </summary>
-		public void FinalizePlan()
+		internal void FinalizePlan()
 		{
 			if(_finalized)
 			{
@@ -63,7 +63,7 @@ namespace KaraokeLib.Video.Plan
 		/// <summary>
 		/// Returns all elements relevant to the given frame.
 		/// </summary>
-		public IEnumerable<(VideoTimecode StartTime, VideoTimecode EndTime, IVideoElement Element)> GetElementsForFrame(VideoTimecode frame)
+		internal IEnumerable<(VideoTimecode StartTime, VideoTimecode EndTime, IVideoElement Element)> GetElementsForFrame(VideoTimecode frame)
 		{
 			if(!_finalized)
 			{

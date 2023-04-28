@@ -7,7 +7,7 @@ using SkiaSharp;
 
 namespace KaraokeLib.Video
 {
-	internal class VideoContext
+	public class VideoContext
 	{
 		public VideoStyle Style { get; private set; }
 

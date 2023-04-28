@@ -79,7 +79,7 @@ namespace KaraokeLib.Video.Elements
 
 			//                   v
 			// -------{--[event]------------}-------
-			if (endSeconds < position && endSeconds >= bounds.Item1)
+			if (endSeconds <= position && endSeconds >= bounds.Item1)
 			{
 				return VideoElementPriority.BeforeCurrent;
 			}
@@ -93,7 +93,7 @@ namespace KaraokeLib.Video.Elements
 
 			//                   v
 			// [event]{---------------------}-------
-			if (endSeconds < bounds.Item1)
+			if (endSeconds <= bounds.Item1)
 			{
 				return VideoElementPriority.BeforeOutOfRange;
 			}

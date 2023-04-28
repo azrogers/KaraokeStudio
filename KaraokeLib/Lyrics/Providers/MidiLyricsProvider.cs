@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace KaraokeLib.Lyrics.Providers
 {
+	/// <summary>
+	/// Reads and writes Guitar Hero/Rock Band notes.mid files.
+	/// </summary>
 	public class MidiLyricsProvider : ILyricsProvider
 	{
 		private MidiFile _file;
@@ -29,6 +32,11 @@ namespace KaraokeLib.Lyrics.Providers
 		public double GetLengthSeconds()
 		{
 			return _file.GetDuration<MetricTimeSpan>().TotalSeconds;
+		}
+
+		public void Save(Stream outStream)
+		{
+			throw new NotImplementedException("Can't save MidiLyricsProvider");
 		}
 
 		public IEnumerable<LyricsTrack> GetTracks()

@@ -9,6 +9,7 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,11 +30,9 @@ namespace KaraokeLib.Video
 
 			_tracks = lyricsFile.GetTracks().ToArray();
 			_endTimecode = new VideoTimecode(audioFile.GetLengthSeconds(), KaraokeConfig.Default.FrameRate);
-			_context = new VideoContext(new VideoStyle(), KaraokeConfig.Default);
-			_sections = new VideoSection[0];
+			_context = new VideoContext(new VideoStyle(KaraokeConfig.Default), KaraokeConfig.Default);
+			_sections = _tracks.Any() ? VideoSection.FromTrack(_context, _tracks[0]) : new VideoSection[0];
 			_audioFile = audioFile;
-
-			CreateSections();
 		}
 
 		public void RenderVideo(string outputFile)
@@ -49,7 +48,10 @@ namespace KaraokeLib.Video
 				outputFile);
 		}
 
-		public void RenderVideo(VideoTimecode startTimecode, VideoTimecode endTimecode, string outputFile)
+		public void RenderVideo(VideoTimecode startTimecode, VideoTimecode endTimecode, string outputFile) =>
+			RenderVideo(startTimecode, endTimecode, outputFile, VideoPlanGenerator.CreateVideoPlan(_context, _sections, _endTimecode));
+
+		public void RenderVideo(VideoTimecode startTimecode, VideoTimecode endTimecode, string outputFile, VideoPlan plan)
 		{
 			var outputPath = Path.GetFullPath(outputFile);
 			var tempFileName = 
@@ -69,7 +71,6 @@ namespace KaraokeLib.Video
 				.CreateContainer(tempOutputPath)
 				.WithVideo(videoSettings);
 
-			var plan = VideoPlanGenerator.CreateVideoPlan(_context, _sections, _endTimecode);
 			var renderer = new VideoRenderer(_context, _sections);
 
 			using (var bitmap = new SKBitmap(_context.Config.VideoWidth, _context.Config.VideoHeight, SKColorType.Rgba8888, SKAlphaType.Unpremul))
@@ -102,14 +103,16 @@ namespace KaraokeLib.Video
 			File.Delete(tempOutputPath);
 		}
 
-		public void RenderFrameToFile(VideoTimecode videoPosition, string outputFile)
+		public void RenderFrameToFile(VideoTimecode videoPosition, string outputFile) =>
+			RenderFrameToFile(videoPosition, outputFile, VideoPlanGenerator.CreateVideoPlan(_context, _sections, _endTimecode));
+
+		public void RenderFrameToFile(VideoTimecode videoPosition, string outputFile, VideoPlan plan)
 		{
 			if(videoPosition < 0 || videoPosition > _endTimecode)
 			{
 				throw new ArgumentOutOfRangeException("Video position out of range");
 			}
 
-			var plan = VideoPlanGenerator.CreateVideoPlan(_context, _sections, _endTimecode);
 			var renderer = new VideoRenderer(_context, _sections);
 
 			using (var bitmap = new SKBitmap(1920, 1080))
@@ -125,64 +128,6 @@ namespace KaraokeLib.Video
 					data.SaveTo(outputStream);
 				}
 			}
-		}
-
-		private void CreateSections()
-		{
-			var sections = new List<VideoSection>();
-			
-			if(_tracks.Length == 0)
-			{
-				_sections = new VideoSection[0];
-				return;
-			}
-
-			// TODO: support multiple tracks
-			var track = _tracks[0];
-			var lastEventEndTime = 0.0;
-			var firstEventStartTime = track.Events.FirstOrDefault()?.StartTimeSeconds ?? 0.0;
-			var eventsAccumulated = new List<LyricsEvent>();
-
-			foreach(var ev in track.Events)
-			{
-				var timeBetweenEvents = ev.StartTimeSeconds - lastEventEndTime;
-				if(eventsAccumulated.Any() && timeBetweenEvents >= _context.Config.MinTimeBetweenSections)
-				{
-					// break in the video, add a new section for the break and add all accumulated events
-					var newSection = new VideoSection(
-						_context,
-						VideoSectionType.Lyrics,
-						firstEventStartTime,
-						lastEventEndTime - firstEventStartTime);
-					newSection.SetEvents(eventsAccumulated);
-					sections.Add(newSection);
-					sections.Add(new VideoSection(
-						_context,
-						VideoSectionType.Break, 
-						lastEventEndTime,
-						timeBetweenEvents));
-
-					eventsAccumulated.Clear();
-					firstEventStartTime = ev.StartTimeSeconds;
-				}
-
-				lastEventEndTime = ev.EndTimeSeconds;
-				eventsAccumulated.Add(ev);
-			}
-
-			// add last section
-			if(eventsAccumulated.Any())
-			{
-				var newSection = new VideoSection(
-					_context, 
-					VideoSectionType.Lyrics, 
-					firstEventStartTime,
-					lastEventEndTime - firstEventStartTime);
-				newSection.SetEvents(eventsAccumulated);
-				sections.Add(newSection);
-			}
-
-			_sections = sections.ToArray();
 		}
 	}
 }

@@ -30,6 +30,11 @@ namespace KaraokeLib.Video
 
 		public double ToSeconds()
 		{
+			if(_frameRate == 0)
+			{
+				return 0;
+			}
+
 			return _frameCount / (double)_frameRate;
 		}
 
@@ -67,6 +72,16 @@ namespace KaraokeLib.Video
 		public static VideoTimecode operator -(VideoTimecode a, int b)
 		{
 			return new VideoTimecode(a._frameCount - b, a._frameRate);
+		}
+
+		public static VideoTimecode operator +(VideoTimecode a, double b)
+		{
+			return new VideoTimecode(a.ToSeconds() + b, a._frameRate);
+		}
+
+		public static VideoTimecode operator -(VideoTimecode a, double b)
+		{
+			return new VideoTimecode(a.ToSeconds() - b, a._frameRate);
 		}
 
 		public static VideoTimecode operator ++(VideoTimecode a)
@@ -138,5 +153,17 @@ namespace KaraokeLib.Video
 		{
 			return a == b || a > b;
 		}
+
+		public static VideoTimecode Max(VideoTimecode a, VideoTimecode b) => a > b ? a : b;
+
+		public static VideoTimecode Min(VideoTimecode a, VideoTimecode b) => a < b ? a : b;
+
+		public static VideoTimecode Max(VideoTimecode a, double b) => a.ToSeconds() > b ? a : new VideoTimecode(b, a.FrameRate);
+
+		public static VideoTimecode Min(VideoTimecode a, double b) => a.ToSeconds() < b ? a : new VideoTimecode(b, a.FrameRate);
+
+		public static VideoTimecode Max(double a, VideoTimecode b) => Max(b, a);
+
+		public static VideoTimecode Min(double a, VideoTimecode b) => Min(b, a);
 	}
 }

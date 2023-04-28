@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KaraokeLib", "KaraokeLib\Ka
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MidiToKaraoke", "MidiToKaraoke\MidiToKaraoke.csproj", "{3610455A-081E-4532-8169-59CA7021D109}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KaraokeStudio", "..\KaraokeStudio\KaraokeStudio.csproj", "{043AEC0F-4DD9-4990-A22E-29B06A984C11}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KaraokeStudio", "KaraokeStudio\KaraokeStudio.csproj", "{A2CD0318-5BB4-4674-ADE4-C604E301786F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{3610455A-081E-4532-8169-59CA7021D109}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3610455A-081E-4532-8169-59CA7021D109}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3610455A-081E-4532-8169-59CA7021D109}.Release|Any CPU.Build.0 = Release|Any CPU
-		{043AEC0F-4DD9-4990-A22E-29B06A984C11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{043AEC0F-4DD9-4990-A22E-29B06A984C11}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{043AEC0F-4DD9-4990-A22E-29B06A984C11}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{043AEC0F-4DD9-4990-A22E-29B06A984C11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2CD0318-5BB4-4674-ADE4-C604E301786F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2CD0318-5BB4-4674-ADE4-C604E301786F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2CD0318-5BB4-4674-ADE4-C604E301786F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2CD0318-5BB4-4674-ADE4-C604E301786F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

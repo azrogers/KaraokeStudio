@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KaraokeLib.Video.Plan
 {
-	internal class VideoPlanGenerator
+	public class VideoPlanGenerator
 	{
 		public static VideoPlan CreateVideoPlan(VideoContext context, VideoSection[] sections, VideoTimecode lastFrameTimecode)
 		{

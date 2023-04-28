@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace KaraokeLib.Video
 {
-	internal class VideoRenderer
+	public class VideoRenderer
 	{
 		private VideoContext _context;
 		private VideoSection[] _sections;

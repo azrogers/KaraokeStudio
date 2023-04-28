@@ -12,11 +12,13 @@ namespace KaraokeLib.Lyrics
 		IEnumerable<LyricsTrack> GetTracks();
 
 		double GetLengthSeconds();
+
+		void Save(Stream outStream);
 	}
 
     public class LyricsFile<T> : ILyricsFile where T : ILyricsProvider
 	{
-		private T _provider;
+		protected T _provider;
 		private LyricsTrack[] _tracks;
 
 		public LyricsFile(T provider)
@@ -34,6 +36,11 @@ namespace KaraokeLib.Lyrics
 		{
 			return _provider.GetLengthSeconds();
 		}
+
+		public void Save(Stream outStream)
+		{
+			_provider.Save(outStream);
+		}
 	}
 
 	public class MidiLyricsFile : LyricsFile<MidiLyricsProvider>
@@ -43,5 +50,36 @@ namespace KaraokeLib.Lyrics
 
 		public MidiLyricsFile(Stream stream)
 			: base(new MidiLyricsProvider(stream)) { }
+	}
+
+	public class KsfLyricsFile : LyricsFile<KsfLyricsProvider>
+	{
+		public void SetMetadata(string key, string value) => _provider.SetMetadata(key, value);
+		public string? GetMetadata(string key) => _provider.GetMetadata(key);
+		public void RemoveMetadata(string key) => _provider.RemoveMetadata(key);
+
+		public KsfLyricsFile(string filename)
+			: base(new KsfLyricsProvider(filename))
+		{
+
+		}
+
+		public KsfLyricsFile(Stream stream)
+			: base(new KsfLyricsProvider(stream))
+		{
+
+		}
+
+		public KsfLyricsFile(ILyricsFile otherFile)
+			: base(new KsfLyricsProvider(otherFile.GetTracks()))
+		{
+
+		}
+
+		public KsfLyricsFile()
+			: base(new KsfLyricsProvider(Enumerable.Empty<LyricsTrack>()))
+		{
+
+		}
 	}
 }

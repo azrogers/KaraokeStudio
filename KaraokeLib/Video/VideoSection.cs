@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Collections.Specialized.BitVector32;
 
 namespace KaraokeLib.Video
 {
-	internal class VideoSection
+	public class VideoSection
 	{
 		private VideoContext _context;
 		private VideoParagraph[] _paragraphs;
@@ -18,7 +19,7 @@ namespace KaraokeLib.Video
 
 		public double SectionLength { get; private set; }
 
-		public IEnumerable<VideoParagraph> Paragraphs => _paragraphs;
+		internal IEnumerable<VideoParagraph> Paragraphs => _paragraphs;
 
 		public VideoSection(
 			VideoContext context, 
@@ -55,9 +56,59 @@ namespace KaraokeLib.Video
 
 			_paragraphs = newParagraphs.ToArray();
 		}
+
+		public static VideoSection[] FromTrack(VideoContext context, LyricsTrack track)
+		{
+			var sections = new List<VideoSection>();
+
+			var lastEventEndTime = 0.0;
+			var firstEventStartTime = track.Events.FirstOrDefault()?.StartTimeSeconds ?? 0.0;
+			var eventsAccumulated = new List<LyricsEvent>();
+
+			foreach (var ev in track.Events)
+			{
+				var timeBetweenEvents = ev.StartTimeSeconds - lastEventEndTime;
+				if (eventsAccumulated.Any() && timeBetweenEvents >= context.Config.MinTimeBetweenSections)
+				{
+					// break in the video, add a new section for the break and add all accumulated events
+					var newSection = new VideoSection(
+						context,
+						VideoSectionType.Lyrics,
+						firstEventStartTime,
+						lastEventEndTime - firstEventStartTime);
+					newSection.SetEvents(eventsAccumulated);
+					sections.Add(newSection);
+					sections.Add(new VideoSection(
+						context,
+						VideoSectionType.Break,
+						lastEventEndTime,
+						timeBetweenEvents));
+
+					eventsAccumulated.Clear();
+					firstEventStartTime = ev.StartTimeSeconds;
+				}
+
+				lastEventEndTime = ev.EndTimeSeconds;
+				eventsAccumulated.Add(ev);
+			}
+
+			// add last section
+			if (eventsAccumulated.Any())
+			{
+				var newSection = new VideoSection(
+					context,
+					VideoSectionType.Lyrics,
+					firstEventStartTime,
+					lastEventEndTime - firstEventStartTime);
+				newSection.SetEvents(eventsAccumulated);
+				sections.Add(newSection);
+			}
+
+			return sections.ToArray();
+		}
 	}
 
-	internal enum VideoSectionType
+	public enum VideoSectionType
 	{
 		Lyrics,
 		Break
