@@ -17,6 +17,11 @@ namespace KaraokeLib.Lyrics
 			_events = new List<LyricsEvent>();
 		}
 
+		public LyricsTrack(IEnumerable<LyricsEvent> events)
+		{
+			_events = new List<LyricsEvent>(events);
+		}
+
 		public void AddEvents(IEnumerable<LyricsEvent> events)
 		{
 			_events.AddRange(events);

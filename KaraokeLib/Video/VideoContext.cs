@@ -21,7 +21,7 @@ namespace KaraokeLib.Video
 		{
 			Style = style;
 			Config = config;
-			Size = new SKSize(Config.VideoWidth, Config.VideoHeight);
+			Size = Config.VideoSize;
 			NumLines = CalculateNumLines();
 
 			if(NumLines <= 0)

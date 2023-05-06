@@ -1,0 +1,31 @@
+Short Term (Minimum Viable Program)
+===
+ ✔ Finish style editor @done (23-05-05 20:53)
+   ✔ Update preview based on changes to style @done (23-05-05 20:35)
+   ✔ Style import/export @done (23-05-05 20:53)
+ ☐ Improve karaoke generation algorithm
+   ☐ Show lyrics outside of the "lead/trail" time when possible
+ ☐ Create "import settings" window for MIDI
+ ☐ Audio playback
+ ☐ Lyrics editor
+   ☐ Synchronizing lyrics to audio
+ ☐ Timeline
+   ☐ Moving and editing events
+ ☐ Title events
+ ☐ Background graphics
+   ☐ Image
+   ☐ Video
+   ☐ Solid color
+
+ Longer Term
+ ===
+ ☐ Move to a "graphical elements" structure
+   ☐ Create a TitleGraphicElement
+   ☐ Move karaoke to a KaraokeGraphicElement
+     ☐ Support multiple lyric tracks with multiple KaraokeGraphicElements
+   ☐ Backgrounds done as graphic elements
+     ☐ More complex audio-based backgrounds (Milkdrop/ProjectM?)
+ ☐ More configuration for karaoke
+   ☐ Lines fading in/out vs clipped
+   ☐ Line or bouncing ball indicating current position
+ ☐ Move karaoke rendering to a C++ library for performance

@@ -12,6 +12,23 @@ namespace KaraokeStudio
 		{
 			return JsonConvert.DeserializeObject<ProjectConfig>(JsonConvert.SerializeObject(otherConfig)) ?? new ProjectConfig();
 		}
+
+		public static ProjectConfig Load(string filename)
+		{
+			return LoadString(File.ReadAllText(filename));
+		}
+
+		public static ProjectConfig LoadString(string str)
+		{
+			var newConfig = new ProjectConfig();
+			JsonConvert.PopulateObject(str, newConfig);
+			return newConfig;
+		}
+
+		public void Save(string filename)
+		{
+			File.WriteAllText(filename, JsonConvert.SerializeObject(this));
+		}
 	}
 
 	internal class KaraokeProject
@@ -22,7 +39,7 @@ namespace KaraokeStudio
 
 		public TimeSpan Length { get; private set; }
 
-		public ProjectConfig Config { get; private set; }
+		public ProjectConfig Config { get; set; }
 
 		public IEnumerable<LyricsTrack> Tracks => _file.GetTracks();
 
@@ -133,7 +150,7 @@ namespace KaraokeStudio
 				return null;
 			}
 
-			JsonConvert.PopulateObject(config, project.Config);
+			project.Config = ProjectConfig.LoadString(config);
 			return project.IsValid ? project : null;
 		}
 	}

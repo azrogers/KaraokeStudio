@@ -63,6 +63,9 @@ namespace KaraokeLib.Video
 					continue;
 				}
 
+				// need to reset because we modify state instead of producing separate render state currently
+				ev.IsHyphenated = false;
+
 				// include a space if this isn't another syllable and we're not at the start of a new line
 				var hasSpace = ev.LinkedId == -1 && currentLineEvents.Any();
 				var textToMeasure = (hasSpace ? " " : "") + ev.Text;
@@ -79,6 +82,7 @@ namespace KaraokeLib.Video
 					_lines[currentLine] = currentLineEvents.ToArray();
 					if (ev.LinkedId != -1)
 					{
+						// TODO: avoid modifying the LyricsEvent state
 						_lines[currentLine].Last().IsHyphenated = true;
 					}
 					_lineWidths[currentLine] = currentLineWidth;

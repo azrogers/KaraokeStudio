@@ -51,6 +51,8 @@
 			this.forwardButton = new System.Windows.Forms.Button();
 			this.backButton = new System.Windows.Forms.Button();
 			this.positionBar = new System.Windows.Forms.TrackBar();
+			this.projectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.editStyleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.timelineSplit)).BeginInit();
 			this.timelineSplit.Panel1.SuspendLayout();
@@ -66,7 +68,8 @@
 			// menuStrip
 			// 
 			this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem});
+            this.fileToolStripMenuItem,
+            this.projectToolStripMenuItem});
 			this.menuStrip.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip.Name = "menuStrip";
 			this.menuStrip.Size = new System.Drawing.Size(884, 24);
@@ -293,6 +296,21 @@
 			this.positionBar.TickStyle = System.Windows.Forms.TickStyle.None;
 			this.positionBar.Scroll += new System.EventHandler(this.positionBar_Scroll);
 			// 
+			// projectToolStripMenuItem
+			// 
+			this.projectToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.editStyleToolStripMenuItem});
+			this.projectToolStripMenuItem.Name = "projectToolStripMenuItem";
+			this.projectToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
+			this.projectToolStripMenuItem.Text = "Project";
+			// 
+			// editStyleToolStripMenuItem
+			// 
+			this.editStyleToolStripMenuItem.Name = "editStyleToolStripMenuItem";
+			this.editStyleToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.editStyleToolStripMenuItem.Text = "Style...";
+			this.editStyleToolStripMenuItem.Click += new System.EventHandler(this.editStyleToolStripMenuItem_Click);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -346,5 +364,7 @@
 		private Label endPosLabel;
 		private Label startPosLabel;
 		private SkiaSharp.Views.Desktop.SKGLControl videoSkiaControl;
+		private ToolStripMenuItem projectToolStripMenuItem;
+		private ToolStripMenuItem editStyleToolStripMenuItem;
 	}
 }

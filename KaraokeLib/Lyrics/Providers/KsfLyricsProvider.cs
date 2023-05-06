@@ -161,7 +161,7 @@ namespace KaraokeLib.Lyrics.Providers
 					{
 						linkedId = reader.ReadInt32();
 					}
-					var ev = new LyricsEvent(type, id, new KsfTimecode(startTimeMs), new KsfTimecode(endTimeMs), linkedId);
+					var ev = new LyricsEvent(type, id, new TimeSpanTimecode(startTimeMs), new TimeSpanTimecode(endTimeMs), linkedId);
 
 					if(evFields == 2 || evFields == 3)
 					{
@@ -175,19 +175,5 @@ namespace KaraokeLib.Lyrics.Providers
 				_tracks[i].AddEvents(events);
 			}
 		}
-	}
-
-	internal class KsfTimecode : IEventTimecode
-	{
-		private TimeSpan _timeSpan;
-
-		public KsfTimecode(uint milliseconds)
-		{
-			_timeSpan = TimeSpan.FromMilliseconds(milliseconds);
-		}
-
-		public double GetTimeSeconds() => _timeSpan.TotalSeconds;
-
-		public ulong GetTimeMilliseconds() => (ulong) (_timeSpan.TotalMicroseconds / 1000L);
 	}
 }

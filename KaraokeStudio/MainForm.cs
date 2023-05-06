@@ -7,6 +7,7 @@ namespace KaraokeStudio
 	{
 		private ProjectFormHandler _projectHandler;
 		private VideoFormHandler _videoHandler;
+		private StyleForm _styleForm;
 		private System.Windows.Forms.Timer _timer;
 
 		public MainForm()
@@ -22,6 +23,8 @@ namespace KaraokeStudio
 				positionBar,
 				new Label[] { startPosLabel, currentPosLabel, endPosLabel },
 				new Button[] { backButton, playPauseButton, forwardButton });
+			_styleForm = new StyleForm();
+			_styleForm.OnProjectConfigApplied += OnProjectConfigApplied;
 
 			_videoHandler.OnPlayStateChanged += OnPlayStateChanged;
 
@@ -33,6 +36,11 @@ namespace KaraokeStudio
 			_timer.Tick += OnTimerTick;
 
 			OnProjectChanged(null);
+		}
+
+		private void OnProjectConfigApplied(ProjectConfig obj)
+		{
+			_projectHandler.SetConfig(obj);
 		}
 
 		private void OnTimerTick(object? sender, EventArgs e)
@@ -48,20 +56,15 @@ namespace KaraokeStudio
 
 		private void OnPendingStateChanged(bool obj)
 		{
-			UpdateTitle();
+			UpdateTitleAndMenu();
 		}
 
 		private void OnProjectChanged(KaraokeProject? project)
 		{
-			UpdateTitle();
-
-			saveToolStripMenuItem.Enabled = project != null && _projectHandler.IsPendingChanges;
-			// if we haven't saved once, save will open a dialog, so add the ...
-			saveToolStripMenuItem.Text = (_projectHandler.ProjectPath != null ? "Save" : "Save...");
-			// don't enable save as unless we've saved once
-			saveAsToolStripMenuItem.Enabled = _projectHandler.ProjectPath != null;
+			UpdateTitleAndMenu();
 
 			_videoHandler.OnProjectChanged(project);
+			_styleForm.OnProjectChanged(project);
 
 			// set ms to desired framerate
 			if(project != null)
@@ -84,6 +87,11 @@ namespace KaraokeStudio
 		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			Close();
+		}
+
+		private void editStyleToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			_styleForm.Show();
 		}
 
 		private void backButton_Click(object sender, EventArgs e) => _videoHandler.Rewind();
@@ -114,16 +122,23 @@ namespace KaraokeStudio
 		}
 		#endregion
 	
-		private void UpdateTitle()
+		private void UpdateTitleAndMenu()
 		{
 			var project = _projectHandler.Project;
 			if(project == null)
 			{
 				Text = "Karaoke Studio";
-				return;
+			}
+			else
+			{
+				Text = $"Karaoke Studio - {_projectHandler.ProjectPath ?? "New Project"}{(_projectHandler.IsPendingChanges ? " *" : "")}";
 			}
 
-			Text = $"Karaoke Studio - {_projectHandler.ProjectPath ?? "New Project"}{(_projectHandler.IsPendingChanges ? " *" : "")}";
+			saveToolStripMenuItem.Enabled = project != null && _projectHandler.IsPendingChanges;
+			// if we haven't saved once, save will open a dialog, so add the ...
+			saveToolStripMenuItem.Text = (_projectHandler.ProjectPath != null ? "Save" : "Save...");
+			// don't enable save as unless we've saved once
+			saveAsToolStripMenuItem.Enabled = _projectHandler.ProjectPath != null;
 		}
 	}
 }

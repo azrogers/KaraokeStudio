@@ -36,6 +36,15 @@ namespace KaraokeStudio.FormHandlers
 			}
 		}
 
+		public void SetConfig(ProjectConfig config)
+		{
+			if(Project != null)
+			{
+				Project.Config = config;
+				IsPendingChanges = true;
+			}
+		}
+
 		// create new project
 		public void NewProject()
 		{

@@ -61,8 +61,8 @@ namespace KaraokeLib.Video
 			var tempOutputPath = Path.Combine(Path.GetDirectoryName(outputPath) ?? "", tempFileName);
 
 			var videoSettings = new VideoEncoderSettings(
-				width: _context.Config.VideoWidth, 
-				height: _context.Config.VideoHeight, 
+				width: _context.Config.VideoSize.Width, 
+				height: _context.Config.VideoSize.Height, 
 				framerate: _context.Config.FrameRate, 
 				codec: VideoCodec.H264);
 			videoSettings.EncoderPreset = EncoderPreset.Fast;
@@ -73,7 +73,7 @@ namespace KaraokeLib.Video
 
 			var renderer = new VideoRenderer(_context, _sections);
 
-			using (var bitmap = new SKBitmap(_context.Config.VideoWidth, _context.Config.VideoHeight, SKColorType.Rgba8888, SKAlphaType.Unpremul))
+			using (var bitmap = new SKBitmap(_context.Config.VideoSize.Width, _context.Config.VideoSize.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul))
 			using (var canvas = new SKCanvas(bitmap))
 			using (var file = builder.Create())
 			{
@@ -85,7 +85,7 @@ namespace KaraokeLib.Video
 					var imageData = new ImageData(
 						bitmap.Bytes, 
 						ImagePixelFormat.Rgba32, 
-						new System.Drawing.Size(_context.Config.VideoWidth, _context.Config.VideoHeight));
+						new System.Drawing.Size(_context.Config.VideoSize.Width, _context.Config.VideoSize.Height));
 					file.Video.AddFrame(imageData);
 
 					canvas.Clear();

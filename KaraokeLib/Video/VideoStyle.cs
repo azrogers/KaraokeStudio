@@ -49,13 +49,13 @@ namespace KaraokeLib.Video
 
 		public VideoStyle(KaraokeConfig config)
 		{
-			var typeface = SKTypeface.FromFamilyName(config.FontFamily, config.FontWeight, config.FontWidth, config.FontSlant);
-			_font = new SKFont(typeface, config.FontSize);
+			var typeface = SKTypeface.FromFamilyName(config.Font.Family, config.Font.Weight, config.Font.Width, config.Font.Slant);
+			_font = new SKFont(typeface, config.Font.Size);
 
 			_normalPaint = new SKPaint(_font)
 			{
 				IsAntialias = true,
-				TextSize = config.FontSize,
+				TextSize = config.Font.Size,
 				Color = config.NormalColor,
 				Style = SKPaintStyle.Fill
 			};
@@ -63,7 +63,7 @@ namespace KaraokeLib.Video
 			_highlightedPaint = new SKPaint(_font)
 			{
 				IsAntialias = true,
-				TextSize = config.FontSize,
+				TextSize = config.Font.Size,
 				Color = config.HighlightColor,
 				Style = SKPaintStyle.Fill
 			};
@@ -71,7 +71,7 @@ namespace KaraokeLib.Video
 			_strokePaint = new SKPaint(_font)
 			{
 				IsAntialias = true,
-				TextSize = config.FontSize,
+				TextSize = config.Font.Size,
 				Color = config.StrokeColor,
 				Style = SKPaintStyle.Stroke,
 				StrokeJoin = SKStrokeJoin.Miter,

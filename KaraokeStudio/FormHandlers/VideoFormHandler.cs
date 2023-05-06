@@ -160,7 +160,7 @@ namespace KaraokeStudio.FormHandlers
 			}
 
 			_generationState.Render(
-				_lastLoadedProject, 
+				_lastLoadedProject.Tracks, 
 				new VideoTimecode(_currentVideoPosition, _lastLoadedProject.Config.FrameRate), 
 				surface);
 		}
@@ -221,35 +221,21 @@ namespace KaraokeStudio.FormHandlers
 				return;
 			}
 
-			_generationState.UpdateVideoContext(_lastLoadedProject, (_skiaControl.Size.Width, _skiaControl.Size.Height));
+			_generationState.UpdateVideoContext(
+				_lastLoadedProject.Length.TotalSeconds, 
+				_lastLoadedProject.Config, 
+				(_skiaControl.Size.Width, _skiaControl.Size.Height));
 		}
 
 		private void UpdatePanelSize()
 		{
-			// ensure panels are the correct size
-			var widthHeightRatio = 16.0 / 9.0;
-			var heightWidthRatio = 9.0 / 16.0;
+			var size = (16, 9);
 			if(_lastLoadedProject != null)
 			{
-				widthHeightRatio = (double)_lastLoadedProject.Config.VideoWidth / _lastLoadedProject.Config.VideoHeight;
-				heightWidthRatio = (double)_lastLoadedProject.Config.VideoHeight / _lastLoadedProject.Config.VideoWidth;
+				size = (_lastLoadedProject.Config.VideoSize.Width, _lastLoadedProject.Config.VideoSize.Height);
 			}
 
-			var targetSize = new Size(0, 0);
-			if(((double)_videoPanel.Size.Width / _videoPanel.Size.Height) > widthHeightRatio)
-			{
-				targetSize = new Size((int)(_videoPanel.Size.Height * widthHeightRatio), _videoPanel.Size.Height);
-			}
-			else
-			{
-				targetSize = new Size(_videoPanel.Size.Width, (int)(_videoPanel.Size.Width * heightWidthRatio));
-			}
-
-			// update and center
-			_skiaControl.Size = targetSize;
-			_skiaControl.Location = new Point(
-				_videoPanel.Size.Width / 2 - targetSize.Width / 2,
-				_videoPanel.Size.Height / 2 - targetSize.Height / 2);
+			Util.ResizeContainerAspectRatio(_videoPanel, _skiaControl, size);
 		}
 	}
 }
