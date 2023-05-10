@@ -105,9 +105,9 @@ namespace KaraokeLib.Lyrics.Providers
 					{
 						writer.Write(ev.LinkedId);
 					}
-					if(ev.Text != null)
+					if(ev.RawText != null)
 					{
-						writer.WriteNullTerminatedString(ev.Text);
+						writer.WriteNullTerminatedString(ev.RawText);
 					}
 				}
 			}
@@ -165,7 +165,7 @@ namespace KaraokeLib.Lyrics.Providers
 
 					if(evFields == 2 || evFields == 3)
 					{
-						ev.SetText(reader.ReadNullTerminatedString());
+						ev.Text = reader.ReadNullTerminatedString();
 					}
 
 					events.Add(ev);

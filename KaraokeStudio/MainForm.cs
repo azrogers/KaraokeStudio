@@ -7,6 +7,7 @@ namespace KaraokeStudio
 	{
 		private ProjectFormHandler _projectHandler;
 		private VideoFormHandler _videoHandler;
+		private AudioFormHandler _audioHandler;
 		private StyleForm _styleForm;
 		private System.Windows.Forms.Timer _timer;
 
@@ -23,9 +24,12 @@ namespace KaraokeStudio
 				positionBar,
 				new Label[] { startPosLabel, currentPosLabel, endPosLabel },
 				new Button[] { backButton, playPauseButton, forwardButton });
+			_audioHandler = new AudioFormHandler();
+
 			_styleForm = new StyleForm();
 			_styleForm.OnProjectConfigApplied += OnProjectConfigApplied;
 
+			_videoHandler.OnSeek += OnVideoSeek;
 			_videoHandler.OnPlayStateChanged += OnPlayStateChanged;
 
 			_projectHandler.OnProjectChanged += OnProjectChanged;
@@ -38,9 +42,15 @@ namespace KaraokeStudio
 			OnProjectChanged(null);
 		}
 
+		private void OnVideoSeek(double pos)
+		{
+			_audioHandler.OnPlaybackStateChanged(_videoHandler.IsPlaying, pos);
+		}
+
 		private void OnProjectConfigApplied(ProjectConfig obj)
 		{
 			_projectHandler.SetConfig(obj);
+			_videoHandler.UpdateGenerationContext();
 		}
 
 		private void OnTimerTick(object? sender, EventArgs e)
@@ -52,6 +62,7 @@ namespace KaraokeStudio
 		private void OnPlayStateChanged(bool isPlaying)
 		{
 			_timer.Enabled = isPlaying;
+			_audioHandler.OnPlaybackStateChanged(isPlaying, _videoHandler.Position);
 		}
 
 		private void OnPendingStateChanged(bool obj)
@@ -65,6 +76,7 @@ namespace KaraokeStudio
 
 			_videoHandler.OnProjectChanged(project);
 			_styleForm.OnProjectChanged(project);
+			_audioHandler.OnProjectChanged(project);
 
 			// set ms to desired framerate
 			if(project != null)
@@ -139,6 +151,17 @@ namespace KaraokeStudio
 			saveToolStripMenuItem.Text = (_projectHandler.ProjectPath != null ? "Save" : "Save...");
 			// don't enable save as unless we've saved once
 			saveAsToolStripMenuItem.Enabled = _projectHandler.ProjectPath != null;
+
+			openRecentToolStripMenuItem.DropDownItems.Clear();
+			foreach(var file in AppSettings.Instance.RecentFiles)
+			{
+				openRecentToolStripMenuItem.DropDownItems.Add(file, null, (o, e) =>
+				{
+					_projectHandler.OpenProject(file);
+				});
+			}
+
+			openRecentToolStripMenuItem.Enabled = openRecentToolStripMenuItem.HasDropDownItems;
 		}
 	}
 }

@@ -30,7 +30,7 @@ namespace KaraokeLib.Video
 
 			_tracks = lyricsFile.GetTracks().ToArray();
 			_endTimecode = new VideoTimecode(audioFile.GetLengthSeconds(), KaraokeConfig.Default.FrameRate);
-			_context = new VideoContext(new VideoStyle(KaraokeConfig.Default), KaraokeConfig.Default);
+			_context = new VideoContext(new VideoStyle(KaraokeConfig.Default), KaraokeConfig.Default, _endTimecode);
 			_sections = _tracks.Any() ? VideoSection.FromTrack(_context, _tracks[0]) : new VideoSection[0];
 			_audioFile = audioFile;
 		}
@@ -49,7 +49,7 @@ namespace KaraokeLib.Video
 		}
 
 		public void RenderVideo(VideoTimecode startTimecode, VideoTimecode endTimecode, string outputFile) =>
-			RenderVideo(startTimecode, endTimecode, outputFile, VideoPlanGenerator.CreateVideoPlan(_context, _sections, _endTimecode));
+			RenderVideo(startTimecode, endTimecode, outputFile, VideoPlanGenerator.CreateVideoPlan(_context, _sections));
 
 		public void RenderVideo(VideoTimecode startTimecode, VideoTimecode endTimecode, string outputFile, VideoPlan plan)
 		{
@@ -104,7 +104,7 @@ namespace KaraokeLib.Video
 		}
 
 		public void RenderFrameToFile(VideoTimecode videoPosition, string outputFile) =>
-			RenderFrameToFile(videoPosition, outputFile, VideoPlanGenerator.CreateVideoPlan(_context, _sections, _endTimecode));
+			RenderFrameToFile(videoPosition, outputFile, VideoPlanGenerator.CreateVideoPlan(_context, _sections));
 
 		public void RenderFrameToFile(VideoTimecode videoPosition, string outputFile, VideoPlan plan)
 		{

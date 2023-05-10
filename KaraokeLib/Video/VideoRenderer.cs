@@ -36,12 +36,19 @@ namespace KaraokeLib.Video
 			var posSeconds = videoTimecode.ToSeconds();
 			var bounds = (posSeconds - _context.Config.LyricTrailTime, posSeconds + _context.Config.LyricLeadTime);
 
+			// draw to an intermediate surface for transitions
+			var surface = SKSurface.Create(new SKImageInfo((int)_context.Size.Width, (int)_context.Size.Height));
+
 			var elements = videoPlan.GetElementsForFrame(videoTimecode);
 			foreach (var ev in elements)
 			{
-				var minTime = Math.Max(ev.StartTime.ToSeconds(), bounds.Item1);
-				var maxTime = Math.Min(ev.EndTime.ToSeconds(), bounds.Item2);
-				ev.Element.Render(_context, canvas, posSeconds, (minTime, maxTime));
+				surface.Canvas.Clear();
+
+				var minTime = bounds.Item1;//Math.Max(ev.StartTime.ToSeconds(), bounds.Item1);
+				var maxTime = bounds.Item2;// Math.Min(ev.EndTime.ToSeconds(), bounds.Item2);
+				ev.Element.Render(_context, surface.Canvas, posSeconds, (minTime, maxTime));
+
+				canvas.DrawSurface(surface, SKPoint.Empty);
 			}
 		}
 	}

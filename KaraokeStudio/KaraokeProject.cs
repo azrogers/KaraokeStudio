@@ -37,6 +37,8 @@ namespace KaraokeStudio
 
 		public string AudioFile { get; private set; } = "";
 
+		public WaveStream? AudioStream => _waveStream;
+
 		public TimeSpan Length { get; private set; }
 
 		public ProjectConfig Config { get; set; }

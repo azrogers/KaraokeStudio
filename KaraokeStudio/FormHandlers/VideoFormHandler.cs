@@ -35,6 +35,9 @@ namespace KaraokeStudio.FormHandlers
 		private Stopwatch _stopwatch = new Stopwatch();
 
 		public event Action<bool>? OnPlayStateChanged;
+		public event Action<double>? OnSeek;
+
+		public double Position => _currentVideoPosition;
 
 		public bool IsPlaying
 		{
@@ -74,12 +77,16 @@ namespace KaraokeStudio.FormHandlers
 		{
 			_currentVideoPosition -= 10.0;
 			_currentVideoPosition = Math.Max(_currentVideoPosition, 0.0);
+			UpdateVideoPosition();
+			OnSeek?.Invoke(_currentVideoPosition);
 		}
 
 		public void FastForward()
 		{
 			_currentVideoPosition += 10.0;
 			_currentVideoPosition = Math.Min(_currentVideoPosition, _lastLoadedTimespan?.TotalSeconds ?? 0.0);
+			UpdateVideoPosition();
+			OnSeek?.Invoke(_currentVideoPosition);
 		}
 
 		public void TogglePlay()
@@ -114,6 +121,7 @@ namespace KaraokeStudio.FormHandlers
 			_currentVideoPosition = Math.Min(_lastLoadedTimespan.Value.TotalSeconds, newPosition);
 			UpdateVideoPosition();
 			_skiaControl.Invalidate();
+			OnSeek?.Invoke(_currentVideoPosition);
 		}
 
 		public void OnTick()
@@ -214,7 +222,7 @@ namespace KaraokeStudio.FormHandlers
 			_playPauseButton.Text = IsPlaying ? "Pause" : "Play";
 		}
 
-		private void UpdateGenerationContext()
+		public void UpdateGenerationContext()
 		{
 			if(_lastLoadedProject == null)
 			{

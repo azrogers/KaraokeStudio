@@ -64,7 +64,7 @@ mas-sa quis sem. Cur-a-bit-ur cur-sus or-ci vit-ae con-seq-uat hen-dre-rit. Sus-
 						(firstId != id ? firstId : -1));
 					id++;
 					time += 0.5f;
-					ev.SetText(part.Trim());
+					ev.Text = part.Trim();
 					yield return ev;
 				}
 			}

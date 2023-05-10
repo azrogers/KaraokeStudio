@@ -18,7 +18,6 @@ namespace KaraokeStudio
 		private VideoStyle? _style;
 		private VideoRenderer? _renderer;
 		private VideoPlan? _plan;
-		private double _duration;
 		private int _frameRate;
 
 		private bool _isPlanStale = false;
@@ -43,7 +42,7 @@ namespace KaraokeStudio
 					sections = new VideoSection[0];
 				}
 
-				_plan = VideoPlanGenerator.CreateVideoPlan(_context, sections, new VideoTimecode(_duration, _frameRate));
+				_plan = VideoPlanGenerator.CreateVideoPlan(_context, sections);
 				_renderer = new VideoRenderer(_context, sections);
 				_isPlanStale = false;
 			}
@@ -56,10 +55,9 @@ namespace KaraokeStudio
 			var config = FromProjectConfig(pConfig, size);
 			_style = new VideoStyle(config);
 
-			_context = new VideoContext(_style, config);
+			_context = new VideoContext(_style, config, new VideoTimecode(duration, pConfig.FrameRate));
 			_isPlanStale = true;
 			_frameRate = pConfig.FrameRate;
-			_duration = duration;
 		}
 
 		private KaraokeConfig FromProjectConfig(ProjectConfig config, (int Width, int Height) outputSize)

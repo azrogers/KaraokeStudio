@@ -17,11 +17,14 @@ namespace KaraokeLib.Video
 
 		public KaraokeConfig Config { get; private set; }
 
-		public VideoContext(VideoStyle style, KaraokeConfig config)
+		public VideoTimecode LastFrameTimecode { get; private set; }
+
+		public VideoContext(VideoStyle style, KaraokeConfig config, VideoTimecode lastFrameTimecode)
 		{
 			Style = style;
 			Config = config;
 			Size = Config.VideoSize;
+			LastFrameTimecode = lastFrameTimecode;
 			NumLines = CalculateNumLines();
 
 			if(NumLines <= 0)

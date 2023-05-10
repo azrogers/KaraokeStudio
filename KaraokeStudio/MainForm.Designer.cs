@@ -32,6 +32,7 @@
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.openRecentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -39,6 +40,8 @@
 			this.midiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.projectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.editStyleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.timelineSplit = new System.Windows.Forms.SplitContainer();
 			this.videoSplit = new System.Windows.Forms.SplitContainer();
 			this.videoPanel = new System.Windows.Forms.Panel();
@@ -51,8 +54,6 @@
 			this.forwardButton = new System.Windows.Forms.Button();
 			this.backButton = new System.Windows.Forms.Button();
 			this.positionBar = new System.Windows.Forms.TrackBar();
-			this.projectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.editStyleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.timelineSplit)).BeginInit();
 			this.timelineSplit.Panel1.SuspendLayout();
@@ -81,6 +82,7 @@
 			this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.newToolStripMenuItem,
             this.openToolStripMenuItem,
+            this.openRecentToolStripMenuItem,
             this.saveToolStripMenuItem,
             this.saveAsToolStripMenuItem,
             this.toolStripSeparator1,
@@ -106,6 +108,12 @@
 			this.openToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
 			this.openToolStripMenuItem.Text = "Open...";
 			this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
+			// 
+			// openRecentToolStripMenuItem
+			// 
+			this.openRecentToolStripMenuItem.Name = "openRecentToolStripMenuItem";
+			this.openRecentToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
+			this.openRecentToolStripMenuItem.Text = "Open recent...";
 			// 
 			// saveToolStripMenuItem
 			// 
@@ -155,6 +163,21 @@
 			this.exitToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
 			this.exitToolStripMenuItem.Text = "Exit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+			// 
+			// projectToolStripMenuItem
+			// 
+			this.projectToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.editStyleToolStripMenuItem});
+			this.projectToolStripMenuItem.Name = "projectToolStripMenuItem";
+			this.projectToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
+			this.projectToolStripMenuItem.Text = "Project";
+			// 
+			// editStyleToolStripMenuItem
+			// 
+			this.editStyleToolStripMenuItem.Name = "editStyleToolStripMenuItem";
+			this.editStyleToolStripMenuItem.Size = new System.Drawing.Size(108, 22);
+			this.editStyleToolStripMenuItem.Text = "Style...";
+			this.editStyleToolStripMenuItem.Click += new System.EventHandler(this.editStyleToolStripMenuItem_Click);
 			// 
 			// timelineSplit
 			// 
@@ -296,21 +319,6 @@
 			this.positionBar.TickStyle = System.Windows.Forms.TickStyle.None;
 			this.positionBar.Scroll += new System.EventHandler(this.positionBar_Scroll);
 			// 
-			// projectToolStripMenuItem
-			// 
-			this.projectToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.editStyleToolStripMenuItem});
-			this.projectToolStripMenuItem.Name = "projectToolStripMenuItem";
-			this.projectToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
-			this.projectToolStripMenuItem.Text = "Project";
-			// 
-			// editStyleToolStripMenuItem
-			// 
-			this.editStyleToolStripMenuItem.Name = "editStyleToolStripMenuItem";
-			this.editStyleToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.editStyleToolStripMenuItem.Text = "Style...";
-			this.editStyleToolStripMenuItem.Click += new System.EventHandler(this.editStyleToolStripMenuItem_Click);
-			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -366,5 +374,6 @@
 		private SkiaSharp.Views.Desktop.SKGLControl videoSkiaControl;
 		private ToolStripMenuItem projectToolStripMenuItem;
 		private ToolStripMenuItem editStyleToolStripMenuItem;
+		private ToolStripMenuItem openRecentToolStripMenuItem;
 	}
 }

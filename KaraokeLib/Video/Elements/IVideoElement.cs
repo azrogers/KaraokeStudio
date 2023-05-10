@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using KaraokeLib.Lyrics;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,15 +11,30 @@ namespace KaraokeLib.Video.Elements
 	// a single element in the video (a renderable bit of text, an intermission, etc)
 	internal interface IVideoElement
 	{
+		/// <summary>
+		/// The type of element this class implements.
+		/// </summary>
 		VideoElementType Type { get; }
 
-		(float, float) Position { get; }
-
-		double StartPos { get; }
+		/// <summary>
+		/// The position of this element on the screen.
+		/// </summary>
+		(float X, float Y) Position { get; }
 
 		/// <summary>
-		/// Is this element visible within the given timecodes?
+		/// The timecode of the start of the event.
 		/// </summary>
+		IEventTimecode StartTimecode { get; set; }
+
+		/// <summary>
+		/// The timecode of the end of the event.
+		/// </summary>
+		IEventTimecode EndTimecode { get; set; }
+
+		/// <summary>
+		/// Checks whether this element overlaps with the timeframe specified in <paramref name="bounds"/>.
+		/// </summary>
+		/// <param name="bounds">The beginning and end of the timeframe to check, in seconds.</param>
 		bool IsVisible((double, double) bounds);
 
 		/// <summary>

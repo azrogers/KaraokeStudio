@@ -124,7 +124,7 @@ namespace KaraokeLib.Lyrics.Providers
 
 						expectingFollowingLyric = text.EndsWith('-');
 
-						newEvent.SetText(text.TrimEnd('-').Replace('=', '-'));
+						newEvent.Text = text.TrimEnd('-').Replace('=', '-');
 
 						previousId = nextId;
 						nextId++;
@@ -221,6 +221,16 @@ namespace KaraokeLib.Lyrics.Providers
 		public ulong GetTimeMilliseconds()
 		{
 			return (ulong)(_timeSpan.TotalMicroseconds / 1000L);
+		}
+
+		public int CompareTo(IEventTimecode? other)
+		{
+			if(other == null)
+			{
+				return 1;
+			}
+
+			return GetTimeMilliseconds().CompareTo(other.GetTimeMilliseconds());
 		}
 	}
 }

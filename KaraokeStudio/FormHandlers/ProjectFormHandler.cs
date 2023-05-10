@@ -1,4 +1,5 @@
 ﻿using Ookii.Dialogs.WinForms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace KaraokeStudio.FormHandlers
 {
@@ -65,6 +66,25 @@ namespace KaraokeStudio.FormHandlers
 			OnProjectChanged?.Invoke(_loadedProject);
 		}
 
+		public void OpenProject(string file)
+		{
+			if (!AlertPendingChanges())
+			{
+				return;
+			}
+
+			if (!File.Exists(file))
+			{
+				return;
+			}
+
+			_loadedProject = KaraokeProject.Load(file);
+			_loadedProjectPath = file;
+			IsPendingChanges = false;
+			AppSettings.Instance.AddRecentFile(_loadedProjectPath);
+			OnProjectChanged?.Invoke(_loadedProject);
+		}
+
 		// open existing project
 		public void OpenProject()
 		{
@@ -78,15 +98,12 @@ namespace KaraokeStudio.FormHandlers
 			dialog.Multiselect = false;
 			dialog.Title = "Open Karaoke Studio file";
 			dialog.Filter = "Karaoke Studio file|*.ksf|All files|*.*";
-			if (dialog.ShowDialog() != DialogResult.OK || !File.Exists(dialog.FileName))
+			if (dialog.ShowDialog() != DialogResult.OK)
 			{
 				return;
 			}
 
-			_loadedProject = KaraokeProject.Load(dialog.FileName);
-			_loadedProjectPath = dialog.FileName;
-			IsPendingChanges = false;
-			OnProjectChanged?.Invoke(_loadedProject);
+			OpenProject(dialog.FileName);
 		}
 
 		public void LoadMidiFile()
@@ -115,7 +132,7 @@ namespace KaraokeStudio.FormHandlers
 
 			_loadedProject = KaraokeProject.FromMidi(midiFile, audioFile);
 			_loadedProjectPath = null;
-			IsPendingChanges = false;
+			IsPendingChanges = true;
 			OnProjectChanged?.Invoke(_loadedProject);
 		}
 
@@ -174,6 +191,7 @@ namespace KaraokeStudio.FormHandlers
 			}
 
 			_loadedProject.Save(_loadedProjectPath);
+			AppSettings.Instance.AddRecentFile(_loadedProjectPath);
 			IsPendingChanges = false;
 			return true;
 		}
