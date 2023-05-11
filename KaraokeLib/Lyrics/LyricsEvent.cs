@@ -115,6 +115,8 @@ namespace KaraokeLib.Lyrics
 			_span = span;
 		}
 
+		public TimeSpanTimecode(double seconds) => _span = TimeSpan.FromSeconds(seconds);
+
 		public TimeSpanTimecode(uint milliseconds)
 		{
 			_span = TimeSpan.FromMilliseconds(milliseconds);

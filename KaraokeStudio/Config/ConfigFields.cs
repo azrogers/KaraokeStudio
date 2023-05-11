@@ -47,6 +47,8 @@ namespace KaraokeStudio.Config
 				}
 			}
 
+			public Type FieldType => _fieldType;
+
 			private FieldInfo _field;
 			private ConfigRangeAttribute? _range;
 			private Type _fieldType;
@@ -67,6 +69,11 @@ namespace KaraokeStudio.Config
 				return (T?)Convert.ChangeType(fieldValue, typeof(T));
 			}
 
+			public object? GetValue(Type t, object o)
+			{
+				return Convert.ChangeType(_field.GetValue(o), t);
+			}
+
 			public void SetValue<T>(object o, T val)
 			{
 				_field.SetValue(o, Convert.ChangeType(val, _field.FieldType));
@@ -74,7 +81,12 @@ namespace KaraokeStudio.Config
 
 			private ControlType GetControlType(Type fieldType)
 			{
-				if(Util.IsNumericType(fieldType))
+				if (fieldType.IsEnum)
+				{
+					return ControlType.Enum;
+				}
+
+				if (Util.IsNumericType(fieldType))
 				{
 					return (_range?.HasMax ?? false) ? ControlType.Range : ControlType.Numeric;
 				}
@@ -104,7 +116,8 @@ namespace KaraokeStudio.Config
 			Range,
 			Size,
 			Color,
-			Font
+			Font,
+			Enum
 		}
 	}
 }

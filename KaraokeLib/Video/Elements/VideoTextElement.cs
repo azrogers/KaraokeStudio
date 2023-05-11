@@ -1,4 +1,5 @@
 ﻿using KaraokeLib.Lyrics;
+using KaraokeLib.Video.Transitions;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -21,13 +22,19 @@ namespace KaraokeLib.Video.Elements
 		public (float X, float Y) Position { get; set; }
 
 		/// <inheritdoc />
-		public float Width => _width;
+		public (float Width, float Height) Size => (_width, _context.Style.LineHeight);
 
 		/// <inheritdoc />
 		public IEventTimecode StartTimecode { get; set; }
 
 		/// <inheritdoc />
 		public IEventTimecode EndTimecode { get; set; }
+
+		/// <inheritdoc />
+		public TransitionConfig StartTransition { get; set; }
+
+		/// <inheritdoc />
+		public TransitionConfig EndTransition { get; set; }
 
 		private (double, double)? _cachedVisibleBounds;
 		private bool _cachedVisibleResult;
@@ -48,19 +55,10 @@ namespace KaraokeLib.Video.Elements
 			string text,
 			IEventTimecode startTimecode,
 			IEventTimecode endTimecode)
-		{
-			_context = context;
-			_text = text;
-			StartTimecode = _earliestEventTimecode = startTimecode;
-			EndTimecode = _latestEventTimecode = endTimecode;
-			_width = context.Style.GetTextWidth(_text);
-			_events = new LyricsEvent[]
+			: this(context, new LyricsEvent[]
 			{
-				new LyricsEvent(LyricsEventType.Lyric, -1, _earliestEventTimecode, _latestEventTimecode) { Text = _text }
-			};
-
-			_elementWidths = new float[] { _width };
-		}
+				new LyricsEvent(LyricsEventType.Lyric, -1, startTimecode, endTimecode) { Text = text }
+			}, 0) { }
 
 		/// <summary>
 		/// Creates a VideoTextElement from at least one event on a single line.
@@ -74,6 +72,11 @@ namespace KaraokeLib.Video.Elements
 			_events = events.ToArray();
 			StartTimecode = _earliestEventTimecode = events.Select(e => e.StartTime).Min() ?? new TimeSpanTimecode(TimeSpan.MinValue);
 			EndTimecode = _latestEventTimecode = events.Select(e => e.EndTime).Max() ?? new TimeSpanTimecode(TimeSpan.MaxValue);
+
+			CreateTransitions();
+
+			StartTransition ??= new TransitionConfig();
+			EndTransition ??= new TransitionConfig();
 
 			// create line from events
 			var safeArea = _context.Style.GetSafeArea(_context.Size);
@@ -95,6 +98,15 @@ namespace KaraokeLib.Video.Elements
 
 			var textXPos = safeArea.Left + safeArea.Width / 2 - totalWidth / 2;
 			Position = (textXPos, yPos);
+		}
+
+		/// <inheritdoc />
+		public void SetTiming(IEventTimecode newStart, IEventTimecode newEnd)
+		{
+			StartTimecode = newStart;
+			EndTimecode = newEnd;
+
+			CreateTransitions();
 		}
 
 		/// <inheritdoc/>
@@ -179,7 +191,7 @@ namespace KaraokeLib.Video.Elements
 		}
 
 		/// <inheritdoc/>
-		public void Render(VideoContext context, SKCanvas canvas, double videoPos, (double, double) bounds)
+		public void Render(VideoContext context, SKCanvas canvas, double videoPos)
 		{
 			/*if (!IsVisible(bounds))
 			{
@@ -307,6 +319,32 @@ namespace KaraokeLib.Video.Elements
 			}
 
 			return 0;
+		}
+
+		private void CreateTransitions()
+		{
+			var startDuration = Math.Clamp(
+				_earliestEventTimecode.GetTimeSeconds() - StartTimecode.GetTimeSeconds(),
+				_context.Config.MinTransitionLength,
+				_context.Config.MaxTransitionLength);
+
+			StartTransition = new TransitionConfig()
+			{
+				Type = _context.Config.TransitionIn,
+				EasingCurve = _context.Config.TransitionInCurve,
+				Duration = startDuration
+			};
+
+			var endDuration = Math.Clamp(
+				EndTimecode.GetTimeSeconds() - _latestEventTimecode.GetTimeSeconds(),
+				_context.Config.MinTransitionLength,
+				_context.Config.MaxTransitionLength);
+			EndTransition = new TransitionConfig()
+			{
+				Type = _context.Config.TransitionOut,
+				EasingCurve = _context.Config.TransitionOutCurve,
+				Duration = endDuration
+			};
 		}
 	}
 }

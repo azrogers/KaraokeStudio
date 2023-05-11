@@ -1,4 +1,5 @@
 ﻿using KaraokeLib.Lyrics;
+using KaraokeLib.Video.Transitions;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -22,14 +23,34 @@ namespace KaraokeLib.Video.Elements
 		(float X, float Y) Position { get; }
 
 		/// <summary>
+		/// The (Width, Height) of the element in pixels.
+		/// </summary>
+		(float Width, float Height) Size { get; }
+
+		/// <summary>
 		/// The timecode of the start of the event.
 		/// </summary>
-		IEventTimecode StartTimecode { get; set; }
+		IEventTimecode StartTimecode { get; }
 
 		/// <summary>
 		/// The timecode of the end of the event.
 		/// </summary>
-		IEventTimecode EndTimecode { get; set; }
+		IEventTimecode EndTimecode { get; }
+
+		/// <summary>
+		/// The transition going from not visible to visible.
+		/// </summary>
+		TransitionConfig StartTransition { get; }
+
+		/// <summary>
+		/// The transition going from visible to not visible.
+		/// </summary>
+		TransitionConfig EndTransition { get; }
+
+		/// <summary>
+		/// Change the timing of this element.
+		/// </summary>
+		void SetTiming(IEventTimecode newStartTimecode, IEventTimecode newEndTimecode);
 
 		/// <summary>
 		/// Checks whether this element overlaps with the timeframe specified in <paramref name="bounds"/>.
@@ -41,8 +62,7 @@ namespace KaraokeLib.Video.Elements
 		/// Renders this element at the given time.
 		/// </summary>
 		/// <param name="position">The current point in the video.</param>
-		/// <param name="bounds">The (earliest, latest) time that elements should be visible.</param>
-		void Render(VideoContext context, SKCanvas canvas, double position, (double, double) bounds);
+		void Render(VideoContext context, SKCanvas canvas, double position);
 
 		/// <summary>
 		/// Gets the element's priority.

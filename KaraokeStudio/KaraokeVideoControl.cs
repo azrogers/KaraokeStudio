@@ -1,30 +1,24 @@
 ﻿using KaraokeLib.Video;
 using SkiaSharp;
-using SkiaSharp.Views.Desktop;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using FontAwesome.Sharp;
 
-namespace KaraokeStudio.FormHandlers
+namespace KaraokeStudio
 {
-	internal class VideoFormHandler
+	internal partial class KaraokeVideoControl : UserControl
 	{
 		private bool _isPlayingInternal = false;
 
-		private Panel _videoPanel;
-		private SKGLControl _skiaControl;
-		private TrackBar _positionBar;
-
-		private Label _startPosLabel;
-		private Label _currentPosLabel;
-		private Label _endPosLabel;
-
-		private Button _rewindButton;
-		private Button _playPauseButton;
-		private Button _forwardButton;
+		private System.Windows.Forms.Timer _timer;
 
 		private double _currentVideoPosition;
 		private TimeSpan? _lastLoadedTimespan = null;
@@ -47,30 +41,18 @@ namespace KaraokeStudio.FormHandlers
 				_isPlayingInternal = value;
 				UpdateButtons();
 				_stopwatch.Restart();
+				_timer.Enabled = _isPlayingInternal;
 				OnPlayStateChanged?.Invoke(_isPlayingInternal);
 			}
 		}
 
-		public VideoFormHandler(
-			Panel videoPanel,
-			SKGLControl skiaControl,
-			TrackBar positionBar,
-			Label[] labels,
-			Button[] buttons)
+		public KaraokeVideoControl()
 		{
-			_videoPanel = videoPanel;
-			_skiaControl = skiaControl;
+			InitializeComponent();
 
-			_positionBar = positionBar;
-			_startPosLabel = labels[0];
-			_currentPosLabel = labels[1];
-			_endPosLabel = labels[2];
-
-			_rewindButton = buttons[0];
-			_playPauseButton = buttons[1];
-			_forwardButton = buttons[2];
-
-			UpdateState();
+			_timer = new System.Windows.Forms.Timer();
+			_timer.Enabled = false;
+			_timer.Tick += OnTimerTick;
 		}
 
 		public void Rewind()
@@ -91,7 +73,7 @@ namespace KaraokeStudio.FormHandlers
 
 		public void TogglePlay()
 		{
-			if(IsPlaying)
+			if (IsPlaying)
 			{
 				Pause();
 			}
@@ -113,20 +95,20 @@ namespace KaraokeStudio.FormHandlers
 
 		public void Seek(double newPosition)
 		{
-			if(_lastLoadedTimespan == null)
+			if (_lastLoadedTimespan == null)
 			{
 				return;
 			}
 
 			_currentVideoPosition = Math.Min(_lastLoadedTimespan.Value.TotalSeconds, newPosition);
 			UpdateVideoPosition();
-			_skiaControl.Invalidate();
+			videoSkiaControl.Invalidate();
 			OnSeek?.Invoke(_currentVideoPosition);
 		}
 
 		public void OnTick()
 		{
-			if(!IsPlaying || _lastLoadedTimespan == null)
+			if (!IsPlaying || _lastLoadedTimespan == null)
 			{
 				return;
 			}
@@ -143,7 +125,7 @@ namespace KaraokeStudio.FormHandlers
 		{
 			var isDirty = false;
 
-			var newSize = (_videoPanel.Size.Width, _videoPanel.Size.Height);
+			var newSize = (videoPanel.Size.Width, videoPanel.Size.Height);
 			if (_lastUpdateSize == null || _lastUpdateSize != newSize)
 			{
 				UpdatePanelSize();
@@ -153,7 +135,7 @@ namespace KaraokeStudio.FormHandlers
 
 			// TODO: handle updating video elements
 
-			if(isDirty)
+			if (isDirty)
 			{
 				UpdateGenerationContext();
 			}
@@ -161,32 +143,37 @@ namespace KaraokeStudio.FormHandlers
 
 		public void Render(SKSurface surface)
 		{
-			if(_lastLoadedProject == null)
+			if (_lastLoadedProject == null)
 			{
 				surface.Canvas.Clear();
 				return;
 			}
 
 			_generationState.Render(
-				_lastLoadedProject.Tracks, 
-				new VideoTimecode(_currentVideoPosition, _lastLoadedProject.Config.FrameRate), 
+				_lastLoadedProject.Tracks,
+				new VideoTimecode(_currentVideoPosition, _lastLoadedProject.Config.FrameRate),
 				surface);
 		}
 
 		public void OnProjectChanged(KaraokeProject? project)
 		{
-			if(_lastLoadedProject != project)
+			if (_lastLoadedProject != project)
 			{
 				_currentVideoPosition = 0;
 				IsPlaying = false;
 			}
-			else if(_lastLoadedProject != null && project != null && _lastLoadedTimespan != project.Length)
+			else if (_lastLoadedProject != null && project != null && _lastLoadedTimespan != project.Length)
 			{
 				// project length changed, we need to adjust
-				if(_currentVideoPosition > project.Length.TotalSeconds)
+				if (_currentVideoPosition > project.Length.TotalSeconds)
 				{
 					_currentVideoPosition = project.Length.TotalSeconds;
 				}
+			}
+			
+			if(project != null)
+			{
+				_timer.Interval = (int)Math.Round((1.0 / project.Config.FrameRate) * 1000);
 			}
 
 			_lastLoadedProject = project;
@@ -195,55 +182,84 @@ namespace KaraokeStudio.FormHandlers
 			UpdateButtons();
 			UpdateGenerationContext();
 
-			_skiaControl.Invalidate();
+			videoSkiaControl.Invalidate();
 		}
 
 		private void UpdateVideoPosition()
 		{
-			if(_lastLoadedTimespan != null)
+			if (_lastLoadedTimespan != null)
 			{
-				_endPosLabel.Text = Util.FormatTimespan(_lastLoadedTimespan.Value);
-				_positionBar.Maximum = (int)Math.Ceiling(_lastLoadedTimespan.Value.TotalSeconds);
-				_positionBar.Value = (int)Math.Round(_currentVideoPosition);
+				endPosLabel.Text = Util.FormatTimespan(_lastLoadedTimespan.Value);
+				positionBar.Maximum = (int)Math.Ceiling(_lastLoadedTimespan.Value.TotalSeconds);
+				positionBar.Value = (int)Math.Round(_currentVideoPosition);
 			}
 			else
 			{
-				_endPosLabel.Text = "0:00";
-				_positionBar.Maximum = 0;
-				_positionBar.Value = 0;
+				endPosLabel.Text = "0:00";
+				positionBar.Maximum = 0;
+				positionBar.Value = 0;
 			}
 
-			_currentPosLabel.Text = Util.FormatTimespan(TimeSpan.FromSeconds(_currentVideoPosition), true);
+			currentPosLabel.Text = Util.FormatTimespan(TimeSpan.FromSeconds(_currentVideoPosition), true);
 		}
 
 		private void UpdateButtons()
 		{
-			_rewindButton.Enabled = _playPauseButton.Enabled = _forwardButton.Enabled = _lastLoadedProject != null;
-			_playPauseButton.Text = IsPlaying ? "Pause" : "Play";
+			backButton.Enabled = playPauseButton.Enabled = forwardButton.Enabled = _lastLoadedProject != null;
+			playPauseButton.Text = IsPlaying ? "Pause" : "Play";
 		}
 
 		public void UpdateGenerationContext()
 		{
-			if(_lastLoadedProject == null)
+			if (_lastLoadedProject == null)
 			{
 				return;
 			}
 
 			_generationState.UpdateVideoContext(
-				_lastLoadedProject.Length.TotalSeconds, 
-				_lastLoadedProject.Config, 
-				(_skiaControl.Size.Width, _skiaControl.Size.Height));
+				_lastLoadedProject.Length.TotalSeconds,
+				_lastLoadedProject.Config,
+				(videoSkiaControl.Size.Width, videoSkiaControl.Size.Height));
 		}
 
 		private void UpdatePanelSize()
 		{
 			var size = (16, 9);
-			if(_lastLoadedProject != null)
+			if (_lastLoadedProject != null)
 			{
 				size = (_lastLoadedProject.Config.VideoSize.Width, _lastLoadedProject.Config.VideoSize.Height);
 			}
 
-			Util.ResizeContainerAspectRatio(_videoPanel, _skiaControl, size);
+			Util.ResizeContainerAspectRatio(videoPanel, videoSkiaControl, size);
+		}
+
+		private void OnTimerTick(object? sender, EventArgs e)
+		{
+			// tell the video panel we need to repaint
+			videoSkiaControl.Invalidate();
+		}
+
+		private void backButton_Click(object sender, EventArgs e) => Rewind();
+
+		private void forwardButton_Click(object sender, EventArgs e) => FastForward();
+
+		private void playPauseButton_Click(object sender, EventArgs e) => TogglePlay();
+
+		private void positionBar_Scroll(object sender, EventArgs e) => Seek(positionBar.Value);
+
+		private void videoSkiaControl_PaintSurface(object sender, SkiaSharp.Views.Desktop.SKPaintGLSurfaceEventArgs e)
+		{
+			OnTick();
+			Render(e.Surface);
+		}
+
+		private void videoPanel_Paint(object sender, PaintEventArgs e)
+		{
+			UpdateState();
+		}
+
+		private void playPauseButton_Paint(object sender, PaintEventArgs e)
+		{
 		}
 	}
 }

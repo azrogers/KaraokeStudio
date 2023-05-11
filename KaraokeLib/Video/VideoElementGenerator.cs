@@ -43,7 +43,7 @@ namespace KaraokeLib.Video
 				{
 					var firstElem = line[0];
 					var newStartSeconds = Math.Max(0, firstElem.StartTimecode.GetTimeSeconds() - context.Config.LyricLeadTime);
-					firstElem.StartTimecode = new TimeSpanTimecode(TimeSpan.FromSeconds(newStartSeconds));
+					firstElem.SetTiming(new TimeSpanTimecode(newStartSeconds), firstElem.EndTimecode);
 				}
 
 				if(line.Count > 1)
@@ -56,10 +56,10 @@ namespace KaraokeLib.Video
 
 						var distBetween = thisElement.StartTimecode.GetTimeSeconds() - prevElement.EndTimecode.GetTimeSeconds();
 						var newStartSeconds = thisElement.StartTimecode.GetTimeSeconds() - Math.Min(distBetween / 2, context.Config.LyricLeadTime);
-						thisElement.StartTimecode = new TimeSpanTimecode(TimeSpan.FromSeconds(newStartSeconds));
+						thisElement.SetTiming(new TimeSpanTimecode(newStartSeconds), thisElement.EndTimecode);
 
 						var newEndSeconds = prevElement.EndTimecode.GetTimeSeconds() + Math.Min(distBetween / 2, context.Config.LyricTrailTime);
-						prevElement.EndTimecode = new TimeSpanTimecode(TimeSpan.FromSeconds(newEndSeconds));
+						prevElement.SetTiming(prevElement.StartTimecode, new TimeSpanTimecode(newEndSeconds));
 					}
 				}
 
@@ -67,7 +67,7 @@ namespace KaraokeLib.Video
 				{
 					var lastElem = line[line.Count - 1];
 					var newEndSeconds = Math.Min(context.LastFrameTimecode.ToSeconds(), lastElem.EndTimecode.GetTimeSeconds() + context.Config.LyricTrailTime);
-					lastElem.EndTimecode = new TimeSpanTimecode(TimeSpan.FromSeconds(newEndSeconds));
+					lastElem.SetTiming(lastElem.StartTimecode, new TimeSpanTimecode(newEndSeconds));
 				}
 			}
 

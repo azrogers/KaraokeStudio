@@ -6,8 +6,57 @@ using System.Threading.Tasks;
 
 namespace KaraokeLib.Util
 {
+	// https://gist.github.com/Kryzarel/bba64622057f21a1d6d44879f9cd7bd4
 	internal class EasingFunctions
 	{
+		private static readonly Dictionary<EasingType, Func<float, float>> _functions = new Dictionary<EasingType, Func<float, float>>()
+		{ 
+			{ EasingType.Linear, Linear },
+			{ EasingType.InQuad, InQuad },
+			{ EasingType.OutQuad, OutQuad },
+			{ EasingType.InOutQuad, InOutQuad },
+			{ EasingType.InCubic, InCubic },
+			{ EasingType.OutCubic, OutCubic },
+			{ EasingType.InOutCubic, InOutCubic },
+			{ EasingType.InQuart, InQuart },
+			{ EasingType.OutQuart, OutQuart },
+			{ EasingType.InOutQuart, InOutQuart },
+			{ EasingType.InQuint, InQuint },
+			{ EasingType.OutQuint, OutQuint },
+			{ EasingType.InOutQuint, InOutQuint },
+			{ EasingType.InSine, InSine },
+			{ EasingType.OutSine, OutSine },
+			{ EasingType.InOutSine, InOutSine },
+			{ EasingType.InExpo, InExpo },
+			{ EasingType.OutExpo, OutExpo },
+			{ EasingType.InOutExpo, InOutExpo },
+			{ EasingType.InCirc, InCirc },
+			{ EasingType.OutCirc, OutCirc },
+			{ EasingType.InOutCirc, InOutCirc },
+			{ EasingType.InElastic, InElastic },
+			{ EasingType.OutElastic, OutElastic },
+			{ EasingType.InOutElastic, InOutElastic },
+			{ EasingType.InBack, InBack },
+			{ EasingType.OutBack, OutBack },
+			{ EasingType.InOutBack, InOutBack },
+			{ EasingType.InBounce, InBounce },
+			{ EasingType.OutBounce, OutBounce },
+			{ EasingType.InOutBounce, InOutBounce }
+		};
+
+		/// <summary>
+		/// Runs the value <paramref name="t"/> through the easing function specified by <paramref name="type"/> and returns the value.
+		/// </summary>
+		public static float Evaluate(EasingType type, float t)
+		{
+			if(!_functions.TryGetValue(type, out var func))
+			{
+				throw new NotImplementedException();
+			}
+
+			return func(t);
+		}
+
 		public static float Linear(float t) => t;
 
 		public static float InQuad(float t) => t * t;
@@ -117,5 +166,40 @@ namespace KaraokeLib.Util
 			if (t < 0.5) return InBounce(t * 2) / 2;
 			return 1 - InBounce((1 - t) * 2) / 2;
 		}
+	}
+
+	public enum EasingType
+	{
+		Linear = 0,
+		InQuad,
+		OutQuad,
+		InOutQuad,
+		InCubic,
+		OutCubic,
+		InOutCubic,
+		InQuart,
+		OutQuart,
+		InOutQuart,
+		InQuint,
+		OutQuint,
+		InOutQuint,
+		InSine,
+		OutSine,
+		InOutSine,
+		InExpo,
+		OutExpo,
+		InOutExpo,
+		InCirc,
+		OutCirc,
+		InOutCirc,
+		InElastic,
+		OutElastic,
+		InOutElastic,
+		InBack,
+		OutBack,
+		InOutBack,
+		InBounce,
+		OutBounce,
+		InOutBounce
 	}
 }

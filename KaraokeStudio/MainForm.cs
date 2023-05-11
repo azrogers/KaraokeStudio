@@ -6,10 +6,8 @@ namespace KaraokeStudio
     public partial class MainForm : Form
 	{
 		private ProjectFormHandler _projectHandler;
-		private VideoFormHandler _videoHandler;
 		private AudioFormHandler _audioHandler;
 		private StyleForm _styleForm;
-		private System.Windows.Forms.Timer _timer;
 
 		public MainForm()
 		{
@@ -18,51 +16,34 @@ namespace KaraokeStudio
 			InitializeComponent();
 
 			_projectHandler = new ProjectFormHandler();
-			_videoHandler = new VideoFormHandler(
-				videoPanel,
-				videoSkiaControl,
-				positionBar,
-				new Label[] { startPosLabel, currentPosLabel, endPosLabel },
-				new Button[] { backButton, playPauseButton, forwardButton });
 			_audioHandler = new AudioFormHandler();
 
 			_styleForm = new StyleForm();
 			_styleForm.OnProjectConfigApplied += OnProjectConfigApplied;
 
-			_videoHandler.OnSeek += OnVideoSeek;
-			_videoHandler.OnPlayStateChanged += OnPlayStateChanged;
+			video.OnSeek += OnVideoSeek;
+			video.OnPlayStateChanged += OnPlayStateChanged;
 
 			_projectHandler.OnProjectChanged += OnProjectChanged;
 			_projectHandler.OnPendingStateChanged += OnPendingStateChanged;
-
-			_timer = new System.Windows.Forms.Timer();
-			_timer.Enabled = false;
-			_timer.Tick += OnTimerTick;
 
 			OnProjectChanged(null);
 		}
 
 		private void OnVideoSeek(double pos)
 		{
-			_audioHandler.OnPlaybackStateChanged(_videoHandler.IsPlaying, pos);
+			_audioHandler.OnPlaybackStateChanged(video.IsPlaying, pos);
 		}
 
 		private void OnProjectConfigApplied(ProjectConfig obj)
 		{
 			_projectHandler.SetConfig(obj);
-			_videoHandler.UpdateGenerationContext();
-		}
-
-		private void OnTimerTick(object? sender, EventArgs e)
-		{
-			// tell the video panel we need to repaint
-			videoSkiaControl.Invalidate();
+			video.UpdateGenerationContext();
 		}
 
 		private void OnPlayStateChanged(bool isPlaying)
 		{
-			_timer.Enabled = isPlaying;
-			_audioHandler.OnPlaybackStateChanged(isPlaying, _videoHandler.Position);
+			_audioHandler.OnPlaybackStateChanged(isPlaying, video.Position);
 		}
 
 		private void OnPendingStateChanged(bool obj)
@@ -74,15 +55,9 @@ namespace KaraokeStudio
 		{
 			UpdateTitleAndMenu();
 
-			_videoHandler.OnProjectChanged(project);
+			video.OnProjectChanged(project);
 			_styleForm.OnProjectChanged(project);
 			_audioHandler.OnProjectChanged(project);
-
-			// set ms to desired framerate
-			if(project != null)
-			{
-				_timer.Interval = (int)Math.Round((1.0 / project.Config.FrameRate) * 1000);
-			}
 		}
 
 		#region UI Events
@@ -104,25 +79,6 @@ namespace KaraokeStudio
 		private void editStyleToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			_styleForm.Show();
-		}
-
-		private void backButton_Click(object sender, EventArgs e) => _videoHandler.Rewind();
-
-		private void forwardButton_Click(object sender, EventArgs e) => _videoHandler.FastForward();
-
-		private void playPauseButton_Click(object sender, EventArgs e) => _videoHandler.TogglePlay();
-
-		private void positionBar_Scroll(object sender, EventArgs e) => _videoHandler.Seek(positionBar.Value);
-
-		private void videoSkiaControl_PaintSurface(object sender, SkiaSharp.Views.Desktop.SKPaintGLSurfaceEventArgs e)
-		{
-			_videoHandler.OnTick();
-			_videoHandler.Render(e.Surface);
-		}
-
-		private void videoPanel_Paint(object sender, PaintEventArgs e)
-		{
-			_videoHandler.UpdateState();
 		}
 
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)

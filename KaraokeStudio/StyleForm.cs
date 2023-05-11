@@ -33,7 +33,7 @@ namespace KaraokeStudio
 			// disable horizontal scroll on configContainer
 			configContainer.HorizontalScroll.Maximum = 0;
 			configContainer.AutoScroll = false;
-			configContainer.VerticalScroll.Visible = false;
+			configContainer.VerticalScroll.Visible = true;
 			configContainer.AutoScroll = true;
 
 			_isDirty = false;
@@ -89,6 +89,9 @@ namespace KaraokeStudio
 						break;
 					case ConfigFields.ControlType.Font:
 						AddField(field.Name, new FontConfigControl() { Field = field });
+						break;
+					case ConfigFields.ControlType.Enum:
+						AddField(field.Name, new EnumConfigControl() { Field = field });
 						break;
 				}
 			}

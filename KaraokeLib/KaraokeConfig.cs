@@ -1,4 +1,5 @@
 ﻿using KaraokeLib.Util;
+using KaraokeLib.Video.Transitions;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -39,6 +40,17 @@ namespace KaraokeLib
 		public double LyricLeadTime = 2.0;
 		[ConfigRange(0.0)]
 		public double LyricTrailTime = 1.0;
+
+		// TODO: should be moved to a per-event and per-track config
+		public VideoTransitionType TransitionIn = VideoTransitionType.Fade;
+		public EasingType TransitionInCurve = EasingType.InQuad;
+		public VideoTransitionType TransitionOut = VideoTransitionType.Fade;
+		public EasingType TransitionOutCurve = EasingType.OutQuad;
+
+		[ConfigRange(0.0)]
+		public double MaxTransitionLength = 1.0;
+		[ConfigRange(0.0)]
+		public double MinTransitionLength = 0.1;
 
 		// TODO: should be moved to a separate "import settings" class with a separate window for MIDI import settings
 		[ConfigRange(0.0)]

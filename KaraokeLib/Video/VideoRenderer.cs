@@ -1,6 +1,8 @@
 ﻿using KaraokeLib.Lyrics;
+using KaraokeLib.Util;
 using KaraokeLib.Video.Elements;
 using KaraokeLib.Video.Plan;
+using KaraokeLib.Video.Transitions;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -34,7 +36,6 @@ namespace KaraokeLib.Video
 				});
 
 			var posSeconds = videoTimecode.ToSeconds();
-			var bounds = (posSeconds - _context.Config.LyricTrailTime, posSeconds + _context.Config.LyricLeadTime);
 
 			// draw to an intermediate surface for transitions
 			var surface = SKSurface.Create(new SKImageInfo((int)_context.Size.Width, (int)_context.Size.Height));
@@ -44,12 +45,40 @@ namespace KaraokeLib.Video
 			{
 				surface.Canvas.Clear();
 
-				var minTime = bounds.Item1;//Math.Max(ev.StartTime.ToSeconds(), bounds.Item1);
-				var maxTime = bounds.Item2;// Math.Min(ev.EndTime.ToSeconds(), bounds.Item2);
-				ev.Element.Render(_context, surface.Canvas, posSeconds, (minTime, maxTime));
+				ev.Element.Render(_context, surface.Canvas, posSeconds);
 
-				canvas.DrawSurface(surface, SKPoint.Empty);
+				var startTime = ev.Element.StartTimecode.GetTimeSeconds();
+				var endTime = ev.Element.EndTimecode.GetTimeSeconds();
+
+				// handle transitions if necessary
+				if(
+					posSeconds >= startTime && 
+					(startTime + ev.Element.StartTransition.Duration) > posSeconds)
+				{
+					// 0 when starting, 1 when finishing
+					var t = (float)Math.Clamp((posSeconds - startTime) / ev.Element.StartTransition.Duration, 0, 1);
+					HandleTransition(ev.Element.StartTransition, ev.Element, surface, canvas, t, true);
+				}
+				else if(
+					posSeconds < endTime &&
+					(endTime - ev.Element.EndTransition.Duration) < posSeconds)
+				{
+					var beforeT = (ev.Element.EndTransition.Duration - (endTime - posSeconds)) / ev.Element.EndTransition.Duration;
+					// 1 when starting, 0 when finishing
+					var t = (float)Math.Clamp(1.0 - beforeT, 0, 1);
+					HandleTransition(ev.Element.EndTransition, ev.Element, surface, canvas, t, false);
+				}
+				else
+				{
+					canvas.DrawSurface(surface, SKPoint.Empty);
+				}
 			}
+		}
+
+		private void HandleTransition(TransitionConfig transition, IVideoElement elem, SKSurface surface, SKCanvas dest, float t, bool isStartTransition)
+		{
+			var realT = EasingFunctions.Evaluate(transition.EasingCurve, t);
+			TransitionManager.Get(transition.Type).Blit(elem, surface, dest, realT, isStartTransition);
 		}
 	}
 }
