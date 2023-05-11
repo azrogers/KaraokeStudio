@@ -18,25 +18,33 @@ namespace KaraokeStudio
 
 		private static string Filename => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "KaraokeStudio", "settings.json");
 
-		public IEnumerable<string> RecentFiles => _recentFiles;
+		[JsonProperty]
+		public HashSet<string> RecentFiles { get; private set; } = new HashSet<string>();
 
-		private HashSet<string> _recentFiles = new HashSet<string>();
+		[JsonProperty]
+		public float Volume { get; private set; }
 
 		public void AddRecentFile(string file)
 		{
-			_recentFiles.Add(file);
-			if(_recentFiles.Count > MAX_RECENT_FILES)
+			RecentFiles.Add(file);
+			if(RecentFiles.Count > MAX_RECENT_FILES)
 			{
-				_recentFiles.Remove(_recentFiles.First());
+				RecentFiles.Remove(RecentFiles.First());
 			}
 
+			Save();
+		}
+
+		public void SetVolume(float vol)
+		{
+			Volume = vol;
 			Save();
 		}
 
 		public void Save()
 		{
 			var dir = Path.GetDirectoryName(Filename);
-			if(!Directory.Exists(dir))
+			if(dir != null && !Directory.Exists(dir))
 			{
 				Directory.CreateDirectory(dir);
 			}

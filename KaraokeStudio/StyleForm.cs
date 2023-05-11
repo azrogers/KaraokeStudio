@@ -27,6 +27,7 @@ namespace KaraokeStudio
 		public StyleForm()
 		{
 			InitializeComponent();
+
 			_fields = new ConfigFields(typeof(ProjectConfig));
 			CreateFields(_fields);
 

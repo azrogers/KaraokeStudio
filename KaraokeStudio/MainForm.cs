@@ -6,7 +6,6 @@ namespace KaraokeStudio
     public partial class MainForm : Form
 	{
 		private ProjectFormHandler _projectHandler;
-		private AudioFormHandler _audioHandler;
 		private StyleForm _styleForm;
 
 		public MainForm()
@@ -16,13 +15,9 @@ namespace KaraokeStudio
 			InitializeComponent();
 
 			_projectHandler = new ProjectFormHandler();
-			_audioHandler = new AudioFormHandler();
 
 			_styleForm = new StyleForm();
 			_styleForm.OnProjectConfigApplied += OnProjectConfigApplied;
-
-			video.OnSeek += OnVideoSeek;
-			video.OnPlayStateChanged += OnPlayStateChanged;
 
 			_projectHandler.OnProjectChanged += OnProjectChanged;
 			_projectHandler.OnPendingStateChanged += OnPendingStateChanged;
@@ -30,20 +25,10 @@ namespace KaraokeStudio
 			OnProjectChanged(null);
 		}
 
-		private void OnVideoSeek(double pos)
-		{
-			_audioHandler.OnPlaybackStateChanged(video.IsPlaying, pos);
-		}
-
 		private void OnProjectConfigApplied(ProjectConfig obj)
 		{
 			_projectHandler.SetConfig(obj);
 			video.UpdateGenerationContext();
-		}
-
-		private void OnPlayStateChanged(bool isPlaying)
-		{
-			_audioHandler.OnPlaybackStateChanged(isPlaying, video.Position);
 		}
 
 		private void OnPendingStateChanged(bool obj)
@@ -57,7 +42,6 @@ namespace KaraokeStudio
 
 			video.OnProjectChanged(project);
 			_styleForm.OnProjectChanged(project);
-			_audioHandler.OnProjectChanged(project);
 		}
 
 		#region UI Events

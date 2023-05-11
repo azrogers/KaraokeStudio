@@ -31,12 +31,13 @@
 			this.videoPanel = new System.Windows.Forms.Panel();
 			this.videoSkiaControl = new SkiaSharp.Views.Desktop.SKGLControl();
 			this.controlsPanel = new System.Windows.Forms.Panel();
+			this.volumeSlider = new NAudio.Gui.VolumeSlider();
 			this.currentPosLabel = new System.Windows.Forms.Label();
 			this.endPosLabel = new System.Windows.Forms.Label();
 			this.startPosLabel = new System.Windows.Forms.Label();
-			this.playPauseButton = new System.Windows.Forms.Button();
-			this.forwardButton = new System.Windows.Forms.Button();
-			this.backButton = new System.Windows.Forms.Button();
+			this.playPauseButton = new FontAwesome.Sharp.IconButton();
+			this.forwardButton = new FontAwesome.Sharp.IconButton();
+			this.backButton = new FontAwesome.Sharp.IconButton();
 			this.positionBar = new System.Windows.Forms.TrackBar();
 			this.videoPanel.SuspendLayout();
 			this.controlsPanel.SuspendLayout();
@@ -67,6 +68,7 @@
 			// 
 			// controlsPanel
 			// 
+			this.controlsPanel.Controls.Add(this.volumeSlider);
 			this.controlsPanel.Controls.Add(this.currentPosLabel);
 			this.controlsPanel.Controls.Add(this.endPosLabel);
 			this.controlsPanel.Controls.Add(this.startPosLabel);
@@ -79,6 +81,15 @@
 			this.controlsPanel.Name = "controlsPanel";
 			this.controlsPanel.Size = new System.Drawing.Size(564, 64);
 			this.controlsPanel.TabIndex = 0;
+			// 
+			// volumeSlider
+			// 
+			this.volumeSlider.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.volumeSlider.Location = new System.Drawing.Point(486, 38);
+			this.volumeSlider.Name = "volumeSlider";
+			this.volumeSlider.Size = new System.Drawing.Size(75, 23);
+			this.volumeSlider.TabIndex = 7;
+			this.volumeSlider.VolumeChanged += new System.EventHandler(this.volumeSlider_VolumeChanged);
 			// 
 			// currentPosLabel
 			// 
@@ -113,34 +124,45 @@
 			// playPauseButton
 			// 
 			this.playPauseButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-			this.playPauseButton.Location = new System.Drawing.Point(230, 38);
+			this.playPauseButton.IconChar = FontAwesome.Sharp.IconChar.Play;
+			this.playPauseButton.IconColor = System.Drawing.Color.Black;
+			this.playPauseButton.IconFont = FontAwesome.Sharp.IconFont.Auto;
+			this.playPauseButton.IconSize = 14;
+			this.playPauseButton.ImageAlign = System.Drawing.ContentAlignment.BottomCenter;
+			this.playPauseButton.Location = new System.Drawing.Point(266, 38);
 			this.playPauseButton.Name = "playPauseButton";
-			this.playPauseButton.Size = new System.Drawing.Size(108, 23);
+			this.playPauseButton.Size = new System.Drawing.Size(32, 23);
 			this.playPauseButton.TabIndex = 3;
-			this.playPauseButton.Text = "Play";
 			this.playPauseButton.UseVisualStyleBackColor = true;
 			this.playPauseButton.Click += new System.EventHandler(this.playPauseButton_Click);
-			this.playPauseButton.Paint += new System.Windows.Forms.PaintEventHandler(this.playPauseButton_Paint);
 			// 
 			// forwardButton
 			// 
 			this.forwardButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-			this.forwardButton.Location = new System.Drawing.Point(344, 38);
+			this.forwardButton.IconChar = FontAwesome.Sharp.IconChar.Forward;
+			this.forwardButton.IconColor = System.Drawing.Color.Black;
+			this.forwardButton.IconFont = FontAwesome.Sharp.IconFont.Auto;
+			this.forwardButton.IconSize = 16;
+			this.forwardButton.ImageAlign = System.Drawing.ContentAlignment.BottomCenter;
+			this.forwardButton.Location = new System.Drawing.Point(304, 38);
 			this.forwardButton.Name = "forwardButton";
 			this.forwardButton.Size = new System.Drawing.Size(32, 23);
 			this.forwardButton.TabIndex = 2;
-			this.forwardButton.Text = ">>";
 			this.forwardButton.UseVisualStyleBackColor = true;
 			this.forwardButton.Click += new System.EventHandler(this.forwardButton_Click);
 			// 
 			// backButton
 			// 
 			this.backButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-			this.backButton.Location = new System.Drawing.Point(192, 38);
+			this.backButton.IconChar = FontAwesome.Sharp.IconChar.Backward;
+			this.backButton.IconColor = System.Drawing.Color.Black;
+			this.backButton.IconFont = FontAwesome.Sharp.IconFont.Auto;
+			this.backButton.IconSize = 16;
+			this.backButton.ImageAlign = System.Drawing.ContentAlignment.BottomCenter;
+			this.backButton.Location = new System.Drawing.Point(228, 38);
 			this.backButton.Name = "backButton";
 			this.backButton.Size = new System.Drawing.Size(32, 23);
 			this.backButton.TabIndex = 1;
-			this.backButton.Text = "<<";
 			this.backButton.UseVisualStyleBackColor = true;
 			this.backButton.Click += new System.EventHandler(this.backButton_Click);
 			// 
@@ -173,14 +195,15 @@
 		#endregion
 
 		private Panel controlsPanel;
-		private Button forwardButton;
-		private Button backButton;
+		private FontAwesome.Sharp.IconButton forwardButton;
+		private FontAwesome.Sharp.IconButton backButton;
 		private TrackBar positionBar;
-		private Button playPauseButton;
+		private FontAwesome.Sharp.IconButton playPauseButton;
 		private Panel videoPanel;
 		private Label currentPosLabel;
 		private Label endPosLabel;
 		private Label startPosLabel;
 		private SkiaSharp.Views.Desktop.SKGLControl videoSkiaControl;
+		private NAudio.Gui.VolumeSlider volumeSlider;
 	}
 }

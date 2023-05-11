@@ -11,12 +11,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using FontAwesome.Sharp;
+using NAudio.Wave;
 
 namespace KaraokeStudio
 {
 	internal partial class KaraokeVideoControl : UserControl
 	{
 		private bool _isPlayingInternal = false;
+
+		private WaveStream? _waveStream;
+		private WaveOutEvent _output;
 
 		private System.Windows.Forms.Timer _timer;
 
@@ -43,12 +47,28 @@ namespace KaraokeStudio
 				_stopwatch.Restart();
 				_timer.Enabled = _isPlayingInternal;
 				OnPlayStateChanged?.Invoke(_isPlayingInternal);
+
+				if (_waveStream != null)
+				{
+					if (_isPlayingInternal && _output.PlaybackState != PlaybackState.Playing)
+					{
+						_output.Play();
+					}
+					else if (!_isPlayingInternal && _output.PlaybackState == PlaybackState.Playing)
+					{
+						_output.Pause();
+					}
+				}
 			}
 		}
 
 		public KaraokeVideoControl()
 		{
 			InitializeComponent();
+
+			_output = new WaveOutEvent();
+			_output.Volume = AppSettings.Instance.Volume;
+			volumeSlider.Volume = AppSettings.Instance.Volume;
 
 			_timer = new System.Windows.Forms.Timer();
 			_timer.Enabled = false;
@@ -60,7 +80,7 @@ namespace KaraokeStudio
 			_currentVideoPosition -= 10.0;
 			_currentVideoPosition = Math.Max(_currentVideoPosition, 0.0);
 			UpdateVideoPosition();
-			OnSeek?.Invoke(_currentVideoPosition);
+			HandleSeek();
 		}
 
 		public void FastForward()
@@ -68,7 +88,7 @@ namespace KaraokeStudio
 			_currentVideoPosition += 10.0;
 			_currentVideoPosition = Math.Min(_currentVideoPosition, _lastLoadedTimespan?.TotalSeconds ?? 0.0);
 			UpdateVideoPosition();
-			OnSeek?.Invoke(_currentVideoPosition);
+			HandleSeek();
 		}
 
 		public void TogglePlay()
@@ -103,7 +123,7 @@ namespace KaraokeStudio
 			_currentVideoPosition = Math.Min(_lastLoadedTimespan.Value.TotalSeconds, newPosition);
 			UpdateVideoPosition();
 			videoSkiaControl.Invalidate();
-			OnSeek?.Invoke(_currentVideoPosition);
+			HandleSeek();
 		}
 
 		public void OnTick()
@@ -176,6 +196,20 @@ namespace KaraokeStudio
 				_timer.Interval = (int)Math.Round((1.0 / project.Config.FrameRate) * 1000);
 			}
 
+			volumeSlider.Enabled = project?.AudioStream != null;
+
+			if (_waveStream != null && _waveStream != project?.AudioStream)
+			{
+				_output.Stop();
+				_waveStream.Dispose();
+			}
+
+			_waveStream = project?.AudioStream;
+			if (_waveStream != null)
+			{
+				_output.Init(_waveStream);
+			}
+
 			_lastLoadedProject = project;
 			_lastLoadedTimespan = project?.Length;
 			UpdateVideoPosition();
@@ -183,6 +217,15 @@ namespace KaraokeStudio
 			UpdateGenerationContext();
 
 			videoSkiaControl.Invalidate();
+		}
+
+		private void HandleSeek()
+		{
+			OnSeek?.Invoke(_currentVideoPosition);
+			if(_waveStream != null)
+			{
+				_waveStream.CurrentTime = TimeSpan.FromSeconds(_currentVideoPosition);
+			}
 		}
 
 		private void UpdateVideoPosition()
@@ -206,7 +249,7 @@ namespace KaraokeStudio
 		private void UpdateButtons()
 		{
 			backButton.Enabled = playPauseButton.Enabled = forwardButton.Enabled = _lastLoadedProject != null;
-			playPauseButton.Text = IsPlaying ? "Pause" : "Play";
+			playPauseButton.IconChar = IsPlaying ? IconChar.Pause : IconChar.Play;
 		}
 
 		public void UpdateGenerationContext()
@@ -258,8 +301,10 @@ namespace KaraokeStudio
 			UpdateState();
 		}
 
-		private void playPauseButton_Paint(object sender, PaintEventArgs e)
+		private void volumeSlider_VolumeChanged(object sender, EventArgs e)
 		{
+			_output.Volume = volumeSlider.Volume;
+			AppSettings.Instance.SetVolume(volumeSlider.Volume);
 		}
 	}
 }
