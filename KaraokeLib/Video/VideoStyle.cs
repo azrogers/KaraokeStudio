@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using Melanchall.DryWetMidi.Tools;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,8 +19,6 @@ namespace KaraokeLib.Video
 
 		private SKFont _font;
 		private float _padding = 0.1f;
-		private bool _cachedLineHeight = false;
-		private float _lineHeight = 0;
 
 		private SKPaint _normalPaint;
 		private SKPaint _highlightedPaint;
@@ -33,18 +32,7 @@ namespace KaraokeLib.Video
 
 		public SKPaint StrokePaint => _strokePaint;
 
-		public float LineHeight
-		{
-			get
-			{
-				if (!_cachedLineHeight)
-				{
-					CacheLineHeight();
-				}
-
-				return _lineHeight;
-			}
-		}
+		public float LineHeight { get; private set; }
 
 
 		public VideoStyle(KaraokeConfig config)
@@ -79,6 +67,13 @@ namespace KaraokeLib.Video
 			};
 
 			_padding = config.FramePaddingPercent;
+
+			var glyphs = ALPHABET.Select(c => _font.GetGlyph(c)).ToArray();
+			// get the height of a single line
+			{
+				_font.MeasureText(glyphs, out var bounds);
+				LineHeight = bounds.Height;
+			}
 		}
 
 		public SKRect GetSafeArea(SKSize size)
@@ -97,15 +92,6 @@ namespace KaraokeLib.Video
 		public float GetTextWidth(string text, SKPaint? paint = null)
 		{
 			return _font.MeasureText(text.ToCharArray().Select(c => _font.GetGlyph(c)).ToArray(), paint ?? NormalPaint);
-		}
-
-		private void CacheLineHeight()
-		{
-			var glyphs = ALPHABET.Select(c => _font.GetGlyph(c)).ToArray();
-			SKRect bounds;
-			_font.MeasureText(glyphs, out bounds);
-			_lineHeight = bounds.Height;
-			_cachedLineHeight = true;
 		}
 	}
 }

@@ -323,11 +323,10 @@ namespace KaraokeLib.Video.Elements
 
 		private void CreateTransitions()
 		{
-			var startDuration = Math.Clamp(
-				_earliestEventTimecode.GetTimeSeconds() - StartTimecode.GetTimeSeconds(),
-				_context.Config.MinTransitionLength,
-				_context.Config.MaxTransitionLength);
+			var min = Math.Min(_context.Config.MinTransitionLength, _context.Config.MaxTransitionLength);
+			var max = Math.Max(_context.Config.MinTransitionLength, _context.Config.MaxTransitionLength);
 
+			var startDuration = Math.Clamp(_earliestEventTimecode.GetTimeSeconds() - StartTimecode.GetTimeSeconds(), min, max);
 			StartTransition = new TransitionConfig()
 			{
 				Type = _context.Config.TransitionIn,
@@ -335,10 +334,7 @@ namespace KaraokeLib.Video.Elements
 				Duration = startDuration
 			};
 
-			var endDuration = Math.Clamp(
-				EndTimecode.GetTimeSeconds() - _latestEventTimecode.GetTimeSeconds(),
-				_context.Config.MinTransitionLength,
-				_context.Config.MaxTransitionLength);
+			var endDuration = Math.Clamp(EndTimecode.GetTimeSeconds() - _latestEventTimecode.GetTimeSeconds(), min, max);
 			EndTransition = new TransitionConfig()
 			{
 				Type = _context.Config.TransitionOut,

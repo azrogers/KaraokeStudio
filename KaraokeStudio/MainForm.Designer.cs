@@ -1,4 +1,6 @@
-﻿namespace KaraokeStudio
+﻿using KaraokeStudio.Timeline;
+
+namespace KaraokeStudio
 {
 	partial class MainForm
 	{
@@ -45,9 +47,11 @@
 			this.timelineSplit = new System.Windows.Forms.SplitContainer();
 			this.videoSplit = new System.Windows.Forms.SplitContainer();
 			this.video = new KaraokeStudio.KaraokeVideoControl();
+			this.timeline = new KaraokeStudio.Timeline.TimelineControl();
 			this.menuStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.timelineSplit)).BeginInit();
 			this.timelineSplit.Panel1.SuspendLayout();
+			this.timelineSplit.Panel2.SuspendLayout();
 			this.timelineSplit.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.videoSplit)).BeginInit();
 			this.videoSplit.Panel2.SuspendLayout();
@@ -178,6 +182,10 @@
 			// timelineSplit.Panel1
 			// 
 			this.timelineSplit.Panel1.Controls.Add(this.videoSplit);
+			// 
+			// timelineSplit.Panel2
+			// 
+			this.timelineSplit.Panel2.Controls.Add(this.timeline);
 			this.timelineSplit.Size = new System.Drawing.Size(884, 426);
 			this.timelineSplit.SplitterDistance = 299;
 			this.timelineSplit.TabIndex = 1;
@@ -204,6 +212,14 @@
 			this.video.Size = new System.Drawing.Size(327, 297);
 			this.video.TabIndex = 0;
 			// 
+			// timeline
+			// 
+			this.timeline.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.timeline.Location = new System.Drawing.Point(0, 0);
+			this.timeline.Name = "timeline";
+			this.timeline.Size = new System.Drawing.Size(882, 121);
+			this.timeline.TabIndex = 0;
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -218,6 +234,7 @@
 			this.menuStrip.ResumeLayout(false);
 			this.menuStrip.PerformLayout();
 			this.timelineSplit.Panel1.ResumeLayout(false);
+			this.timelineSplit.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.timelineSplit)).EndInit();
 			this.timelineSplit.ResumeLayout(false);
 			this.videoSplit.Panel2.ResumeLayout(false);
@@ -247,5 +264,6 @@
 		private ToolStripMenuItem editStyleToolStripMenuItem;
 		private ToolStripMenuItem openRecentToolStripMenuItem;
 		private KaraokeVideoControl video;
+		private TimelineControl timeline;
 	}
 }

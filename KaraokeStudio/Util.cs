@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SkiaSharp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -86,5 +87,7 @@ namespace KaraokeStudio
 				container.Size.Width / 2 - targetSize.Width / 2,
 				verticalCenter ? container.Size.Height / 2 - targetSize.Height / 2 : 0);
 		}
+
+		public static SKColor ToSKColor(this Color c) => new SKColor(c.R, c.G, c.B);
 	}
 }

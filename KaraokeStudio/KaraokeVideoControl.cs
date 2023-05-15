@@ -34,6 +34,7 @@ namespace KaraokeStudio
 
 		public event Action<bool>? OnPlayStateChanged;
 		public event Action<double>? OnSeek;
+		public event Action<double>? OnPositionChanged;
 
 		public double Position => _currentVideoPosition;
 
@@ -138,6 +139,7 @@ namespace KaraokeStudio
 
 			_currentVideoPosition += elapsed;
 			_currentVideoPosition = Math.Min(_lastLoadedTimespan.Value.TotalSeconds, _currentVideoPosition);
+			OnPositionChanged?.Invoke(_currentVideoPosition);
 			UpdateVideoPosition();
 		}
 
@@ -180,6 +182,7 @@ namespace KaraokeStudio
 			if (_lastLoadedProject != project)
 			{
 				_currentVideoPosition = 0;
+				OnPositionChanged?.Invoke(_currentVideoPosition);
 				IsPlaying = false;
 			}
 			else if (_lastLoadedProject != null && project != null && _lastLoadedTimespan != project.Length)
@@ -188,6 +191,7 @@ namespace KaraokeStudio
 				if (_currentVideoPosition > project.Length.TotalSeconds)
 				{
 					_currentVideoPosition = project.Length.TotalSeconds;
+					OnPositionChanged?.Invoke(_currentVideoPosition);
 				}
 			}
 			
@@ -222,6 +226,7 @@ namespace KaraokeStudio
 		private void HandleSeek()
 		{
 			OnSeek?.Invoke(_currentVideoPosition);
+			OnPositionChanged?.Invoke(_currentVideoPosition);
 			if(_waveStream != null)
 			{
 				_waveStream.CurrentTime = TimeSpan.FromSeconds(_currentVideoPosition);

@@ -10,7 +10,7 @@ namespace KaraokeLib.Lyrics
 	{
 		private List<LyricsEvent> _events;
 
-		public IEnumerable<LyricsEvent> Events => _events;
+		public List<LyricsEvent> Events => _events;
 
 		public LyricsTrack()
 		{

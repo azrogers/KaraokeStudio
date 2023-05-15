@@ -1,5 +1,6 @@
 using KaraokeStudio.FormHandlers;
 using Ookii.Dialogs.WinForms;
+using KaraokeStudio.Timeline;
 
 namespace KaraokeStudio
 {
@@ -22,7 +23,14 @@ namespace KaraokeStudio
 			_projectHandler.OnProjectChanged += OnProjectChanged;
 			_projectHandler.OnPendingStateChanged += OnPendingStateChanged;
 
+			video.OnPositionChanged += OnPositionChanged;
+
 			OnProjectChanged(null);
+		}
+
+		private void OnPositionChanged(double newTime)
+		{
+			timeline.OnPositionChanged(newTime);
 		}
 
 		private void OnProjectConfigApplied(ProjectConfig obj)
@@ -42,6 +50,7 @@ namespace KaraokeStudio
 
 			video.OnProjectChanged(project);
 			_styleForm.OnProjectChanged(project);
+			timeline.OnProjectChanged(project);
 		}
 
 		#region UI Events

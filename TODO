@@ -10,7 +10,9 @@ Short Term (Minimum Viable Program)
  ☐ Create "import settings" window for MIDI
  ✔ Audio playback @done (23-05-09 18:22)
  ☐ Improved video view
-   ☐ Make video view a reusable component and use in style preview
+   ✔ Make video view a reusable component @done (23-05-10 21:14)
+     ☐ Use in style preview
+   ☐ Multiple rendering resolutions (full size, half size, fit size)
    ☐ Debug view
  ☐ Lyrics editor
    ☐ Synchronizing lyrics to audio
