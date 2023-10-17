@@ -1,12 +1,7 @@
 ﻿using KaraokeLib.Lyrics;
+using KaraokeLib.Util;
+using KaraokeLib.Video;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Documents;
 
 namespace KaraokeStudio.Timeline
 {
@@ -33,10 +28,11 @@ namespace KaraokeStudio.Timeline
 		private SKPaint _selectedStrokePaint;
 
 		private SKFont _font;
-		private float _dotGlyphWidth;
-		private Dictionary<ushort, SKRect> _glyphBounds = new Dictionary<ushort, SKRect>();
+		private float _ellipsisWidth;
+		private float _lineHeight;
+		private Dictionary<string, SKRect> _textBounds = new Dictionary<string, SKRect>();
 
-		private int _selectedEventId = -1;
+		private ClickableItem? _selectedEvent;
 
 		private ClickableItem[][] _clickableItems = new ClickableItem[0][];
 
@@ -77,59 +73,70 @@ namespace KaraokeStudio.Timeline
 				_eventTypePaints.Add(pair.Key, new SKPaint() { Color = pair.Value.ToSKColor() });
 			}
 
-			_font = new SKFont(SKTypeface.FromFamilyName("Arial"), 6.0f);
-			_font.MeasureText(new ushort[] { _font.GetGlyph('.') }, out var bounds);
-			_dotGlyphWidth = bounds.Width;
+			_font = new SKFont(VisualStyle.DefaultTypeface, 6.0f);
+
+			// overestimate ellipsis size to accomodate spacing - a bit of a hack, to be quite honest
+			var dotGlyph = _font.GetGlyph('.');
+			_font.MeasureText(new ushort[] { dotGlyph, dotGlyph, dotGlyph, dotGlyph }, out var ellipsisBounds);
+			_ellipsisWidth = ellipsisBounds.Width;
+
+			_lineHeight = StyleUtil.GetFontHeight(_font);
 		}
 
-		public void CopyContents(SKCanvas destination, SKMatrix matrix)
+		/// <summary>
+		/// Copy the contents of the timeline canvas onto the given destination canvas.
+		/// </summary>
+		/// <param name="destination">The canvas to copy onto.</param>
+		/// <param name="matrix">The matrix to use to zoom and pan the canvas.</param>
+		/// <param name="visibleRect">The rect in canvas space that's visible in the control.</param>
+		public void CopyContents(SKCanvas destination, SKMatrix matrix, SKRect visibleRect)
 		{
 			if (_picture != null)
 			{
 				destination.DrawPicture(_picture, ref matrix);
+			}
+
+			if (_selectedEvent != null)
+			{
+				// draw selection rect
+				destination.Save();
+				destination.SetMatrix(matrix);
+				destination.DrawRect(_selectedEvent.Value.Rect, _selectedStrokePaint);
+				destination.Restore();
+			}
+
+			for (var i = 0; i < _clickableItems.GetLength(0); i++)
+			{
+				var arr = _clickableItems[i];
+				if (arr == null)
+				{
+					continue;
+				}
+
+				for (var j = 0; j < arr.Length; j++)
+				{
+					var item = arr[j];
+					// this rect is visible!
+					if (visibleRect.IntersectsWith(item.Rect) && _events.TryGetValue(item.EventId, out var ev))
+					{
+						TryDrawEventText(destination, ev, matrix.MapRect(item.Rect));
+					}
+				}
 			}
 		}
 
 		public void SelectEventAtPoint(SKPoint point)
 		{
 			var ev = FindEventAtPoint(point);
-			_selectedEventId = ev?.Id ?? -1;
-			// TODO: can we draw the selected event highlight over the top so we can avoid redrawing the whole canvas?
-			RedrawCanvas();
-		}
-		
-		/// <summary>
-		/// Returns an event on the timeline at the given (X, Y) position, if any.
-		/// </summary>
-		public LyricsEvent? FindEventAtPoint(SKPoint point)
-		{
-			if(_project == null)
-			{
-				return null;
-			}
-
-			var track = (int)Math.Floor(point.Y / TrackHeight);
-			if(track < 0 || track >= _clickableItems.GetLength(0))
-			{
-				return null;
-			}
-
-			foreach(var item in _clickableItems[track])
-			{
-				if(point.X >= item.StartX && point.X < item.EndX && _events.TryGetValue(item.EventId, out var ev))
-				{
-					return ev;
-				}
-			}
-
-			return null;
+			_selectedEvent = ev;
 		}
 
 		internal void OnProjectChanged(KaraokeProject? project)
 		{
 			_project = project;
 			_events.Clear();
-			_selectedEventId = -1;
+			_textBounds.Clear();
+			_selectedEvent = null;
 
 			var newSize = CalculateSize();
 			if (newSize != _size)
@@ -137,6 +144,33 @@ namespace KaraokeStudio.Timeline
 				// recreate the canvas if the size has changed
 				RecreateCanvas(newSize);
 			}
+		}
+
+		/// <summary>
+		/// Returns an event on the timeline at the given (X, Y) position, if any.
+		/// </summary>
+		private ClickableItem? FindEventAtPoint(SKPoint point)
+		{
+			if (_project == null)
+			{
+				return null;
+			}
+
+			var track = (int)Math.Floor(point.Y / TrackHeight);
+			if (track < 0 || track >= _clickableItems.GetLength(0))
+			{
+				return null;
+			}
+
+			foreach (var item in _clickableItems[track])
+			{
+				if (item.Rect.Contains(point) && _events.TryGetValue(item.EventId, out var ev))
+				{
+					return item;
+				}
+			}
+
+			return null;
 		}
 
 		private SKSize CalculateSize()
@@ -182,7 +216,7 @@ namespace KaraokeStudio.Timeline
 			}
 
 			var trackYPos = 0.0f;
-			for(var i = 0; i < projectTracks.Length; i++)
+			for (var i = 0; i < projectTracks.Length; i++)
 			{
 				var events = projectTracks[i].Events;
 				var items = _clickableItems[i];
@@ -212,15 +246,11 @@ namespace KaraokeStudio.Timeline
 					}
 
 					canvas.DrawRect(eventRect, paint);
-					canvas.DrawRect(eventRect, ev.Id == _selectedEventId ? _selectedStrokePaint : _strokePaint);
-
-					// TODO: text size should remain the same regardless of zoom level and text should get more visible as we zoom
-					TryDrawEventText(canvas, ev, eventRect);
+					canvas.DrawRect(eventRect, _strokePaint);
 
 					items[j] = new ClickableItem()
 					{
-						StartX = eventRect.Left,
-						EndX = eventRect.Right,
+						Rect = eventRect,
 						EventId = ev.Id
 					};
 				}
@@ -236,43 +266,46 @@ namespace KaraokeStudio.Timeline
 
 		private void TryDrawEventText(SKCanvas canvas, LyricsEvent ev, SKRect rect)
 		{
+			var eventText = ev.GetText(null);
+
 			// draw text if we can fit it
-			if (string.IsNullOrWhiteSpace(ev.Text))
+			if (string.IsNullOrWhiteSpace(eventText))
 			{
 				return;
 			}
 
 			var padding = 3.0f;
-			var textPos = new SKPoint(rect.Left + padding, rect.Top + padding);
-			var maxWidth = rect.Width - padding * 2;
+			var paddedRect = new SKRect(
+				rect.Left + padding,
+				rect.Top + padding,
+				rect.Right - padding,
+				rect.Bottom - padding);
 
-			var glyphs = ev.Text.ToCharArray().Select(c => _font.GetGlyph(c)).ToArray();
-			// temporary arr for optimization
-			var arr = new ushort[1];
+			var glyphs = eventText.ToCharArray().Select(c => _font.GetGlyph(c)).ToArray();
+			var glyphsSpan = new ReadOnlySpan<ushort>(glyphs);
+
 			var widthSoFar = 0.0f;
 			var lastDrawableIndex = -1;
 			var lastAbbrevIndex = -1;
-			var lineHeight = 0.0f;
+			var glyphsSoFar = new List<ushort>();
 			for (var i = 0; i < glyphs.Length; i++)
 			{
-				if (!_glyphBounds.TryGetValue(glyphs[i], out var bounds))
+				var text = eventText.Substring(0, i + 1);
+				if (!_textBounds.TryGetValue(text, out var bounds))
 				{
-					arr[0] = glyphs[i];
-
-					_font.MeasureText(arr, out bounds);
-					_glyphBounds[glyphs[i]] = bounds;
+					_font.MeasureText(glyphsSpan.Slice(0, i + 1), out bounds, _textPaint);
+					_textBounds[text] = bounds;
 				}
 
 				var width = bounds.Width;
-				lineHeight = Math.Max(bounds.Height, lineHeight);
 
-				if ((widthSoFar + width) > maxWidth)
+				if (!paddedRect.Contains(paddedRect.Left + widthSoFar + width, paddedRect.Top))
 				{
 					break;
 				}
 
 				// if we can fit this text plus ellipses, let's remember that
-				if ((widthSoFar + width + _dotGlyphWidth * 3) <= maxWidth)
+				if (paddedRect.Contains(paddedRect.Left + widthSoFar + width + _ellipsisWidth, paddedRect.Top))
 				{
 					lastAbbrevIndex = i;
 				}
@@ -281,25 +314,24 @@ namespace KaraokeStudio.Timeline
 				widthSoFar += width;
 			}
 
-			textPos.Y += lineHeight;
+			var textPos = new SKPoint(paddedRect.Left, paddedRect.Top + _lineHeight);
 
 			if (lastDrawableIndex == glyphs.Length - 1)
 			{
 				// we can draw the full string
-				canvas.DrawText(ev.Text, textPos, _textPaint);
+				canvas.DrawText(eventText, textPos, _textPaint);
 			}
 			else if (lastAbbrevIndex > -1)
 			{
 				// we can draw at least part of the string
-				canvas.DrawText(ev.Text.Substring(0, lastAbbrevIndex + 1) + "...", textPos, _textPaint);
+				canvas.DrawText(eventText.Substring(0, lastAbbrevIndex + 1) + "...", textPos, _textPaint);
 			}
 		}
 
 		private struct ClickableItem
 		{
 			public int EventId;
-			public float StartX;
-			public float EndX;
+			public SKRect Rect;
 		}
 	}
 }

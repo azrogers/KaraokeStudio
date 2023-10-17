@@ -1,4 +1,5 @@
-﻿using Ookii.Dialogs.WinForms;
+﻿using KaraokeLib.Lyrics;
+using Ookii.Dialogs.WinForms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace KaraokeStudio.FormHandlers
@@ -79,9 +80,12 @@ namespace KaraokeStudio.FormHandlers
 			}
 
 			_loadedProject = KaraokeProject.Load(file);
-			_loadedProjectPath = file;
+			_loadedProjectPath = _loadedProject != null ? file : null;
 			IsPendingChanges = false;
-			AppSettings.Instance.AddRecentFile(_loadedProjectPath);
+			if(_loadedProjectPath != null)
+			{
+				AppSettings.Instance.AddRecentFile(_loadedProjectPath);
+			}
 			OnProjectChanged?.Invoke(_loadedProject);
 		}
 
@@ -134,6 +138,31 @@ namespace KaraokeStudio.FormHandlers
 			_loadedProjectPath = null;
 			IsPendingChanges = true;
 			OnProjectChanged?.Invoke(_loadedProject);
+		}
+
+		public void ExportLrcFile()
+		{
+			if(_loadedProject == null)
+			{
+				return;
+			}
+
+			var dialog = new VistaOpenFileDialog();
+			dialog.CheckFileExists = false;
+			dialog.Multiselect = false;
+			dialog.Title = "Export LRC file";
+			dialog.Filter = "Enhanced LRC file|*.lrc|All files|*.*";
+			if (dialog.ShowDialog() != DialogResult.OK)
+			{
+				return;
+			}
+
+			var outPath = dialog.FileName;
+			var lrcFile = new LrcLyricsFile(_loadedProject.Tracks);
+			using (var output = File.OpenWrite(outPath))
+			{
+				lrcFile.Save(output);
+			}
 		}
 
 		// returns true if we can continue, or false if we're cancelling the operation after alerting of pending changes

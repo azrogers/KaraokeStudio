@@ -59,5 +59,25 @@ namespace KaraokeStudio.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] OpenSans {
+            get {
+                object obj = ResourceManager.GetObject("OpenSans", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] OpenSans_Italic {
+            get {
+                object obj = ResourceManager.GetObject("OpenSans-Italic", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

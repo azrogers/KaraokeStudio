@@ -12,9 +12,12 @@ namespace KaraokeLib.Lyrics
 
 		public List<LyricsEvent> Events => _events;
 
-		public LyricsTrack()
+		public LyricsTrackType Type { get; private set; }
+
+		public LyricsTrack(LyricsTrackType type)
 		{
 			_events = new List<LyricsEvent>();
+			Type = type;
 		}
 
 		public LyricsTrack(IEnumerable<LyricsEvent> events)
@@ -27,5 +30,11 @@ namespace KaraokeLib.Lyrics
 			_events.AddRange(events);
 			_events = _events.OrderBy(ev => ev.StartTimeMilliseconds).ToList();
 		}
+	}
+
+	public enum LyricsTrackType : byte
+	{
+		Lyrics = 0x00,
+		Graphics = 0x01
 	}
 }

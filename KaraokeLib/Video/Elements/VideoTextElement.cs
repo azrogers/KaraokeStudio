@@ -13,7 +13,7 @@ namespace KaraokeLib.Video.Elements
 	/// Represents a bit of timed text on the screen, usually lyrics.
 	/// Can represent one or more LyricsEvents.
 	/// </summary>
-	internal class VideoTextElement : IVideoElement
+	public class VideoTextElement : IVideoElement
 	{
 		/// <inheritdoc />
 		public VideoElementType Type { get; private set; }
@@ -36,6 +36,12 @@ namespace KaraokeLib.Video.Elements
 		/// <inheritdoc />
 		public TransitionConfig EndTransition { get; set; }
 
+		/// <inheritdoc />
+		public int ParagraphId { get; private set; }
+
+		/// <inheritdoc />
+		public int Id { get; private set; }
+
 		private (double, double)? _cachedVisibleBounds;
 		private bool _cachedVisibleResult;
 		private IEventTimecode _earliestEventTimecode;
@@ -52,21 +58,27 @@ namespace KaraokeLib.Video.Elements
 		/// </summary>
 		public VideoTextElement(
 			VideoContext context,
+			VideoLayoutState layoutState,
 			string text,
 			IEventTimecode startTimecode,
-			IEventTimecode endTimecode)
-			: this(context, new LyricsEvent[]
+			IEventTimecode endTimecode,
+			int id,
+			int paragraphId = -1)
+			: this(context, layoutState, new LyricsEvent[]
 			{
-				new LyricsEvent(LyricsEventType.Lyric, -1, startTimecode, endTimecode) { Text = text }
-			}, 0) { }
+				new LyricsEvent(LyricsEventType.Lyric, -1, startTimecode, endTimecode) { RawText = text }
+			}, 0, id, paragraphId) { }
 
 		/// <summary>
 		/// Creates a VideoTextElement from at least one event on a single line.
 		/// </summary>
 		public VideoTextElement(
 			VideoContext context,
+			VideoLayoutState layoutState,
 			IEnumerable<LyricsEvent> events,
-			float yPos)
+			float yPos,
+			int id,
+			int paragraphId)
 		{
 			_context = context;
 			_events = events.ToArray();
@@ -77,6 +89,8 @@ namespace KaraokeLib.Video.Elements
 
 			StartTransition ??= new TransitionConfig();
 			EndTransition ??= new TransitionConfig();
+			ParagraphId = paragraphId;
+			Id = id;
 
 			// create line from events
 			var safeArea = _context.Style.GetSafeArea(_context.Size);
@@ -87,7 +101,7 @@ namespace KaraokeLib.Video.Elements
 			for (var i = 0; i < _events.Length; i++)
 			{
 				// if we're not the first and this isn't a middle syllable, add a space
-				var text = (i != 0 && _events[i].LinkedId == -1 ? " " : "") + _events[i].Text;
+				var text = (i != 0 && _events[i].LinkedId == -1 ? " " : "") + _events[i].GetText(layoutState);
 				_elementWidths[i] = _context.Style.GetTextWidth(text);
 				totalWidth += _elementWidths[i];
 				builder.Append(text);
@@ -96,8 +110,78 @@ namespace KaraokeLib.Video.Elements
 			_text = builder.ToString();
 			_width = totalWidth;
 
-			var textXPos = safeArea.Left + safeArea.Width / 2 - totalWidth / 2;
-			Position = (textXPos, yPos);
+			switch(context.Config.HorizontalAlign)
+			{
+				case HorizontalAlignment.Left:
+					Position = (safeArea.Left, yPos);
+					break;
+				case HorizontalAlignment.Right:
+					Position = (safeArea.Right - totalWidth, yPos);
+					break;
+				case HorizontalAlignment.Center:
+					Position = (safeArea.Left + safeArea.Width / 2 - totalWidth / 2, yPos);
+					break;
+				default:
+					throw new NotImplementedException($"Unknown enum value {context.Config.HorizontalAlign}");
+			}
+		}
+
+		/// <summary>
+		/// Returns the index into this VideoTextElement's text that the given position is located closest to.
+		/// </summary>
+		/// <param name="x">The X position to test, relative to <see cref="Position"/>.</param>
+		/// <param name="y">The Y position to test, relative to <see cref="Position"/>.</param>
+		/// <returns>The index into this element's text. Can be equal to the length of the text, which signifies that it's after the last character.</returns>
+		public int GetCharOffset(float x, float y)
+		{
+			if(x < 0)
+			{
+				return 0;
+			}
+
+			if(x >= Size.Width)
+			{
+				return _text.Length;
+			}
+
+			var width = 0.0f;
+			for(int i = 0; i < _text.Length; i++)
+			{
+				var ch = _text[i];
+				var chWidth = _context.Style.GetTextWidth(ch.ToString());
+				if(x >= width && x < (width + chWidth * 0.5f))
+				{
+					// first half of the char, select before
+					return Math.Max(i -1, 0);
+				}
+				else if(x >= width && x < (width + chWidth))
+				{
+					// second half of the char, select after
+					return i;
+				}
+
+				width += chWidth;
+			}
+
+			return _text.Length;
+		}
+
+		/// <summary>
+		/// Returns the width of the amount of text before the given index.
+		/// </summary>
+		public float GetOffsetWidth(int offset)
+		{
+			if(offset == 0)
+			{
+				return 0;
+			}
+
+			if(offset >= _text.Length)
+			{
+				return Size.Width;
+			}
+
+			return _context.Style.GetTextWidth(_text.Substring(0, offset + 1));
 		}
 
 		/// <inheritdoc />
@@ -130,109 +214,31 @@ namespace KaraokeLib.Video.Elements
 		}
 
 		/// <inheritdoc/>
-		public VideoElementPriority GetPriority(double position, (double, double) bounds)
-		{
-			var startSeconds = _earliestEventTimecode.GetTimeSeconds();
-			var endSeconds = _latestEventTimecode.GetTimeSeconds();
-
-			//                   v
-			// -------{-------[event]-------}-------
-			if (position >= startSeconds && position < endSeconds)
-			{
-				return VideoElementPriority.Current;
-			}
-
-			//                   v
-			// -------{------------[event]--}-------
-			if (startSeconds >= position && startSeconds < bounds.Item2)
-			{
-				return VideoElementPriority.AfterCurrent;
-			}
-
-			//                   v
-			// -------{--[event]------------}-------
-			if (endSeconds <= position && endSeconds >= bounds.Item1)
-			{
-				return VideoElementPriority.BeforeCurrent;
-			}
-
-			//                   v
-			// -------{---------------------}[event]
-			if(startSeconds >= bounds.Item2)
-			{
-				return VideoElementPriority.AfterOutOfRange;
-			}
-
-			//                   v
-			// [event]{---------------------}-------
-			if (endSeconds <= bounds.Item1)
-			{
-				return VideoElementPriority.BeforeOutOfRange;
-			}
-
-			throw new InvalidOperationException("Corner case not considered?");
-		}
-
-		/// <inheritdoc/>
 		public (float, float) GetRenderedBounds(double position, (double, double) bounds)
 		{
 			return IsVisible(bounds) ? (Position.X, Position.X) : (Position.X, Position.X + _width);
-			// below code is for a swipe transition, which is not implemented yet (TODO)
-			/*
-			var earliest = bounds.Item1;
-			var latest = bounds.Item2;
-			var startSeconds = _startTimecode.GetTimeSeconds();
-			var endSeconds = _endTimecode.GetTimeSeconds();
-
-			var normalizedStartPos = Math.Clamp((earliest - startSeconds) / (endSeconds - startSeconds), 0, 1);
-			var normalizedEndPos = Math.Clamp((latest - startSeconds) / (endSeconds - startSeconds), 0, 1);
-			return (Position.Item1 + (float)normalizedStartPos * _width, Position.Item1 + (float)normalizedEndPos * _width);
-			*/
 		}
 
 		/// <inheritdoc/>
 		public void Render(VideoContext context, SKCanvas canvas, double videoPos)
 		{
-			/*if (!IsVisible(bounds))
-			{
-				// we don't need to render anything
-				return;
-			}*/
-
-			// FOR NOW, the only clipping we need to worry about is for the highlighted position
-			// no transitions implemented yet
-
-			//var earliest = bounds.Item1;
-			//var latest = bounds.Item2;
 			var startSeconds = _earliestEventTimecode.GetTimeSeconds();
-			//var endSeconds = _endTimecode.GetTimeSeconds();
 			var lineHeight = context.Style.LineHeight;
 
 			var drawHighlighted = videoPos >= startSeconds;
-			var drawNormal = true;//videoPos < endSeconds;
+			var drawNormal = true;
 
 			var highlightPos = GetNormalizedPosition(videoPos);
 
-			//var normalizedStartPos = Math.Clamp((earliest - startSeconds) / (endSeconds - startSeconds), 0, 1);
-			//var normalizedEndPos = 1.0;
-
-			if(drawNormal)
+			if (drawNormal)
 			{
 				canvas.Save();
 
-				/*normalizedEndPos = Math.Clamp((latest - startSeconds) / (endSeconds - startSeconds), 0, 1);
-				var relativeXRange = ((float)normalizedStartPos * _width, (float)normalizedEndPos * _width);
-				var rect = new SKRect(
-					Position.Item1 + relativeXRange.Item1,
-					Position.Item2,
-					Position.Item1 + relativeXRange.Item2,
-					context.Size.Height
-				);*/
 				var rect = new SKRect(
 					Position.X + (float)(highlightPos * _width),
 					Position.Y,
 					Position.X + _width,
-					context.Size.Height);
+					Position.Y + context.Size.Height);
 
 				canvas.ClipRect(rect, SKClipOperation.Intersect, true);
 				canvas.DrawText(_text, new SKPoint(Position.Item1, Position.Item2 + lineHeight), context.Style.NormalPaint);
@@ -240,23 +246,15 @@ namespace KaraokeLib.Video.Elements
 				canvas.Restore();
 			}
 
-			if(drawHighlighted)
+			if (drawHighlighted)
 			{
 				canvas.Save();
 
-				/*var highlightedEndPos = Math.Clamp((videoPos - startSeconds) / (endSeconds - startSeconds), 0, 1);
-				var relativeXRange = ((float)normalizedStartPos * _width, (float)highlightedEndPos * _width);
-				var rect = new SKRect(
-					Position.Item1 + relativeXRange.Item1,
-					Position.Item2,
-					Position.Item1 + relativeXRange.Item2,
-					context.Size.Height
-				);*/
 				var rect = new SKRect(
 					Position.X,
 					Position.Y,
 					Position.X + (float)(highlightPos * _width),
-					context.Size.Height);
+					Position.Y + context.Size.Height);
 
 				canvas.ClipRect(rect, SKClipOperation.Intersect, true);
 				canvas.DrawText(_text, new SKPoint(Position.Item1, Position.Item2 + lineHeight), context.Style.HighlightedPaint);
@@ -264,16 +262,15 @@ namespace KaraokeLib.Video.Elements
 				canvas.Restore();
 			}
 
-			if(drawNormal || drawHighlighted)
+			if ((drawNormal || drawHighlighted) && context.Config.StrokeWidth > 0)
 			{
 				canvas.Save();
 
-				//var relativeXRange = ((float)normalizedStartPos * _width, (float)normalizedEndPos * _width);
 				var rect = new SKRect(
-					Position.Item1,// + relativeXRange.Item1,
+					Position.Item1,
 					Position.Item2,
-					Position.Item1 + _width,// + relativeXRange.Item2,
-					context.Size.Height);
+					Position.Item1 + _width,
+					Position.Y + context.Size.Height);
 
 				canvas.ClipRect(rect, SKClipOperation.Intersect, true);
 				canvas.DrawText(_text, new SKPoint(Position.Item1, Position.Item2 + lineHeight), context.Style.StrokePaint);
@@ -290,18 +287,18 @@ namespace KaraokeLib.Video.Elements
 		/// </remarks>
 		private double GetNormalizedPosition(double time)
 		{
-			if(time <= _earliestEventTimecode.GetTimeSeconds())
+			if (time <= _earliestEventTimecode.GetTimeSeconds())
 			{
 				return 0;
 			}
 
-			if(time >= _latestEventTimecode.GetTimeSeconds())
+			if (time >= _latestEventTimecode.GetTimeSeconds())
 			{
 				return 1;
 			}
 
 			var accumWidth = 0f;
-			for(var i = 0; i < _events.Length; i++)
+			for (var i = 0; i < _events.Length; i++)
 			{
 				if (_events[i].ContainsTime(time))
 				{

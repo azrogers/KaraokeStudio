@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static System.Collections.Specialized.BitVector32;
 
 namespace KaraokeLib.Video
 {
@@ -34,30 +33,24 @@ namespace KaraokeLib.Video
 			SectionLength = sectionLength;
 		}
 
-		public void SetEvents(IEnumerable<LyricsEvent> events)
+		public VideoSection(
+			VideoContext context,
+			VideoSectionType type,
+			VideoParagraph[] paragraphs)
 		{
-			var newParagraphs = new List<VideoParagraph>();
-			var eventsArr = events.ToArray();
-			var i = 0;
-
-			while(i < eventsArr.Length)
-			{
-				var para = new VideoParagraph(_context, _context.NumLines);
-				var numConsumed = para.FillParagraph(eventsArr, i);
-
-				if(numConsumed <= 0)
-				{
-					throw new InvalidDataException("Paragraph took zero events?");
-				}
-
-				i += numConsumed;
-				newParagraphs.Add(para);
-			}
-
-			_paragraphs = newParagraphs.ToArray();
+			_context = context;
+			_paragraphs = paragraphs;
+			Type = type;
+			Start = paragraphs.Min(p => p.StartTimeSeconds);
+			SectionLength = paragraphs.Max(p => p.EndTimeSeconds) - Start;
 		}
 
-		public static VideoSection[] FromTrack(VideoContext context, LyricsTrack track)
+		public void SetEvents(IEnumerable<LyricsEvent> events, VideoLayoutState layoutState)
+		{
+			_paragraphs = VideoParagraph.CreateParagraphs(_context, events.ToArray(), layoutState, _context.NumLines);
+		}
+
+		public static VideoSection[] SectionsFromTrack(VideoContext context, LyricsTrack track, VideoLayoutState layoutState)
 		{
 			var sections = new List<VideoSection>();
 
@@ -76,7 +69,7 @@ namespace KaraokeLib.Video
 						VideoSectionType.Lyrics,
 						firstEventStartTime,
 						lastEventEndTime - firstEventStartTime);
-					newSection.SetEvents(eventsAccumulated);
+					newSection.SetEvents(eventsAccumulated, layoutState);
 					sections.Add(newSection);
 					sections.Add(new VideoSection(
 						context,
@@ -100,7 +93,7 @@ namespace KaraokeLib.Video
 					VideoSectionType.Lyrics,
 					firstEventStartTime,
 					lastEventEndTime - firstEventStartTime);
-				newSection.SetEvents(eventsAccumulated);
+				newSection.SetEvents(eventsAccumulated, layoutState);
 				sections.Add(newSection);
 			}
 

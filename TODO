@@ -36,3 +36,4 @@ Short Term (Minimum Viable Program)
    ☐ Lines fading in/out vs clipped
    ☐ Line or bouncing ball indicating current position
  ☐ Move karaoke rendering to a C++ library for performance
+ ☐ Support non-English languages

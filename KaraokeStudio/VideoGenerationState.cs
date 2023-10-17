@@ -18,6 +18,7 @@ namespace KaraokeStudio
 		private VideoStyle? _style;
 		private VideoRenderer? _renderer;
 		private VideoPlan? _plan;
+		private VideoLayoutState? _layoutState;
 		private int _frameRate;
 
 		private bool _isPlanStale = false;
@@ -31,19 +32,21 @@ namespace KaraokeStudio
 
 			if(_isPlanStale || _renderer == null || _plan == null)
 			{
+				_layoutState = new VideoLayoutState();
+
 				VideoSection[] sections;
 				if (tracks.Any())
 				{
 					// TODO: support multiple tracks?
-					sections = VideoSection.FromTrack(_context, tracks.First());
+					sections = VideoSection.SectionsFromTrack(_context, tracks.First(), _layoutState);
 				}
 				else
 				{
 					sections = new VideoSection[0];
 				}
 
-				_plan = VideoPlanGenerator.CreateVideoPlan(_context, sections);
-				_renderer = new VideoRenderer(_context, sections);
+				_plan = VideoPlanGenerator.CreateVideoPlan(_context, _layoutState, sections);
+				_renderer = new VideoRenderer(_context, _layoutState, sections);
 				_isPlanStale = false;
 			}
 

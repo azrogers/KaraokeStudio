@@ -1,5 +1,6 @@
 ﻿using FontAwesome.Sharp;
 using KaraokeLib.Lyrics;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,8 @@ namespace KaraokeStudio
 		public static readonly Color HighlightColor = Color.FromArgb(59, 142, 165);
 		public static readonly Color PositiveColor = Color.FromArgb(112, 174, 110);
 		public static readonly Color NegativeColor = Color.FromArgb(240, 93, 94);
+
+		public static readonly SKTypeface DefaultTypeface;
 
 		public static readonly Dictionary<LyricsEventType, Color> EventColors = new Dictionary<LyricsEventType, Color>()
 		{
@@ -41,6 +44,14 @@ namespace KaraokeStudio
 				height, 
 				height);
 			g.DrawImage(bitmap, rect);
+		}
+
+		static VisualStyle()
+		{
+			using (var stream = new MemoryStream(Properties.Resources.OpenSans))
+			{
+				DefaultTypeface = SKTypeface.FromStream(stream);
+			}
 		}
 	}
 }

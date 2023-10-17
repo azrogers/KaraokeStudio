@@ -20,6 +20,8 @@ namespace KaraokeLib
 		public KColor NormalColor = new KColor(255, 255, 255);
 		public KColor HighlightColor = new KColor(70, 175, 90);
 		public KColor StrokeColor = new KColor(0, 0, 0);
+		// TODO: replace with Graphics LyricsTrack background element
+		public KColor BackgroundColor = new KColor(230, 230, 230);
 
 		[ConfigRange(0.0)]
 		public float StrokeWidth = 3;
@@ -33,8 +35,7 @@ namespace KaraokeLib
 			Width = SKFontStyleWidth.Normal
 		};
 
-		[ConfigRange(0.0, 1.0)]
-		public float FramePaddingPercent = 0.1f;
+		public KPadding Padding = new KPadding(30.0f, 60.0f, 30.0f, 60.0f);
 
 		[ConfigRange(0.0)]
 		public double LyricLeadTime = 2.0;
@@ -55,6 +56,23 @@ namespace KaraokeLib
 		// TODO: should be moved to a separate "import settings" class with a separate window for MIDI import settings
 		[ConfigRange(0.0)]
 		public double MinTimeBetweenSections = 10.0;
+
+		public HorizontalAlignment HorizontalAlign = HorizontalAlignment.Center;
+		public VerticalAlignment VerticalAlign = VerticalAlignment.Center;
+	}
+
+	public enum HorizontalAlignment
+	{
+		Left,
+		Right,
+		Center
+	}
+
+	public enum VerticalAlignment
+	{
+		Top,
+		Bottom,
+		Center
 	}
 
 	public class ConfigRangeAttribute : Attribute

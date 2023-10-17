@@ -18,22 +18,18 @@ namespace KaraokeLib.Video
 		private VideoSection[] _sections;
 		private IVideoElement[] _elements;
 
-		public VideoRenderer(VideoContext context, VideoSection[] sections)
+		public VideoRenderer(VideoContext context, VideoLayoutState layoutState, VideoSection[] sections)
 		{
 			_context = context;
 			_sections = sections;
-			_elements = VideoElementGenerator.Generate(context, sections);
+			_elements = VideoElementGenerator.Generate(context, layoutState, sections);
 		}
 
 		public void RenderFrame(VideoPlan videoPlan, VideoTimecode videoTimecode, SKCanvas canvas)
 		{
 			canvas.DrawRect(
 				new SKRect(0, 0, _context.Size.Width, _context.Size.Height),
-				new SKPaint()
-				{
-					Color = new SKColor(230, 230, 230),
-					Style = SKPaintStyle.Fill
-				});
+				_context.Style.BackgroundPaint);
 
 			var posSeconds = videoTimecode.ToSeconds();
 

@@ -124,7 +124,7 @@ namespace KaraokeLib.Lyrics.Providers
 
 						expectingFollowingLyric = text.EndsWith('-');
 
-						newEvent.Text = text.TrimEnd('-').Replace('=', '-');
+						newEvent.RawText = text.TrimEnd('-').Replace('=', '-');
 
 						previousId = nextId;
 						nextId++;
@@ -165,7 +165,7 @@ namespace KaraokeLib.Lyrics.Providers
 					}
 				}
 
-				var newTrack = new LyricsTrack();
+				var newTrack = new LyricsTrack(LyricsTrackType.Lyrics);
 				newTrack.AddEvents(events);
 				yield return newTrack;
 			}

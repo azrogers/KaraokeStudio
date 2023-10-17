@@ -106,6 +106,16 @@ namespace KaraokeStudio.Config
 					return ControlType.Font;
 				}
 
+				if(fieldType == typeof(bool))
+				{
+					return ControlType.Bool;
+				}
+
+				if(fieldType == typeof(KPadding))
+				{
+					return ControlType.Padding;
+				}
+
 				throw new NotImplementedException($"No config control for {fieldType}");
 			}
 		}
@@ -117,7 +127,9 @@ namespace KaraokeStudio.Config
 			Size,
 			Color,
 			Font,
-			Enum
+			Enum,
+			Bool,
+			Padding
 		}
 	}
 }

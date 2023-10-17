@@ -52,6 +52,15 @@ namespace KaraokeLib.Lyrics
 			: base(new MidiLyricsProvider(stream)) { }
 	}
 
+	public class LrcLyricsFile : LyricsFile<LrcLyricsProvider>
+	{
+		public LrcLyricsFile(string filename) : base(new LrcLyricsProvider(filename)) { }
+
+		public LrcLyricsFile(Stream stream) : base(new LrcLyricsProvider(stream)) { }
+		public LrcLyricsFile(ILyricsFile otherFile) : base(new LrcLyricsProvider(otherFile.GetTracks())) { }
+		public LrcLyricsFile(IEnumerable<LyricsTrack> tracks) : base(new LrcLyricsProvider(tracks)) { }
+	}
+
 	public class KsfLyricsFile : LyricsFile<KsfLyricsProvider>
 	{
 		public void SetMetadata(string key, string value) => _provider.SetMetadata(key, value);

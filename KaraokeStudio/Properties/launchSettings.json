@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "KaraokeStudio": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\Ashley\\Projects\\Nonsense\\KaraokeGenerator\\KaraokeGenerator\\KaraokeStudio\\bin\\Debug\\test.ksf\""
+    }
+  }
+}

@@ -1,4 +1,5 @@
-﻿using Melanchall.DryWetMidi.Tools;
+﻿using KaraokeLib.Util;
+using Melanchall.DryWetMidi.Tools;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -10,19 +11,13 @@ namespace KaraokeLib.Video
 {
 	public class VideoStyle
 	{
-		private static readonly char[] ALPHABET = new char[] {
-			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 
-			'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 
-			'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 
-			'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
-			'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
-
 		private SKFont _font;
-		private float _padding = 0.1f;
+		private KaraokeConfig _config;
 
 		private SKPaint _normalPaint;
 		private SKPaint _highlightedPaint;
 		private SKPaint _strokePaint;
+		private SKPaint _backgroundPaint;
 
 		public SKFont Font => _font;
 
@@ -31,6 +26,7 @@ namespace KaraokeLib.Video
 		public SKPaint HighlightedPaint => _highlightedPaint;
 
 		public SKPaint StrokePaint => _strokePaint;
+		public SKPaint BackgroundPaint => _backgroundPaint;
 
 		public float LineHeight { get; private set; }
 
@@ -66,26 +62,23 @@ namespace KaraokeLib.Video
 				StrokeWidth = config.StrokeWidth
 			};
 
-			_padding = config.FramePaddingPercent;
-
-			var glyphs = ALPHABET.Select(c => _font.GetGlyph(c)).ToArray();
-			// get the height of a single line
+			_backgroundPaint = new SKPaint()
 			{
-				_font.MeasureText(glyphs, out var bounds);
-				LineHeight = bounds.Height;
-			}
+				Color = config.BackgroundColor,
+				Style = SKPaintStyle.Fill
+			};
+
+			LineHeight = StyleUtil.GetFontHeight(_font);
+			_config = config;
 		}
 
 		public SKRect GetSafeArea(SKSize size)
 		{
-			var paddingX = size.Width * _padding * 0.5f;
-			var paddingY = size.Height * _padding * 0.5f;
-
 			return new SKRect(
-				paddingX, 
-				paddingY, 
-				paddingX + size.Width - paddingX * 2, 
-				paddingY + size.Height - paddingY * 2
+				_config.Padding.Left, 
+				_config.Padding.Top, 
+				size.Width - _config.Padding.Right, 
+				size.Height - _config.Padding.Bottom
 			);
 		}
 

@@ -14,7 +14,7 @@ namespace KaraokeLib.Lyrics.Providers
 	{
 		// = "KSPF"
 		private const uint MAGIC_NUMBER = 0x4650534B;
-		private const byte VERSION = 0;
+		private const byte VERSION = 1;
 
 		private Dictionary<string, string> _metadata = new Dictionary<string, string>();
 
@@ -76,18 +76,19 @@ namespace KaraokeLib.Lyrics.Providers
 			foreach(var track in _tracks)
 			{
 				writer.Write((uint)track.Events.Count());
+				writer.Write((byte)track.Type);
 				foreach(var ev in track.Events)
 				{
 					// 0 = no optional fields, 1 = no text, 2 = no linked id, 3 = both
-					if(ev.LinkedId == -1 && ev.Text == null)
+					if(ev.LinkedId == -1 && ev.RawText == null)
 					{
 						writer.Write((byte)0);
 					}
-					else if(ev.LinkedId != -1 && ev.Text == null)
+					else if(ev.LinkedId != -1 && ev.RawText == null)
 					{
 						writer.Write((byte)1);
 					}
-					else if(ev.LinkedId == -1 && ev.Text != null)
+					else if(ev.LinkedId == -1 && ev.RawText != null)
 					{
 						writer.Write((byte)2);
 					}
@@ -128,10 +129,6 @@ namespace KaraokeLib.Lyrics.Providers
 			{
 				throw new NotImplementedException($"Can't read format version {version}");
 			}
-			else if(version < VERSION)
-			{
-				throw new NotImplementedException($"No conversion from format version {version} implemented");
-			}
 
 			var metadataCount = reader.ReadUInt16();
 			_metadata.EnsureCapacity(metadataCount);
@@ -148,6 +145,12 @@ namespace KaraokeLib.Lyrics.Providers
 				var events = new List<LyricsEvent>();
 
 				var eventCount = reader.ReadUInt32();
+				var trackType = LyricsTrackType.Lyrics;
+				// KSF version 1 added track type
+				if(version > 0)
+				{
+					trackType = (LyricsTrackType)reader.ReadByte();
+				}
 				for(var j = 0; j < eventCount; j++)
 				{
 					var evFields = reader.ReadByte();
@@ -165,13 +168,13 @@ namespace KaraokeLib.Lyrics.Providers
 
 					if(evFields == 2 || evFields == 3)
 					{
-						ev.Text = reader.ReadNullTerminatedString();
+						ev.RawText = reader.ReadNullTerminatedString();
 					}
 
 					events.Add(ev);
 				}
 
-				_tracks[i] = new LyricsTrack();
+				_tracks[i] = new LyricsTrack(trackType);
 				_tracks[i].AddEvents(events);
 			}
 		}

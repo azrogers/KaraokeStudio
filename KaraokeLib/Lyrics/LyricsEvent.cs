@@ -1,9 +1,4 @@
-﻿using Melanchall.DryWetMidi.Interaction;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using KaraokeLib.Video;
 
 namespace KaraokeLib.Lyrics
 {
@@ -16,8 +11,6 @@ namespace KaraokeLib.Lyrics
 		private IEventTimecode _endTimecode;
 
 		private string? _text;
-
-		public bool IsHyphenated { get; set; } = false;
 
 		public double StartTimeSeconds => _startTimecode.GetTimeSeconds();
 
@@ -35,19 +28,11 @@ namespace KaraokeLib.Lyrics
 
 		public LyricsEventType Type => _type;
 
-		public string Text
+		public string? RawText
 		{
-			get
-			{
-				return _text + (IsHyphenated ? "-" : "") ?? "";
-			}
-			set
-			{
-				_text = value;
-			}
+			get => _text;
+			set => _text = value;
 		}
-
-		public string RawText => _text ?? "";
 
 		public int Id => _id;
 
@@ -66,9 +51,9 @@ namespace KaraokeLib.Lyrics
 		public int LinkedId => _linkedId;
 
 		public LyricsEvent(
-			LyricsEventType type, 
-			int id, 
-			IEventTimecode startTimecode, 
+			LyricsEventType type,
+			int id,
+			IEventTimecode startTimecode,
 			IEventTimecode endTimecode,
 			int linkedId = -1)
 		{
@@ -94,6 +79,15 @@ namespace KaraokeLib.Lyrics
 		public bool ContainsTime(double time)
 		{
 			return time >= StartTimeSeconds && time <= EndTimeSeconds;
+		}
+
+		/// <summary>
+		/// Gets the text of the lyric that should be displayed.
+		/// </summary>
+		/// <param name="layoutState">The layout state that informs how this event should be displayed.</param>
+		public string GetText(VideoLayoutState? layoutState)
+		{
+			return (_text ?? "") + ((layoutState?.IsHyphenated(this) ?? false) ? "-" : "");
 		}
 	}
 
@@ -128,7 +122,7 @@ namespace KaraokeLib.Lyrics
 
 		public int CompareTo(IEventTimecode? other)
 		{
-			if(other == null)
+			if (other == null)
 			{
 				return 1;
 			}

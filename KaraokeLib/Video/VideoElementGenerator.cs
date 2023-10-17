@@ -12,28 +12,25 @@ namespace KaraokeLib.Video
 	/// <summary>
 	/// Takes in <see cref="VideoParagraph"/>s contained in <see cref="VideoSection"/>s and creates <see cref="IVideoElement"/>s to display.
 	/// </summary>
-	internal class VideoElementGenerator
+	public class VideoElementGenerator
 	{
-		public static IVideoElement[] Generate(VideoContext context, VideoSection[] sections)
+		public static IVideoElement[] Generate(VideoContext context, VideoLayoutState layoutState, VideoSection[] sections)
 		{
 			var elements = new List<IVideoElement>();
-			var lineElements = new List<IVideoElement>[context.NumLines];
-			for(var i = 0; i < context.NumLines; i++)
-			{
-				lineElements[i] = new List<IVideoElement>();
-			}
+			var lineElements = new Dictionary<int, List<IVideoElement>>();
 
+			var elementId = 0;
+			var paragraphId = 0;
 			foreach (var section in sections)
 			{
 				foreach(var para in section.Paragraphs)
 				{
-					GenerateParagraph(context, para, ref elements, ref lineElements);
+					elementId = GenerateParagraph(context, layoutState, para, elementId, paragraphId++, ref elements, ref lineElements);
 				}
 			}
 
-			for(var i = 0; i < context.NumLines; i++)
+			foreach(var (i, line) in lineElements)
 			{
-				var line = lineElements[i];
 				if(!line.Any())
 				{
 					continue;
@@ -74,28 +71,59 @@ namespace KaraokeLib.Video
 			return elements.ToArray();
 		}
 
-		private static void GenerateParagraph(
-			VideoContext context, 
+		private static int GenerateParagraph(
+			VideoContext context,
+			VideoLayoutState layoutState,
 			VideoParagraph paragraph, 
+			int nextElementId,
+			int paragraphId,
 			ref List<IVideoElement> outElements,
-			ref List<IVideoElement>[] outLineElements)
+			ref Dictionary<int, List<IVideoElement>> outLineElements)
 		{
-			var safeArea = context.Style.GetSafeArea(context.Size);
+			var startYPos = CalculateYPos(context);
 			var lineHeight = context.Style.LineHeight;
-			var startYPos = (safeArea.Height - lineHeight * context.NumLines) / 2 + safeArea.Top;
+
+			// first line will get a ++ but we want that index to be 0
+			var lineIndex = -1;
+			var elementId = nextElementId;
 
 			// create elements out of each line
-			for (var i = 0; i < context.NumLines; i++)
+			foreach(var line in paragraph.Lines)
 			{
-				var events = paragraph.GetLineEvents(i).ToArray();
-				if(!events.Any())
+				lineIndex++;
+				if(!line.Any())
 				{
 					continue;
 				}
 
-				var elem = new VideoTextElement(context, events, startYPos + lineHeight * i);
+				var elem = new VideoTextElement(context, layoutState, line, startYPos + lineHeight * lineIndex, elementId++, paragraphId);
 				outElements.Add(elem);
-				outLineElements[i].Add(elem);
+				if(!outLineElements.TryGetValue(lineIndex, out var lineElements))
+				{
+					lineElements = new List<IVideoElement>();
+				}
+
+				lineElements.Add(elem);
+				outLineElements[lineIndex] = lineElements;
+			}
+
+			return elementId;
+		}
+
+		private static float CalculateYPos(VideoContext context)
+		{
+			var safeArea = context.Style.GetSafeArea(context.Size);
+			var lineHeight = context.Style.LineHeight;
+			switch (context.Config.VerticalAlign)
+			{
+				case VerticalAlignment.Top:
+					return safeArea.Top;
+				case VerticalAlignment.Bottom:
+					return safeArea.Bottom - lineHeight * context.NumLines;
+				case VerticalAlignment.Center:
+					return (safeArea.Height - lineHeight * context.NumLines) / 2 + safeArea.Top;
+				default:
+					throw new NotImplementedException($"Unknown enum value {context.Config.VerticalAlign}");
 			}
 		}
 	}

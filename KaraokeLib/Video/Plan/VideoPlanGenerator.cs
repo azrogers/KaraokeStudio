@@ -8,12 +8,10 @@ namespace KaraokeLib.Video.Plan
 {
 	public class VideoPlanGenerator
 	{
-		public static VideoPlan CreateVideoPlan(VideoContext context, VideoSection[] sections)
+		public static VideoPlan CreateVideoPlan(VideoContext context, VideoLayoutState layoutState, VideoSection[] sections)
 		{
-			var elements = VideoElementGenerator.Generate(context, sections);
-			/*var vacancyPlanCreator = new VacancyPlanCreator(context, elements);
-			var naivePlan = vacancyPlanCreator.CreatePlan(context.LastFrameTimecode);
-			naivePlan.FinalizePlan();*/
+			var elements = VideoElementGenerator.Generate(context, layoutState, sections);
+
 			// dead simple "IsVisible" check for plan for now
 			var naivePlan = new VideoPlan();
 			for(var i = 0; i < context.LastFrameTimecode.FrameNumber; i++)

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace KaraokeLib.Video.Elements
 {
 	// a single element in the video (a renderable bit of text, an intermission, etc)
-	internal interface IVideoElement
+	public interface IVideoElement
 	{
 		/// <summary>
 		/// The type of element this class implements.
@@ -48,6 +48,16 @@ namespace KaraokeLib.Video.Elements
 		TransitionConfig EndTransition { get; }
 
 		/// <summary>
+		/// Used to keep track of which paragraph this video element belongs to.
+		/// </summary>
+		int ParagraphId { get; }
+
+		/// <summary>
+		/// The unique ID of this element.
+		/// </summary>
+		int Id { get; }
+
+		/// <summary>
 		/// Change the timing of this element.
 		/// </summary>
 		void SetTiming(IEventTimecode newStartTimecode, IEventTimecode newEndTimecode);
@@ -65,48 +75,13 @@ namespace KaraokeLib.Video.Elements
 		void Render(VideoContext context, SKCanvas canvas, double position);
 
 		/// <summary>
-		/// Gets the element's priority.
-		/// </summary>
-		/// <param name="position">The current video position.</param>
-		/// <param name="bounds">The bounds of the grace period.</param>
-		VideoElementPriority GetPriority(double position, (double, double) bounds);
-
-		/// <summary>
 		/// Gets the (xmin, xmax) of this element when rendered at the current video position.
 		/// </summary>
 		(float, float) GetRenderedBounds(double position, (double, double) bounds);
 	}
 
-	internal enum VideoElementType
+	public enum VideoElementType
 	{
 		Text,
-	}
-
-	/// <summary>
-	/// The order in which to render elements. 
-	/// Lower = higher priority.
-	/// </summary>
-	internal enum VideoElementPriority
-	{
-		/// <summary>
-		/// The current element at the current video position
-		/// </summary>
-		Current = 0,
-		/// <summary>
-		/// After the current video position but within the grace period.
-		/// </summary>
-		AfterCurrent = 1,
-		/// <summary>
-		/// Before the current video position but within the grace period.
-		/// </summary>
-		BeforeCurrent = 2,
-		/// <summary>
-		/// After the current video position and outside of the grace period.
-		/// </summary>
-		AfterOutOfRange = 3,
-		/// <summary>
-		/// Before the current video position and outside of the grace period.
-		/// </summary>
-		BeforeOutOfRange = 4
 	}
 }

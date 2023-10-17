@@ -28,6 +28,11 @@ namespace KaraokeStudio
 			OnProjectChanged(null);
 		}
 
+		public void LoadProject(string path)
+		{
+			_projectHandler.OpenProject(path);
+		}
+
 		private void OnPositionChanged(double newTime)
 		{
 			timeline.OnPositionChanged(newTime);
@@ -51,6 +56,7 @@ namespace KaraokeStudio
 			video.OnProjectChanged(project);
 			_styleForm.OnProjectChanged(project);
 			timeline.OnProjectChanged(project);
+			lyricsEditor.OnProjectChanged(project);
 		}
 
 		#region UI Events
@@ -63,6 +69,8 @@ namespace KaraokeStudio
 		private void saveAsToolStripMenuitem_Click(object sender, EventArgs e) => _projectHandler.SaveProject(forceNewPath: true);
 
 		private void midiToolStripMenuItem_Click(object sender, EventArgs e) => _projectHandler.LoadMidiFile();
+
+		private void lRCFileToolStripMenuItem_Click(object sender, EventArgs e) => _projectHandler.ExportLrcFile();
 
 		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
 		{
@@ -100,6 +108,8 @@ namespace KaraokeStudio
 			saveToolStripMenuItem.Text = (_projectHandler.ProjectPath != null ? "Save" : "Save...");
 			// don't enable save as unless we've saved once
 			saveAsToolStripMenuItem.Enabled = _projectHandler.ProjectPath != null;
+
+			exportToolStripMenuItem.Enabled = project != null;
 
 			openRecentToolStripMenuItem.DropDownItems.Clear();
 			foreach(var file in AppSettings.Instance.RecentFiles)

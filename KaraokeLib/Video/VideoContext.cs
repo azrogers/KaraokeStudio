@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using KaraokeLib.Lyrics;
 using SkiaSharp;
 
 namespace KaraokeLib.Video
@@ -26,11 +27,6 @@ namespace KaraokeLib.Video
 			Size = Config.VideoSize;
 			LastFrameTimecode = lastFrameTimecode;
 			NumLines = CalculateNumLines();
-
-			if(NumLines <= 0)
-			{
-				throw new InvalidDataException("NumLines <= 0");
-			}
 		}
 
 		private int CalculateNumLines()
