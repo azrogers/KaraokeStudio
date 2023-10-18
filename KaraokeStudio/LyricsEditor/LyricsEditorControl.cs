@@ -8,66 +8,162 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ScintillaNET;
+using KaraokeLib.Util;
+using KaraokeLib.Video.Elements;
 
 namespace KaraokeStudio.LyricsEditor
 {
 	public partial class LyricsEditorControl : UserControl
 	{
-		private readonly RectangleF Padding = new RectangleF(15.0f, 15.0f, 15.0f, 15.0f);
+		private const int LYRIC_STYLE = 11;
+		private const int LYRIC_HIGHLIGHT_STYLE = 12;
 
-		private LyricsView _view;
 		private KaraokeProject? _project;
-		private Size? _previousClientSize;
+		private LyricsEditorTextElement[] _textElements = new LyricsEditorTextElement[0];
+		private LyricsEditorTextResult? _textResult;
+		private Scintilla _scintilla;
+		private int _previousHighlightIndex = 0;
 
 		public LyricsEditorControl()
 		{
 			InitializeComponent();
-			_view = new LyricsView();
+
+			BackColor = Color.Black;
+
+			_scintilla = new Scintilla();
+			_scintilla.Dock = DockStyle.Fill;
+			_scintilla.Lexer = Lexer.Container;
+			_scintilla.StyleNeeded += _scintilla_StyleNeeded;
+			_scintilla.Margins[0].Width = 1;
+
+			_scintilla.Styles[Style.Default].BackColor = Color.Black;
+			_scintilla.Styles[Style.Default].ForeColor = Color.White;
+
+			_scintilla.CaretForeColor = Color.White;
+
+			_scintilla.Styles[LYRIC_STYLE].Font = "Open Sans";
+			_scintilla.Styles[LYRIC_STYLE].Size = 30;
+			_scintilla.Styles[LYRIC_STYLE].ForeColor = Color.White;
+			_scintilla.Styles[LYRIC_STYLE].BackColor = Color.Black;
+
+			_scintilla.Styles[LYRIC_HIGHLIGHT_STYLE].Font = "Open Sans";
+			_scintilla.Styles[LYRIC_HIGHLIGHT_STYLE].Size = 30;
+			_scintilla.Styles[LYRIC_HIGHLIGHT_STYLE].ForeColor = VisualStyle.HighlightColor;
+			_scintilla.Styles[LYRIC_HIGHLIGHT_STYLE].BackColor = Color.Black;
+
+			_scintilla.WrapMode = WrapMode.Word;
+
+			Controls.Add(_scintilla);
 		}
 
 		internal void OnProjectChanged(KaraokeProject? project)
 		{
 			_project = project;
-			UpdateView();
-			skiaControl.Invalidate();
+			UpdateTextBox();
 		}
 
-		private void UpdateView()
+		internal void OnPositionChanged(double newPosition)
 		{
-			_view.UpdateView(_project, new RectangleF(0, 0, skiaControl.ClientSize.Width, skiaControl.ClientSize.Height));
+			var charIndex = PositionToCharIndex(newPosition);
+			RestyleArea(charIndex, _previousHighlightIndex, charIndex);
+
+			_previousHighlightIndex = charIndex;
 		}
 
-		private SKMatrix CreateTranslationMatrix() => SKMatrix.CreateTranslation(0, -scrollBar.Value);
-		private SKPoint TranslatePointToCanvas(Point point) => CreateTranslationMatrix().Invert().MapPoint(new SKPoint(point.X, point.Y));
-
-		private void skiaControl_PaintSurface(object sender, SkiaSharp.Views.Desktop.SKPaintGLSurfaceEventArgs e)
+		private void UpdateTextBox()
 		{
-			var viewRect = new SKRect(0, 0, skiaControl.ClientSize.Width, skiaControl.ClientSize.Height);
+			UpdateTextElements();
+			_textResult = LyricsEditorText.CreateString(_textElements);
+			_scintilla.Text = _textResult.Text;
+		}
 
-			if (_previousClientSize == null || _previousClientSize != skiaControl.ClientSize)
+		private void UpdateTextElements()
+		{
+			var track = _project?.Tracks.Where(t => t.Type == KaraokeLib.Lyrics.LyricsTrackType.Lyrics).FirstOrDefault();
+			if (track == null)
 			{
-				_previousClientSize = skiaControl.ClientSize;
-				UpdateView();
-				// TODO: restore accurate scroll pos
+				_textElements = new LyricsEditorTextElement[0];
+				return;
 			}
 
-			// update scroll bar based on new height
-			scrollBar.Maximum = (int)(_view.Height - viewRect.Height);
-			scrollBar.SmallChange = (int)(viewRect.Height / 20);
-			scrollBar.LargeChange = (int)(viewRect.Height / 10);
-
-			_view.Render(e.Surface.Canvas, CreateTranslationMatrix(), viewRect);
+			_textElements = LyricsEditorText.CreateElements(track.Events);
 		}
 
-		private void scrollBar_Scroll(object sender, ScrollEventArgs e)
+		private LyricsEditorTextElement? CharIndexToElement(int index)
 		{
-			skiaControl.Invalidate();
+			if(_textElements.Length == 0 || _textResult == null)
+			{
+				return null;
+			}
+
+			var lastElemId = -1;
+
+			foreach(var (elemId, offset) in _textResult.EventOffsets)
+			{
+				if (offset > index)
+				{
+					return lastElemId == -1 ? _textElements[0] : _textElements.Where(e => e.Id == elemId).First();
+				}
+
+				lastElemId = elemId;
+			}
+
+			return _textElements.Last();
+		}
+
+		private int PositionToCharIndex(double position)
+		{
+			if(_textResult == null)
+			{
+				return 0;
+			}
+
+			foreach(var elem in _textElements.OrderBy(e => e.StartTime))
+			{
+				if(position < elem.StartTime)
+				{
+					return _textResult.EventOffsets[elem.Id];
+				}
+				else if(position >= elem.StartTime && position < elem.EndTime)
+				{
+					var start = _textResult.EventOffsets[elem.Id];
+					var end = start + elem.ToString().Length;
+					var normalizedPos = elem.GetNormalizedPosition(position);
+					return (int)((end - start) * normalizedPos);
+				}
+			}
+
+			return _scintilla.Text.Length - 1;
+		}
+
+		private void RestyleArea(int highlightIndex, int startIndex, int endIndex)
+		{
+			if(highlightIndex < endIndex)
+			{
+				var start = Math.Max(highlightIndex, startIndex);
+				_scintilla.StartStyling(start);
+				_scintilla.SetStyling(endIndex - start, LYRIC_STYLE);
+			}
+
+			if(highlightIndex > startIndex)
+			{
+				var end = Math.Min(highlightIndex, endIndex);
+				_scintilla.StartStyling(startIndex);
+				_scintilla.SetStyling(end - startIndex, LYRIC_HIGHLIGHT_STYLE);
+			}
+		}
+
+		private void _scintilla_StyleNeeded(object? sender, StyleNeededEventArgs e)
+		{
+			var start = _scintilla.GetEndStyled();
+			var end = e.Position;
+
+			RestyleArea(_previousHighlightIndex, start, end);
 		}
 
 		private void skiaControl_MouseDown(object sender, MouseEventArgs e)
 		{
-			_view.UpdateCursorPosition(TranslatePointToCanvas(e.Location));
-			skiaControl.Invalidate();
 		}
 
 		private void LyricsEditorControl_KeyPress(object sender, KeyPressEventArgs e)

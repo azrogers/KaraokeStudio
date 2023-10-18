@@ -36,6 +36,7 @@ namespace KaraokeStudio
 		private void OnPositionChanged(double newTime)
 		{
 			timeline.OnPositionChanged(newTime);
+			lyricsEditor.OnPositionChanged(newTime);
 		}
 
 		private void OnProjectConfigApplied(ProjectConfig obj)

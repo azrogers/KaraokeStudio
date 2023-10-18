@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\KaraokeLib\KaraokeLib.csproj" />
+    <ProjectReference Include="..\ScintillaNET\src\ScintillaNET\ScintillaNET.csproj" />
   </ItemGroup>
 
   <ItemGroup>
