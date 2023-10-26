@@ -125,10 +125,16 @@ namespace KaraokeStudio.Timeline
 			}
 		}
 
-		public void SelectEventAtPoint(SKPoint point)
+		public bool SelectEventAtPoint(SKPoint point)
 		{
 			var ev = FindEventAtPoint(point);
 			_selectedEvent = ev;
+			return ev != null;
+		}
+
+		public double GetTimeOfPoint(SKPoint point)
+		{
+			return point.X / PixelsPerSecond;
 		}
 
 		internal void OnProjectChanged(KaraokeProject? project)
@@ -138,12 +144,7 @@ namespace KaraokeStudio.Timeline
 			_textBounds.Clear();
 			_selectedEvent = null;
 
-			var newSize = CalculateSize();
-			if (newSize != _size)
-			{
-				// recreate the canvas if the size has changed
-				RecreateCanvas(newSize);
-			}
+			RecreateCanvas(CalculateSize());
 		}
 
 		/// <summary>

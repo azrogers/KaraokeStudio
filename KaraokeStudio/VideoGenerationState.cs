@@ -53,6 +53,11 @@ namespace KaraokeStudio
 			_renderer.RenderFrame(_plan, position, surface.Canvas);
 		}
 
+		public void InvalidatePlan()
+		{
+			_isPlanStale = true;
+		}
+
 		public void UpdateVideoContext(double duration, ProjectConfig pConfig, (int Width, int Height) size)
 		{
 			var config = FromProjectConfig(pConfig, size);

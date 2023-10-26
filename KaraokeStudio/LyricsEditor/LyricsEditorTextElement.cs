@@ -1,4 +1,5 @@
 ﻿using KaraokeLib.Lyrics;
+using System.Text;
 
 namespace KaraokeStudio.LyricsEditor
 {
@@ -8,11 +9,7 @@ namespace KaraokeStudio.LyricsEditor
 	/// </summary>
 	internal class LyricsEditorTextElement
 	{
-		public const string NEW_LINE = "\n";
-
-		private const char SYLLABLE_SEPERATOR = '-';
-		private const char ESCAPE_CHAR = '\\';
-		private const string NEW_LINE_TWICE = NEW_LINE + NEW_LINE;
+		private static readonly FastHashes.XxHash32 Hash = new FastHashes.XxHash32();
 
 		/// <summary>
 		/// The <see cref="LyricsEventType"/> of the underlying <see cref="LyricsEvent" /> objects.
@@ -33,6 +30,8 @@ namespace KaraokeStudio.LyricsEditor
 		/// The time the last event this element represents ends at.
 		/// </summary>
 		public double EndTime { get; private set; }
+
+		public LyricsEvent[] Events => _events;
 
 		private LyricsEvent[] _events;
 
@@ -56,24 +55,78 @@ namespace KaraokeStudio.LyricsEditor
 		public double GetNormalizedPosition(double position) =>
 			Math.Clamp((position - StartTime) / (EndTime - StartTime), 0, 1);
 
+		public double CharIndexToPosition(int index)
+		{
+			var currentIndex = 0;
+
+			if(index == 0)
+			{
+				return StartTime;
+			}
+
+			foreach(var ev in _events)
+			{
+				var len = 0;
+				if(ev.Type == LyricsEventType.LineBreak)
+				{
+					len = 1;
+				}
+				else if(ev.Type == LyricsEventType.ParagraphBreak)
+				{
+					len = 2;
+				}
+				else if (ev.Type == LyricsEventType.Lyric)
+				{
+					len = ev.RawText?.Length ?? 0;
+				}
+
+				if(index >= currentIndex && index < currentIndex + len)
+				{
+					var normalizedPos = (index - currentIndex) / (double)len;
+					return Util.Lerp(ev.StartTimeSeconds, ev.EndTimeSeconds, normalizedPos);
+				}
+			}
+
+			return EndTime;
+		}
+
 		public override string ToString()
 		{
 			switch (Type)
 			{
 				case LyricsEventType.LineBreak:
-					return NEW_LINE;
+					return "\n";
 				case LyricsEventType.ParagraphBreak:
-					return NEW_LINE_TWICE;
+					return "\n\n";
 				case LyricsEventType.Lyric:
-					return string.Join(SYLLABLE_SEPERATOR, _events.Select(e => EscapeStr(e.RawText ?? "")));
+					return string.Join(LyricsConstants.SYLLABLE_SEPERATOR, _events.Select(e => EscapeStr(e.RawText ?? "")));
 				default:
 					throw new NotImplementedException($"Unknown event type {Type}");
 			}
 		}
 
+		public int ToHash()
+		{
+			var bytes = new List<byte>
+			{
+				(byte)Type
+			};
+
+			if (Type == LyricsEventType.Lyric)
+			{
+				bytes.AddRange(BitConverter.GetBytes(Events.Length));
+				foreach(var ev in Events)
+				{
+					bytes.AddRange(Encoding.UTF8.GetBytes(ev.RawText ?? ""));
+				}
+			}
+
+			return BitConverter.ToInt32(Hash.ComputeHash(bytes.ToArray()));
+		}
+
 		private static string EscapeStr(string str)
 		{
-			return str.Replace(SYLLABLE_SEPERATOR.ToString(), new string(new char[] { ESCAPE_CHAR, SYLLABLE_SEPERATOR }));
+			return str.Replace(LyricsConstants.SYLLABLE_SEPERATOR.ToString(), new string(new char[] { LyricsConstants.ESCAPE_CHAR, LyricsConstants.SYLLABLE_SEPERATOR }));
 		}
 	}
 }

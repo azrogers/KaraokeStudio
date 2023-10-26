@@ -47,6 +47,12 @@ namespace KaraokeStudio.FormHandlers
 			}
 		}
 
+		public void SetEvents(LyricsTrack track, IEnumerable<LyricsEvent> events)
+		{
+			track.ReplaceEvents(events);
+			IsPendingChanges = true;
+		}
+
 		// create new project
 		public void NewProject()
 		{

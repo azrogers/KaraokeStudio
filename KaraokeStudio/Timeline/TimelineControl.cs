@@ -34,6 +34,9 @@ namespace KaraokeStudio.Timeline
 		private float _horizZoomFactor = 1.0f;
 		private float _verticalZoomFactor = 1.0f;
 		private double _currentVideoPosition;
+		private bool _mouseDown = false;
+
+		public event Action<double>? OnPositionChangedEvent;
 
 		public TimelineControl()
 		{
@@ -61,16 +64,24 @@ namespace KaraokeStudio.Timeline
 			skiaControl.Invalidate();
 		}
 
+		internal void OnProjectEventsChanged(KaraokeProject? project)
+		{
+			_timelineCanvas.OnProjectChanged(project);
+			RecalculateScrollBars();
+			skiaControl.Invalidate();
+		}
+
 		internal void OnPositionChanged(double pos)
 		{
 			_currentVideoPosition = pos;
 			skiaControl.Invalidate();
 		}
 
-		private void SelectEventAtPosition(Point pos)
+		private bool SelectEventAtPosition(Point pos)
 		{
-			_timelineCanvas.SelectEventAtPoint(TranslatePointToCanvas(pos));
+			var result = _timelineCanvas.SelectEventAtPoint(TranslatePointToCanvas(pos));
 			skiaControl.Invalidate();
+			return result;
 		}
 
 		/// <summary>
@@ -208,7 +219,25 @@ namespace KaraokeStudio.Timeline
 
 		private void skiaControl_MouseDown(object sender, MouseEventArgs e)
 		{
-			SelectEventAtPosition(e.Location);
+			if(!SelectEventAtPosition(e.Location))
+			{
+			}
+
+			_mouseDown = true;
+		}
+
+		private void skiaControl_MouseUp(object sender, MouseEventArgs e)
+		{
+			_mouseDown = false;
+		}
+
+		private void skiaControl_MouseMove(object sender, MouseEventArgs e)
+		{
+			if (_mouseDown)
+			{
+				var pos = _timelineCanvas.GetTimeOfPoint(TranslatePointToCanvas(e.Location));
+				OnPositionChangedEvent?.Invoke(pos);
+			}
 		}
 		#endregion
 	}

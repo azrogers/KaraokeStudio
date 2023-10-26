@@ -1,10 +1,11 @@
 using KaraokeStudio.FormHandlers;
 using Ookii.Dialogs.WinForms;
 using KaraokeStudio.Timeline;
+using KaraokeLib.Lyrics;
 
 namespace KaraokeStudio
 {
-    public partial class MainForm : Form
+	public partial class MainForm : Form
 	{
 		private ProjectFormHandler _projectHandler;
 		private StyleForm _styleForm;
@@ -23,7 +24,14 @@ namespace KaraokeStudio
 			_projectHandler.OnProjectChanged += OnProjectChanged;
 			_projectHandler.OnPendingStateChanged += OnPendingStateChanged;
 
-			video.OnPositionChanged += OnPositionChanged;
+			lyricsEditor.OnLyricsEventsChanged += OnLyricsEventsChanged;
+
+			video.OnPositionChangedEvent += OnPositionChanged;
+			timeline.OnPositionChangedEvent += (newTime) =>
+			{
+				timeline.OnPositionChanged(newTime);
+				video.OnPositionChanged(newTime);
+			};
 
 			OnProjectChanged(null);
 		}
@@ -43,6 +51,14 @@ namespace KaraokeStudio
 		{
 			_projectHandler.SetConfig(obj);
 			video.UpdateGenerationContext();
+		}
+
+		private void OnLyricsEventsChanged((LyricsTrack Track, IEnumerable<LyricsEvent> NewEvents) obj)
+		{
+			_projectHandler.SetEvents(obj.Track, obj.NewEvents);
+			video.OnProjectEventsChanged(_projectHandler.Project);
+			timeline.OnProjectEventsChanged(_projectHandler.Project);
+			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
 		}
 
 		private void OnPendingStateChanged(bool obj)
@@ -85,17 +101,17 @@ namespace KaraokeStudio
 
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			if(!_projectHandler.AlertPendingChanges())
+			if (!_projectHandler.AlertPendingChanges())
 			{
 				e.Cancel = true;
 			}
 		}
 		#endregion
-	
+
 		private void UpdateTitleAndMenu()
 		{
 			var project = _projectHandler.Project;
-			if(project == null)
+			if (project == null)
 			{
 				Text = "Karaoke Studio";
 			}
@@ -113,7 +129,7 @@ namespace KaraokeStudio
 			exportToolStripMenuItem.Enabled = project != null;
 
 			openRecentToolStripMenuItem.DropDownItems.Clear();
-			foreach(var file in AppSettings.Instance.RecentFiles)
+			foreach (var file in AppSettings.Instance.RecentFiles)
 			{
 				openRecentToolStripMenuItem.DropDownItems.Add(file, null, (o, e) =>
 				{

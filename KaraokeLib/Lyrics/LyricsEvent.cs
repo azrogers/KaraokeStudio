@@ -89,6 +89,15 @@ namespace KaraokeLib.Lyrics
 		{
 			return (_text ?? "") + ((layoutState?.IsHyphenated(this) ?? false) ? "-" : "");
 		}
+
+		/// <summary>
+		/// Sets the start and end times of this event.
+		/// </summary>
+		public void SetTiming(IEventTimecode start, IEventTimecode end)
+		{
+			_startTimecode = start;
+			_endTimecode = end;
+		}
 	}
 
 	public interface IEventTimecode : IComparable<IEventTimecode>

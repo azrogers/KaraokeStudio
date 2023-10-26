@@ -76,6 +76,8 @@
 			this.skiaControl.PaintSurface += new System.EventHandler<SkiaSharp.Views.Desktop.SKPaintGLSurfaceEventArgs>(this.skiaControl_PaintSurface);
 			this.skiaControl.Layout += new System.Windows.Forms.LayoutEventHandler(this.skiaControl_Layout);
 			this.skiaControl.MouseDown += new System.Windows.Forms.MouseEventHandler(this.skiaControl_MouseDown);
+			this.skiaControl.MouseMove += new System.Windows.Forms.MouseEventHandler(this.skiaControl_MouseMove);
+			this.skiaControl.MouseUp += new System.Windows.Forms.MouseEventHandler(this.skiaControl_MouseUp);
 			// 
 			// verticalMinusButton
 			// 

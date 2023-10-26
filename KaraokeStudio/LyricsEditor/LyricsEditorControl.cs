@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using ScintillaNET;
 using KaraokeLib.Util;
 using KaraokeLib.Video.Elements;
+using KaraokeLib.Lyrics;
 
 namespace KaraokeStudio.LyricsEditor
 {
@@ -25,6 +26,8 @@ namespace KaraokeStudio.LyricsEditor
 		private Scintilla _scintilla;
 		private int _previousHighlightIndex = 0;
 
+		public event Action<(LyricsTrack Track, IEnumerable<LyricsEvent> NewEvents)>? OnLyricsEventsChanged;
+
 		public LyricsEditorControl()
 		{
 			InitializeComponent();
@@ -37,7 +40,7 @@ namespace KaraokeStudio.LyricsEditor
 			_scintilla.StyleNeeded += _scintilla_StyleNeeded;
 			_scintilla.Margins[0].Width = 1;
 
-			_scintilla.Styles[Style.Default].BackColor = Color.Black;
+			_scintilla.Styles[Style.Default].BackColor = VisualStyle.NeutralDarkColor;
 			_scintilla.Styles[Style.Default].ForeColor = Color.White;
 
 			_scintilla.CaretForeColor = Color.White;
@@ -45,12 +48,12 @@ namespace KaraokeStudio.LyricsEditor
 			_scintilla.Styles[LYRIC_STYLE].Font = "Open Sans";
 			_scintilla.Styles[LYRIC_STYLE].Size = 30;
 			_scintilla.Styles[LYRIC_STYLE].ForeColor = Color.White;
-			_scintilla.Styles[LYRIC_STYLE].BackColor = Color.Black;
+			_scintilla.Styles[LYRIC_STYLE].BackColor = VisualStyle.NeutralDarkColor;
 
 			_scintilla.Styles[LYRIC_HIGHLIGHT_STYLE].Font = "Open Sans";
 			_scintilla.Styles[LYRIC_HIGHLIGHT_STYLE].Size = 30;
 			_scintilla.Styles[LYRIC_HIGHLIGHT_STYLE].ForeColor = VisualStyle.HighlightColor;
-			_scintilla.Styles[LYRIC_HIGHLIGHT_STYLE].BackColor = Color.Black;
+			_scintilla.Styles[LYRIC_HIGHLIGHT_STYLE].BackColor = VisualStyle.NeutralDarkColor;
 
 			_scintilla.WrapMode = WrapMode.Word;
 
@@ -60,6 +63,11 @@ namespace KaraokeStudio.LyricsEditor
 		internal void OnProjectChanged(KaraokeProject? project)
 		{
 			_project = project;
+			UpdateTextBox();
+		}
+
+		internal void OnProjectEventsChanged(KaraokeProject? project)
+		{
 			UpdateTextBox();
 		}
 
@@ -73,9 +81,20 @@ namespace KaraokeStudio.LyricsEditor
 
 		private void UpdateTextBox()
 		{
+			var offset = _scintilla.CurrentPosition;
+			var elem = CharIndexToElement(offset);
+			var previousPosition = 0.0;
+			if(elem != null && _textResult != null)
+			{
+				previousPosition = elem.CharIndexToPosition(offset - _textResult.EventOffsets[elem.Id]);
+			}
+
 			UpdateTextElements();
 			_textResult = LyricsEditorText.CreateString(_textElements);
 			_scintilla.Text = _textResult.Text;
+
+			_scintilla.AnchorPosition = _scintilla.CurrentPosition = PositionToCharIndex(previousPosition);
+			_scintilla.ScrollCaret();
 		}
 
 		private void UpdateTextElements()
@@ -172,6 +191,20 @@ namespace KaraokeStudio.LyricsEditor
 			{
 
 			}
+		}
+
+		private void updateLyricsButton_ButtonClick(object sender, EventArgs e)
+		{
+			var track = _project?.Tracks.FirstOrDefault(t => t.Type == LyricsTrackType.Lyrics);
+			if(track == null)
+			{
+				return;
+			}
+
+			var newElements = LyricsEditorText.UpdateFromString(_scintilla.Text, _textElements).ToArray();
+			var newEvents = newElements.SelectMany(e => e.Events).OrderBy(e => e.StartTimeSeconds).ToArray();
+
+			OnLyricsEventsChanged?.Invoke((track, newEvents));
 		}
 	}
 }

@@ -89,5 +89,10 @@ namespace KaraokeStudio
 		}
 
 		public static SKColor ToSKColor(this Color c) => new SKColor(c.R, c.G, c.B);
+
+		public static double Lerp(double a, double b, double t)
+		{
+			return (b - a) * t + a;
+		}
 	}
 }
