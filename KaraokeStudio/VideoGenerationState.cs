@@ -1,17 +1,15 @@
-﻿using KaraokeLib;
+﻿using KaraokeLib.Config;
 using KaraokeLib.Lyrics;
 using KaraokeLib.Video;
 using KaraokeLib.Video.Plan;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeStudio
 {
+	/// <summary>
+	/// Contains the contexts required to generate video frames from a given set of events.
+	/// Handles regenerating video data when lyrics change.
+	/// </summary>
 	internal class VideoGenerationState
 	{
 		private VideoContext? _context;
@@ -19,10 +17,15 @@ namespace KaraokeStudio
 		private VideoRenderer? _renderer;
 		private VideoPlan? _plan;
 		private VideoLayoutState? _layoutState;
-		private int _frameRate;
 
 		private bool _isPlanStale = false;
 
+		/// <summary>
+		/// Renders a frame of video.
+		/// </summary>
+		/// <param name="tracks">The tracks to build the video from.</param>
+		/// <param name="position">The position in the video of the frame to render.</param>
+		/// <param name="surface">The Skia surface to render to.</param>
 		public void Render(IEnumerable<LyricsTrack> tracks, VideoTimecode position, SKSurface surface)
 		{
 			if(_context == null)
@@ -53,26 +56,34 @@ namespace KaraokeStudio
 			_renderer.RenderFrame(_plan, position, surface.Canvas);
 		}
 
+		/// <summary>
+		/// Invalidates the cached layout information, forcing it to be recalculated next <see cref="Render"/>.
+		/// </summary>
 		public void InvalidatePlan()
 		{
 			_isPlanStale = true;
 		}
 
-		public void UpdateVideoContext(double duration, ProjectConfig pConfig, (int Width, int Height) size)
+		/// <summary>
+		/// Updates the internal contexts based on the given information.
+		/// </summary>
+		/// <param name="duration">The total length in seconds of the video to generate.</param>
+		/// <param name="pConfig">The project config to use to generate the video.</param>
+		/// <param name="size">The size in (Width, Height) of the output video.</param>
+		public void UpdateVideoContext(double duration, KaraokeConfig pConfig, (int Width, int Height) size)
 		{
 			var config = FromProjectConfig(pConfig, size);
 			_style = new VideoStyle(config);
 
 			_context = new VideoContext(_style, config, new VideoTimecode(duration, pConfig.FrameRate));
 			_isPlanStale = true;
-			_frameRate = pConfig.FrameRate;
 		}
 
-		private KaraokeConfig FromProjectConfig(ProjectConfig config, (int Width, int Height) outputSize)
+		private KaraokeConfig FromProjectConfig(KaraokeConfig config, (int Width, int Height) outputSize)
 		{
 			var scaleFactor = (double)outputSize.Width / (double)config.VideoSize.Width;
 
-			var kConfig = ProjectConfig.Copy(config);
+			var kConfig = config.Copy();
 			kConfig.VideoSize.Width = outputSize.Width;
 			kConfig.VideoSize.Height = outputSize.Height;
 			kConfig.Font.Size = (float)(config.Font.Size * scaleFactor);

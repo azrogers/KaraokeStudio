@@ -1,4 +1,5 @@
-﻿using KaraokeLib.Lyrics;
+﻿using KaraokeLib.Config;
+using KaraokeLib.Lyrics;
 using Ookii.Dialogs.WinForms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
@@ -38,7 +39,7 @@ namespace KaraokeStudio.FormHandlers
 			}
 		}
 
-		public void SetConfig(ProjectConfig config)
+		public void SetConfig(KaraokeConfig config)
 		{
 			if(Project != null)
 			{

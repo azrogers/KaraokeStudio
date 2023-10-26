@@ -1,4 +1,5 @@
-﻿using KaraokeLib.Lyrics;
+﻿using KaraokeLib.Config;
+using KaraokeLib.Lyrics;
 using KaraokeLib.Video.Elements;
 using SkiaSharp;
 using System;
@@ -9,10 +10,10 @@ using System.Threading.Tasks;
 
 namespace KaraokeLib.Video
 {
-	/// <summary>
-	/// Takes in <see cref="VideoParagraph"/>s contained in <see cref="VideoSection"/>s and creates <see cref="IVideoElement"/>s to display.
-	/// </summary>
-	public class VideoElementGenerator
+    /// <summary>
+    /// Takes in <see cref="VideoParagraph"/>s contained in <see cref="VideoSection"/>s and creates <see cref="IVideoElement"/>s to display.
+    /// </summary>
+    public class VideoElementGenerator
 	{
 		public static IVideoElement[] Generate(VideoContext context, VideoLayoutState layoutState, VideoSection[] sections)
 		{

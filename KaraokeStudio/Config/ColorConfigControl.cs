@@ -1,14 +1,5 @@
 ﻿using Cyotek.Windows.Forms;
 using KaraokeLib.Util;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace KaraokeStudio.Config
 {
@@ -34,7 +25,7 @@ namespace KaraokeStudio.Config
 		private void colorPickButton_Click(object sender, EventArgs e)
 		{
 			var result = _dialog.ShowDialog();
-			if(result == DialogResult.OK)
+			if (result == DialogResult.OK)
 			{
 				// TODO: support alpha
 				_chosenColor = new KColor(_dialog.Color.R, _dialog.Color.G, _dialog.Color.B);
@@ -46,7 +37,7 @@ namespace KaraokeStudio.Config
 		internal override void UpdateValue(object value)
 		{
 			var val = Field?.GetValue<KColor>(value);
-			if(val != null)
+			if (val != null)
 			{
 				_chosenColor = val ?? new KColor(0, 0, 0);
 				colorDisplayPanel.Invalidate();

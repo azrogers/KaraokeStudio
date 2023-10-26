@@ -1,17 +1,6 @@
-﻿using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using KaraokeLib.Lyrics;
 using ScintillaNET;
-using KaraokeLib.Util;
-using KaraokeLib.Video.Elements;
-using KaraokeLib.Lyrics;
+using System.Data;
 
 namespace KaraokeStudio.LyricsEditor
 {
@@ -84,7 +73,7 @@ namespace KaraokeStudio.LyricsEditor
 			var offset = _scintilla.CurrentPosition;
 			var elem = CharIndexToElement(offset);
 			var previousPosition = 0.0;
-			if(elem != null && _textResult != null)
+			if (elem != null && _textResult != null)
 			{
 				previousPosition = elem.CharIndexToPosition(offset - _textResult.EventOffsets[elem.Id]);
 			}
@@ -111,14 +100,14 @@ namespace KaraokeStudio.LyricsEditor
 
 		private LyricsEditorTextElement? CharIndexToElement(int index)
 		{
-			if(_textElements.Length == 0 || _textResult == null)
+			if (_textElements.Length == 0 || _textResult == null)
 			{
 				return null;
 			}
 
 			var lastElemId = -1;
 
-			foreach(var (elemId, offset) in _textResult.EventOffsets)
+			foreach (var (elemId, offset) in _textResult.EventOffsets)
 			{
 				if (offset > index)
 				{
@@ -133,18 +122,18 @@ namespace KaraokeStudio.LyricsEditor
 
 		private int PositionToCharIndex(double position)
 		{
-			if(_textResult == null)
+			if (_textResult == null)
 			{
 				return 0;
 			}
 
-			foreach(var elem in _textElements.OrderBy(e => e.StartTime))
+			foreach (var elem in _textElements.OrderBy(e => e.StartTime))
 			{
-				if(position < elem.StartTime)
+				if (position < elem.StartTime)
 				{
 					return _textResult.EventOffsets[elem.Id];
 				}
-				else if(position >= elem.StartTime && position < elem.EndTime)
+				else if (position >= elem.StartTime && position < elem.EndTime)
 				{
 					var start = _textResult.EventOffsets[elem.Id];
 					var end = start + elem.ToString().Length;
@@ -158,14 +147,14 @@ namespace KaraokeStudio.LyricsEditor
 
 		private void RestyleArea(int highlightIndex, int startIndex, int endIndex)
 		{
-			if(highlightIndex < endIndex)
+			if (highlightIndex < endIndex)
 			{
 				var start = Math.Max(highlightIndex, startIndex);
 				_scintilla.StartStyling(start);
 				_scintilla.SetStyling(endIndex - start, LYRIC_STYLE);
 			}
 
-			if(highlightIndex > startIndex)
+			if (highlightIndex > startIndex)
 			{
 				var end = Math.Min(highlightIndex, endIndex);
 				_scintilla.StartStyling(startIndex);
@@ -196,7 +185,7 @@ namespace KaraokeStudio.LyricsEditor
 		private void updateLyricsButton_ButtonClick(object sender, EventArgs e)
 		{
 			var track = _project?.Tracks.FirstOrDefault(t => t.Type == LyricsTrackType.Lyrics);
-			if(track == null)
+			if (track == null)
 			{
 				return;
 			}

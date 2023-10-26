@@ -1,4 +1,5 @@
-﻿using KaraokeLib.Util;
+﻿using KaraokeLib.Config;
+using KaraokeLib.Util;
 using Melanchall.DryWetMidi.Tools;
 using SkiaSharp;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace KaraokeLib.Video
 {
-	public class VideoStyle
+    public class VideoStyle
 	{
 		private SKFont _font;
 		private KaraokeConfig _config;

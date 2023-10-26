@@ -2,17 +2,18 @@
 using FFMediaToolkit.Encoding;
 using FFMediaToolkit.Graphics;
 using KaraokeLib.Audio;
+using KaraokeLib.Config;
 using KaraokeLib.Lyrics;
 using KaraokeLib.Video.Plan;
 using SkiaSharp;
 
 namespace KaraokeLib.Video
 {
-	/// <summary>
-	/// Responsible for rendering a lyrics file into a video.
-	/// This is the entry-level class for using KaraokeLib.
-	/// </summary>
-	public class VideoGenerator
+    /// <summary>
+    /// Responsible for rendering a lyrics file into a video.
+    /// This is the entry-level class for using KaraokeLib.
+    /// </summary>
+    public class VideoGenerator
 	{
 		private LyricsTrack[] _tracks;
 		private VideoSection[] _sections;
@@ -26,13 +27,14 @@ namespace KaraokeLib.Video
 		/// </summary>
 		/// <param name="lyricsFile">The lyrics file that the video will be generated from.</param>
 		/// <param name="audioFilePath">The path of the audio file that will be paired with the generated video.</param>
-		public VideoGenerator(ILyricsFile lyricsFile, string audioFilePath)
+		/// <param name="videoLength">The length of the generated video in seconds.</param>
+		public VideoGenerator(ILyricsFile lyricsFile, string audioFilePath, double videoLength = -1)
 		{
 			FFmpegLoader.FFmpegPath = Path.Join(Environment.CurrentDirectory, "ffmpeg", "x86_64");
 			var audioFile = new AudioFile(audioFilePath);
 
 			_tracks = lyricsFile.GetTracks().ToArray();
-			_endTimecode = new VideoTimecode(audioFile.GetLengthSeconds(), KaraokeConfig.Default.FrameRate);
+			_endTimecode = new VideoTimecode(videoLength < 0 ? audioFile.GetLengthSeconds() : videoLength, KaraokeConfig.Default.FrameRate);
 			_context = new VideoContext(new VideoStyle(KaraokeConfig.Default), KaraokeConfig.Default, _endTimecode);
 			_layoutState = new VideoLayoutState();
 			_sections = _tracks.Any() ? VideoSection.SectionsFromTrack(_context, _tracks[0], _layoutState) : new VideoSection[0];

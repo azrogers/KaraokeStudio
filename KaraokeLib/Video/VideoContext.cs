@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using KaraokeLib.Config;
 using KaraokeLib.Lyrics;
 using SkiaSharp;
 
 namespace KaraokeLib.Video
 {
-	public class VideoContext
+    public class VideoContext
 	{
 		public VideoStyle Style { get; private set; }
 

@@ -1,4 +1,4 @@
-﻿using KaraokeLib;
+﻿using KaraokeLib.Config;
 using KaraokeLib.Lyrics;
 using NAudio.Vorbis;
 using NAudio.Wave;
@@ -6,31 +6,6 @@ using Newtonsoft.Json;
 
 namespace KaraokeStudio
 {
-	internal class ProjectConfig : KaraokeConfig
-	{
-		public static ProjectConfig Copy(ProjectConfig otherConfig)
-		{
-			return JsonConvert.DeserializeObject<ProjectConfig>(JsonConvert.SerializeObject(otherConfig)) ?? new ProjectConfig();
-		}
-
-		public static ProjectConfig Load(string filename)
-		{
-			return LoadString(File.ReadAllText(filename));
-		}
-
-		public static ProjectConfig LoadString(string str)
-		{
-			var newConfig = new ProjectConfig();
-			JsonConvert.PopulateObject(str, newConfig);
-			return newConfig;
-		}
-
-		public void Save(string filename)
-		{
-			File.WriteAllText(filename, JsonConvert.SerializeObject(this));
-		}
-	}
-
 	internal class KaraokeProject
 	{
 		public bool IsValid => _waveStream != null;
@@ -41,7 +16,7 @@ namespace KaraokeStudio
 
 		public TimeSpan Length { get; private set; }
 
-		public ProjectConfig Config { get; set; }
+		public KaraokeConfig Config { get; set; }
 
 		public IEnumerable<LyricsTrack> Tracks => _file.GetTracks();
 
@@ -57,7 +32,7 @@ namespace KaraokeStudio
 			}
 
 			_file = lyricsFile;
-			Config = new ProjectConfig();
+			Config = new KaraokeConfig();
 		}
 
 		public void Save(string outFile)
@@ -152,7 +127,7 @@ namespace KaraokeStudio
 				return null;
 			}
 
-			project.Config = ProjectConfig.LoadString(config);
+			project.Config = new KaraokeConfig(config);
 			return project.IsValid ? project : null;
 		}
 	}

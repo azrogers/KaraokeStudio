@@ -1,4 +1,5 @@
-﻿using KaraokeLib.Lyrics;
+﻿using KaraokeLib.Config;
+using KaraokeLib.Lyrics;
 using KaraokeLib.Video.Transitions;
 using SkiaSharp;
 using System;
@@ -9,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace KaraokeLib.Video.Elements
 {
-	/// <summary>
-	/// Represents a bit of timed text on the screen, usually lyrics.
-	/// Can represent one or more LyricsEvents.
-	/// </summary>
-	public class VideoTextElement : IVideoElement
+    /// <summary>
+    /// Represents a bit of timed text on the screen, usually lyrics.
+    /// Can represent one or more LyricsEvents.
+    /// </summary>
+    public class VideoTextElement : IVideoElement
 	{
 		/// <inheritdoc />
 		public VideoElementType Type { get; private set; }

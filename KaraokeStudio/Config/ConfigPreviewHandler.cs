@@ -1,10 +1,6 @@
-﻿using KaraokeLib.Lyrics;
+﻿using KaraokeLib.Config;
+using KaraokeLib.Lyrics;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeStudio.Config
 {
@@ -39,7 +35,7 @@ mas-sa quis sem. Cur-a-bit-ur cur-sus or-ci vit-ae con-seq-uat hen-dre-rit. Sus-
 			_generationState.Render(_tracks, new KaraokeLib.Video.VideoTimecode(_events.Last().EndTimeSeconds / 2.0, _frameRate), surface);
 		}
 
-		public void UpdatePreview(ProjectConfig config, (int Width, int Height) size)
+		public void UpdatePreview(KaraokeConfig config, (int Width, int Height) size)
 		{
 			_frameRate = config.FrameRate;
 			_generationState.UpdateVideoContext(_events.Last().EndTimeSeconds, config, size);
@@ -50,11 +46,11 @@ mas-sa quis sem. Cur-a-bit-ur cur-sus or-ci vit-ae con-seq-uat hen-dre-rit. Sus-
 			var words = text.Split(' ');
 			var id = 0;
 			var time = 0.0f;
-			foreach(var word in words)
+			foreach (var word in words)
 			{
 				var parts = word.Split('-');
 				var firstId = id;
-				foreach(var part in parts)
+				foreach (var part in parts)
 				{
 					var ev = new LyricsEvent(
 						LyricsEventType.Lyric,

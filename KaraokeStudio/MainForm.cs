@@ -2,6 +2,7 @@ using KaraokeStudio.FormHandlers;
 using Ookii.Dialogs.WinForms;
 using KaraokeStudio.Timeline;
 using KaraokeLib.Lyrics;
+using KaraokeLib.Config;
 
 namespace KaraokeStudio
 {
@@ -47,7 +48,7 @@ namespace KaraokeStudio
 			lyricsEditor.OnPositionChanged(newTime);
 		}
 
-		private void OnProjectConfigApplied(ProjectConfig obj)
+		private void OnProjectConfigApplied(KaraokeConfig obj)
 		{
 			_projectHandler.SetConfig(obj);
 			video.UpdateGenerationContext();

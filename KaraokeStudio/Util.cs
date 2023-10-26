@@ -9,6 +9,10 @@ namespace KaraokeStudio
 {
 	internal static class Util
 	{
+		/// <summary>
+		/// Formats the given timespan for display.
+		/// </summary>
+		/// <param name="fractional">If true, milliseconds will be included.</param>
 		public static string FormatTimespan(TimeSpan timeSpan, bool fractional = false)
 		{
 			if (timeSpan.TotalHours >= 1)
@@ -19,27 +23,12 @@ namespace KaraokeStudio
 			return fractional ? $"{timeSpan:mm\\:ss\\.fff}" : $"{timeSpan:mm\\:ss}";
 		}
 
-		public static bool IsNumericType(Type t)
-		{
-			switch (Type.GetTypeCode(t))
-			{
-				case TypeCode.Byte:
-				case TypeCode.SByte:
-				case TypeCode.UInt16:
-				case TypeCode.UInt32:
-				case TypeCode.UInt64:
-				case TypeCode.Int16:
-				case TypeCode.Int32:
-				case TypeCode.Int64:
-				case TypeCode.Decimal:
-				case TypeCode.Double:
-				case TypeCode.Single:
-					return true;
-				default:
-					return false;
-			}
-		}
-
+		/// <summary>
+		/// Turns an UpperCamelCase string into a friendlier string for display.
+		/// </summary>
+		/// <example>
+		/// "UpperCamelCase" => "Upper Camel Case"
+		/// </example>
 		public static string HumanizeCamelCase(string s)
 		{
 			var builder = new StringBuilder();
@@ -65,13 +54,20 @@ namespace KaraokeStudio
 			return builder.ToString();
 		}
 
+		/// <summary>
+		/// Resizes the given control within its container so that it's the largest size possible with the given aspect ratio.
+		/// </summary>
+		/// <param name="container">The control's container.</param>
+		/// <param name="control">The control to resize and move.</param>
+		/// <param name="size">The target size of the control.</param>
+		/// <param name="verticalCenter">If ture, the control will be vertically centered within the container.</param>
 		public static void ResizeContainerAspectRatio(Control container, Control control, (int Width, int Height) size, bool verticalCenter = true)
 		{
 			// ensure panels are the correct size
 			var widthHeightRatio = (double)size.Width / size.Height;
 			var heightWidthRatio = (double)size.Height / size.Width;
 
-			var targetSize = new Size(0, 0);
+			Size targetSize;
 			if (((double)container.Size.Width / container.Size.Height) > widthHeightRatio)
 			{
 				targetSize = new Size((int)(container.Size.Height * widthHeightRatio), container.Size.Height);
@@ -88,8 +84,17 @@ namespace KaraokeStudio
 				verticalCenter ? container.Size.Height / 2 - targetSize.Height / 2 : 0);
 		}
 
+		/// <summary>
+		/// Converts a <see cref="Color"/> to a Skia color.
+		/// </summary>
 		public static SKColor ToSKColor(this Color c) => new SKColor(c.R, c.G, c.B);
 
+		/// <summary>
+		/// Performs a linear interpretation between two values.
+		/// </summary>
+		/// <param name="a">The start value.</param>
+		/// <param name="b">The end value.</param>
+		/// <param name="t">The normalized position between start and end.</param>
 		public static double Lerp(double a, double b, double t)
 		{
 			return (b - a) * t + a;

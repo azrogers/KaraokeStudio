@@ -1,41 +1,23 @@
-﻿using KaraokeStudio.Config;
+﻿using KaraokeLib.Config;
+using KaraokeStudio.Config;
 using Ookii.Dialogs.WinForms;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace KaraokeStudio
 {
 	public partial class StyleForm : Form
 	{
-		private ProjectConfig _temporaryConfig = new ProjectConfig();
 		private KaraokeProject? _currentProject = null;
-		private ConfigFields _fields;
-		private List<BaseConfigControl> _controls = new List<BaseConfigControl>();
 		private ConfigPreviewHandler _previewHandler = new ConfigPreviewHandler();
 
 		private bool _isDirty = false;
 
-		internal event Action<ProjectConfig>? OnProjectConfigApplied;
+		internal event Action<KaraokeConfig>? OnProjectConfigApplied;
 
 		public StyleForm()
 		{
 			InitializeComponent();
 
-			_fields = new ConfigFields(typeof(ProjectConfig));
-			CreateFields(_fields);
-
-			// disable horizontal scroll on configContainer
-			configContainer.HorizontalScroll.Maximum = 0;
-			configContainer.AutoScroll = false;
-			configContainer.VerticalScroll.Visible = true;
-			configContainer.AutoScroll = true;
+			configEditor.Config = new KaraokeConfig();
 
 			_isDirty = false;
 			UpdateDirtyUI();
@@ -52,80 +34,19 @@ namespace KaraokeStudio
 				return;
 			}
 
-			if(project == null)
+			if (project == null)
 			{
-				_temporaryConfig = new ProjectConfig();
+				configEditor.Config = new KaraokeConfig();
 			}
 			else
 			{
-				_temporaryConfig = ProjectConfig.Copy(project.Config);
+				configEditor.Config = project.Config.Copy();
 			}
 
-			UpdateControls();
 			UpdateDirtyFlag(false);
 			UpdatePreview();
 		}
 
-		private void CreateFields(ConfigFields fields)
-		{
-			_controls.Clear();
-
-			configContainer.ColumnCount = 2;
-
-			foreach(var field in fields.Fields)
-			{
-				switch(field.ControlType)
-				{
-					case ConfigFields.ControlType.Size:
-						AddField(field.Name, new SizeConfigControl() { Field = field });
-						break;
-					case ConfigFields.ControlType.Numeric:
-						AddField(field.Name, new NumericConfigControl() { Field = field });
-						break;
-					case ConfigFields.ControlType.Range:
-						AddField(field.Name, new RangeConfigControl() { Field = field });
-						break;
-					case ConfigFields.ControlType.Color:
-						AddField(field.Name, new ColorConfigControl() { Field = field });
-						break;
-					case ConfigFields.ControlType.Font:
-						AddField(field.Name, new FontConfigControl() { Field = field });
-						break;
-					case ConfigFields.ControlType.Enum:
-						AddField(field.Name, new EnumConfigControl() { Field = field });
-						break;
-				}
-			}
-
-			configContainer.PerformLayout();
-		}
-
-		private void AddField(string name, BaseConfigControl control)
-		{
-			control.Dock = DockStyle.Fill;
-			control.AutoSize = true;
-			control.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-
-			control.OnValueChanged += (_) =>
-			{
-				UpdateDirtyFlag(true);
-				control.SetValue(_temporaryConfig);
-				UpdatePreview();
-			};
-
-			var label = new Label();
-			label.Text = Util.HumanizeCamelCase(name);
-			label.Size = new Size(100, 15);
-			label.AutoSize = true;
-
-			configContainer.RowCount = _controls.Count + 1;
-			configContainer.RowStyles.Add(new RowStyle(SizeType.AutoSize, 15.0f));
-			configContainer.Controls.Add(label, 0, _controls.Count);
-			configContainer.Controls.Add(control, 1, _controls.Count);
-
-			control.UpdateValue(_temporaryConfig);
-			_controls.Add(control);
-		}
 
 		private void UpdateDirtyFlag(bool isDirty)
 		{
@@ -139,25 +60,24 @@ namespace KaraokeStudio
 			revertButton.Enabled = _isDirty;
 		}
 
-		private void UpdateControls()
+		private void UpdatePanelSize(KaraokeConfig config)
 		{
-			foreach (var c in _controls)
-			{
-				c.UpdateValue(_temporaryConfig);
-			}
-		}
-
-		private void UpdatePanelSize()
-		{
-			var size = (_temporaryConfig.VideoSize.Width, _temporaryConfig.VideoSize.Height);
+			var size = (config.VideoSize.Width, config.VideoSize.Height);
 			Util.ResizeContainerAspectRatio(videoPanel, previewSkiaControl, size, false);
 		}
 
 		private void UpdatePreview()
 		{
-			UpdatePanelSize();
-			_previewHandler.UpdatePreview(_temporaryConfig, (previewSkiaControl.Width, previewSkiaControl.Height));
+			var config = configEditor.GetConfig<KaraokeConfig>();
+			UpdatePanelSize(config);
+			_previewHandler.UpdatePreview(config, (previewSkiaControl.Width, previewSkiaControl.Height));
 			previewSkiaControl.Invalidate();
+		}
+
+		private void configEditor_OnValueChanged()
+		{
+			UpdateDirtyFlag(true);
+			UpdatePreview();
 		}
 
 		private void cancelButton_Click(object sender, EventArgs e)
@@ -167,16 +87,15 @@ namespace KaraokeStudio
 
 		private void revertButton_Click(object sender, EventArgs e)
 		{
-			if(_currentProject == null)
+			if (_currentProject == null)
 			{
-				_temporaryConfig = new ProjectConfig();
+				configEditor.Config = new KaraokeConfig();
 			}
 			else
 			{
-				_temporaryConfig = ProjectConfig.Copy(_currentProject.Config);
+				configEditor.Config = _currentProject.Config.Copy();
 			}
 
-			UpdateControls();
 			UpdatePreview();
 			UpdateDirtyFlag(false);
 		}
@@ -189,13 +108,13 @@ namespace KaraokeStudio
 
 		private void applyButton_Click(object sender, EventArgs e)
 		{
-			if(_currentProject == null)
+			if (_currentProject == null)
 			{
 				UpdateDirtyFlag(false);
 				return;
 			}
 
-			OnProjectConfigApplied?.Invoke(_temporaryConfig);
+			OnProjectConfigApplied?.Invoke(_currentProject.Config);
 			UpdateDirtyFlag(false);
 		}
 
@@ -216,25 +135,26 @@ namespace KaraokeStudio
 			dialog.Filter = "Style config|*.json|All files|*.*";
 			dialog.Multiselect = false;
 			dialog.CheckFileExists = true;
-			if(dialog.ShowDialog() == DialogResult.OK)
+			if (dialog.ShowDialog() == DialogResult.OK)
 			{
-				_temporaryConfig = ProjectConfig.Load(dialog.FileName);
+				configEditor.Config = new KaraokeConfig(File.ReadAllText(dialog.FileName));
 				UpdateDirtyFlag(true);
-				UpdateControls();
 				UpdatePreview();
 			}
 		}
 
 		private void exportButton_Click(object sender, EventArgs e)
 		{
+			var config = configEditor.GetConfig<KaraokeConfig>();
+
 			var dialog = new VistaSaveFileDialog();
 			dialog.Title = "Export style config";
 			dialog.Filter = "Style config|*.json|All files|*.*";
 			dialog.DefaultExt = ".json";
 			dialog.AddExtension = true;
-			if(dialog.ShowDialog() == DialogResult.OK)
+			if (dialog.ShowDialog() == DialogResult.OK)
 			{
-				_temporaryConfig.Save(dialog.FileName);
+				config.Save(dialog.FileName);
 			}
 		}
 	}

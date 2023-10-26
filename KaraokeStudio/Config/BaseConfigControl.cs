@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using KaraokeLib.Config;
 
 namespace KaraokeStudio.Config
 {
 	public class BaseConfigControl : UserControl
 	{
-		internal ConfigFields.Field? Field;
+		internal EditableConfigField? Field;
 		public event Action<Control>? OnValueChanged;
 
 		protected void SendValueChanged()
