@@ -11,8 +11,8 @@ namespace KaraokeStudio.Timeline
 	/// </summary>
 	internal class TimelineCanvas
 	{
-		public float TrackHeight => 50.0f;
-		public float PixelsPerSecond => 50.0f;
+		private const float PIXELS_PER_SECOND = 50.0f;
+		internal const float TRACK_HEIGHT = 50.0f;
 
 		private SKPictureRecorder _pictureRecorder;
 		private SKPicture? _picture = null;
@@ -20,6 +20,7 @@ namespace KaraokeStudio.Timeline
 		private SKSize _size = new SKSize(1, 1);
 
 		private SKColor _backgroundColor;
+		private SKPaint _shadowPaint;
 		private SKPaint _lightPaint;
 		private SKPaint _textPaint;
 		private SKPaint _borderPaint;
@@ -41,11 +42,23 @@ namespace KaraokeStudio.Timeline
 
 		public SKSize Size => _size;
 
+		/// <summary>
+		/// The LyricsEvent currently selected, if any.
+		/// </summary>
+		public LyricsEvent? SelectedEvent => _selectedEvent == null ? null : _events[_selectedEvent.Value.EventId];
+
+		/// <summary>
+		/// Called when the currently selected event has changed.
+		/// </summary>
+		public event Action<LyricsEvent?>? OnEventSelectionChanged;
+
 		public TimelineCanvas()
 		{
 			_pictureRecorder = new SKPictureRecorder();
 
 			_backgroundColor = VisualStyle.NeutralDarkColor.ToSKColor();
+
+			_shadowPaint = new SKPaint() { Color = new SKColor(0, 0, 0, 127) };
 			_borderPaint = new SKPaint() { Color = VisualStyle.BorderColor.ToSKColor() };
 			_lightPaint = new SKPaint() { Color = VisualStyle.NeutralLightColor.ToSKColor() };
 			_textPaint = new SKPaint()
@@ -125,16 +138,38 @@ namespace KaraokeStudio.Timeline
 			}
 		}
 
+		/// <summary>
+		/// Selects the LyricsEvent at the given point in canvas space, if present.
+		/// </summary>
+		/// <returns>True if an event was selected, false if not.</returns>
 		public bool SelectEventAtPoint(SKPoint point)
 		{
 			var ev = FindEventAtPoint(point);
 			_selectedEvent = ev;
+			OnEventSelectionChanged?.Invoke(_selectedEvent == null ? null : _events[_selectedEvent.Value.EventId]);
 			return ev != null;
 		}
 
+		public void Deselect()
+		{
+			_selectedEvent = null;
+			OnEventSelectionChanged?.Invoke(null);
+		}
+
+		/// <summary>
+		/// Returns the position in seconds of the given point in canvas space.
+		/// </summary>
 		public double GetTimeOfPoint(SKPoint point)
 		{
-			return point.X / PixelsPerSecond;
+			return Math.Clamp(point.X / PIXELS_PER_SECOND, 0, _project?.Length.TotalSeconds ?? 0);
+		}
+
+		/// <summary>
+		/// Returns the X position in canvas space of the given time in seconds.
+		/// </summary>
+		public double GetXPosOfTime(double time)
+		{
+			return time * PIXELS_PER_SECOND;
 		}
 
 		internal void OnProjectChanged(KaraokeProject? project)
@@ -147,6 +182,33 @@ namespace KaraokeStudio.Timeline
 			RecreateCanvas(CalculateSize());
 		}
 
+		internal void OnProjectEventsChanged(KaraokeProject? project)
+		{
+			var oldSelectedEvent = _selectedEvent;
+			OnProjectChanged(project);
+			if(oldSelectedEvent != null && _events.ContainsKey(oldSelectedEvent.Value.EventId))
+			{
+				_selectedEvent = FindItemForEventId(oldSelectedEvent.Value.EventId);
+				OnEventSelectionChanged?.Invoke(_selectedEvent == null ? null : _events[_selectedEvent.Value.EventId]);
+			}
+		}
+
+		private ClickableItem? FindItemForEventId(int eventId)
+		{
+			for(var i = 0; i < _clickableItems.Length; i++)
+			{
+				for(var j = 0; j < _clickableItems[i].Length; j++)
+				{
+					if (_clickableItems[i][j].EventId == eventId)
+					{
+						return _clickableItems[i][j];
+					}
+				}
+			}
+
+			return null;
+		}
+
 		/// <summary>
 		/// Returns an event on the timeline at the given (X, Y) position, if any.
 		/// </summary>
@@ -157,7 +219,7 @@ namespace KaraokeStudio.Timeline
 				return null;
 			}
 
-			var track = (int)Math.Floor(point.Y / TrackHeight);
+			var track = (int)Math.Floor(point.Y / TRACK_HEIGHT);
 			if (track < 0 || track >= _clickableItems.GetLength(0))
 			{
 				return null;
@@ -181,8 +243,8 @@ namespace KaraokeStudio.Timeline
 				return new SKSize(1, 1);
 			}
 
-			var width = (float)(PixelsPerSecond * _project.Length.TotalSeconds);
-			var height = _project.Tracks.Count() * TrackHeight;
+			var width = (float)(PIXELS_PER_SECOND * _project.Length.TotalSeconds);
+			var height = _project.Tracks.Count() * TRACK_HEIGHT;
 
 			return new SKSize(width, height);
 		}
@@ -235,10 +297,10 @@ namespace KaraokeStudio.Timeline
 					_events[ev.Id] = ev;
 
 					var eventRect = new SKRect(
-						PixelsPerSecond * (float)ev.StartTimeSeconds,
+						PIXELS_PER_SECOND * (float)ev.StartTimeSeconds,
 						trackYPos,
-						PixelsPerSecond * (float)ev.EndTimeSeconds,
-						trackYPos + TrackHeight - 1.0f
+						PIXELS_PER_SECOND * (float)ev.EndTimeSeconds,
+						trackYPos + TRACK_HEIGHT - 1.0f
 					);
 
 					if (!_eventTypePaints.TryGetValue(ev.Type, out var paint))
@@ -247,6 +309,7 @@ namespace KaraokeStudio.Timeline
 					}
 
 					canvas.DrawRect(eventRect, paint);
+					canvas.DrawRect(new SKRect(eventRect.Left, eventRect.Top + eventRect.Height - 1, eventRect.Right, eventRect.Bottom), _shadowPaint);
 					canvas.DrawRect(eventRect, _strokePaint);
 
 					items[j] = new ClickableItem()
@@ -257,9 +320,9 @@ namespace KaraokeStudio.Timeline
 				}
 
 				// draw border
-				var borderY = trackYPos + TrackHeight;
+				var borderY = trackYPos + TRACK_HEIGHT;
 				canvas.DrawLine(new SKPoint(0, borderY), new SKPoint(_size.Width, borderY), _borderPaint);
-				trackYPos += TrackHeight;
+				trackYPos += TRACK_HEIGHT;
 			}
 
 			_picture = _pictureRecorder.EndRecording();

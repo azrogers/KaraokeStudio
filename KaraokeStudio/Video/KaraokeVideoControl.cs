@@ -1,19 +1,10 @@
-﻿using KaraokeLib.Video;
-using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using FontAwesome.Sharp;
+﻿using FontAwesome.Sharp;
+using KaraokeLib.Video;
 using NAudio.Wave;
+using SkiaSharp;
+using System.Diagnostics;
 
-namespace KaraokeStudio
+namespace KaraokeStudio.Video
 {
 	internal partial class KaraokeVideoControl : UserControl
 	{
@@ -27,10 +18,11 @@ namespace KaraokeStudio
 		private double _currentVideoPosition;
 		private TimeSpan? _lastLoadedTimespan = null;
 		private KaraokeProject? _lastLoadedProject = null;
-		private VideoGenerationState _generationState = new VideoGenerationState();
 		private (int, int)? _lastUpdateSize;
 
 		private Stopwatch _stopwatch = new Stopwatch();
+
+		private IVideoGenerator _videoGenerator = new KaraokeProjectVideoGenerator();
 
 		public event Action<bool>? OnPlayStateChanged;
 		public event Action<double>? OnSeek;
@@ -74,6 +66,12 @@ namespace KaraokeStudio
 			_timer = new System.Windows.Forms.Timer();
 			_timer.Enabled = false;
 			_timer.Tick += OnTimerTick;
+		}
+
+		public void SetVideoGenerator(IVideoGenerator generator)
+		{
+			_videoGenerator = generator;
+			videoSkiaControl.Invalidate();
 		}
 
 		public void Rewind()
@@ -171,8 +169,8 @@ namespace KaraokeStudio
 				return;
 			}
 
-			_generationState.Render(
-				_lastLoadedProject.Tracks,
+			_videoGenerator.Render(
+				_lastLoadedProject,
 				new VideoTimecode(_currentVideoPosition, _lastLoadedProject.Config.FrameRate),
 				surface);
 		}
@@ -237,7 +235,7 @@ namespace KaraokeStudio
 
 		public void OnProjectEventsChanged(KaraokeProject? project)
 		{
-			_generationState.InvalidatePlan();
+			_videoGenerator.Invalidate();
 			videoSkiaControl.Invalidate();
 		}
 
@@ -282,10 +280,7 @@ namespace KaraokeStudio
 				return;
 			}
 
-			_generationState.UpdateVideoContext(
-				_lastLoadedProject.Length.TotalSeconds,
-				_lastLoadedProject.Config,
-				(videoSkiaControl.Size.Width, videoSkiaControl.Size.Height));
+			_videoGenerator.UpdateContext(_lastLoadedProject, videoSkiaControl.Size);
 		}
 
 		private void UpdatePanelSize()

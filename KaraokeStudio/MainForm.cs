@@ -10,6 +10,10 @@ namespace KaraokeStudio
 	{
 		private ProjectFormHandler _projectHandler;
 		private StyleForm _styleForm;
+		private SyncForm _syncForm;
+
+		private LyricsEvent? _selectedEvent = null;
+		private LyricsTrack? _selectedTrack = null;
 
 		public MainForm()
 		{
@@ -22,8 +26,12 @@ namespace KaraokeStudio
 			_styleForm = new StyleForm();
 			_styleForm.OnProjectConfigApplied += OnProjectConfigApplied;
 
+			_syncForm = new SyncForm();
+			_syncForm.OnSyncDataApplied += OnSyncDataApplied;
+
 			_projectHandler.OnProjectChanged += OnProjectChanged;
 			_projectHandler.OnPendingStateChanged += OnPendingStateChanged;
+			_projectHandler.OnProjectWillChangeCallback = OnProjectWillChange;
 
 			lyricsEditor.OnLyricsEventsChanged += OnLyricsEventsChanged;
 
@@ -34,12 +42,25 @@ namespace KaraokeStudio
 				video.OnPositionChanged(newTime);
 			};
 
+			timeline.OnEventSelectionChanged += OnEventSelectionChanged;
+			timeline.OnTrackSelectionChanged += OnTrackSelectionChanged;
+
 			OnProjectChanged(null);
+		}
+
+		private void OnSyncDataApplied(LyricsTrack obj)
+		{
+			_projectHandler.SetEvents(obj, obj.Events);
 		}
 
 		public void LoadProject(string path)
 		{
 			_projectHandler.OpenProject(path);
+		}
+
+		private bool OnProjectWillChange()
+		{
+			return _syncForm.OnProjectWillChange();
 		}
 
 		private void OnPositionChanged(double newTime)
@@ -60,6 +81,7 @@ namespace KaraokeStudio
 			video.OnProjectEventsChanged(_projectHandler.Project);
 			timeline.OnProjectEventsChanged(_projectHandler.Project);
 			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
+			_syncForm.OnProjectEventsChanged(_projectHandler.Project);
 		}
 
 		private void OnPendingStateChanged(bool obj)
@@ -75,6 +97,19 @@ namespace KaraokeStudio
 			_styleForm.OnProjectChanged(project);
 			timeline.OnProjectChanged(project);
 			lyricsEditor.OnProjectChanged(project);
+			_syncForm.Hide();
+		}
+
+		private void OnTrackSelectionChanged(LyricsTrack? obj)
+		{
+			_selectedTrack = obj;
+			UpdateTitleAndMenu();
+		}
+
+		private void OnEventSelectionChanged(LyricsEvent? obj)
+		{
+			_selectedEvent = obj;
+			UpdateTitleAndMenu();
 		}
 
 		#region UI Events
@@ -98,6 +133,21 @@ namespace KaraokeStudio
 		private void editStyleToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			_styleForm.Show();
+		}
+
+		private void syncLyricsToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if(_projectHandler.Project == null || _selectedTrack == null)
+			{
+				return;
+			}
+
+			if(_syncForm.IsDisposed)
+			{
+				_syncForm = new SyncForm();
+			}
+
+			_syncForm.Open(_projectHandler.Project, _selectedTrack);
 		}
 
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -139,6 +189,8 @@ namespace KaraokeStudio
 			}
 
 			openRecentToolStripMenuItem.Enabled = openRecentToolStripMenuItem.HasDropDownItems;
+
+			syncLyricsToolStripMenuItem.Enabled = _selectedTrack?.Type == LyricsTrackType.Lyrics;
 		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using KaraokeLib.Config;
 using KaraokeLib.Lyrics;
+using KaraokeLib.Lyrics.Providers;
 using NAudio.Vorbis;
 using NAudio.Wave;
 using Newtonsoft.Json;

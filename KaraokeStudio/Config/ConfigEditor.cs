@@ -19,6 +19,7 @@ namespace KaraokeStudio.Config
 		private IEditableConfig? _temporaryConfig = null;
 		private List<BaseConfigControl> _controls = new List<BaseConfigControl>();
 		private List<Label> _labels = new List<Label>();
+		private Size? _lastSize;
 
 		/// <summary>
 		/// The percentage of the width of the element that the label column will take up.
@@ -66,7 +67,7 @@ namespace KaraokeStudio.Config
 		{
 			InitializeComponent();
 
-			Layout += ConfigEditor_Layout;
+			Paint += OnPaint;
 
 			// disable horizontal scroll on configContainer
 			configContainer.HorizontalScroll.Maximum = 0;
@@ -99,8 +100,7 @@ namespace KaraokeStudio.Config
 				return;
 			}
 
-			SuspendLayout();
-			//configContainer.SuspendLayout();
+			configContainer.SuspendLayout();
 
 			foreach (var field in _temporaryConfig.Fields)
 			{
@@ -127,8 +127,8 @@ namespace KaraokeStudio.Config
 				}
 			}
 
+			configContainer.ResumeLayout();
 			configContainer.PerformLayout();
-			PerformLayout();
 		}
 
 		private void AddField(string name, BaseConfigControl control)
@@ -191,6 +191,8 @@ namespace KaraokeStudio.Config
 
 		private void AdjustLabelColumn()
 		{
+			configContainer.SuspendLayout();
+
 			var labelColumn = configContainer.ColumnStyles[0];
 			var columnWidth = Math.Max((float)LabelColumnMinWidth, Width * LabelColumnPercentage);
 			labelColumn.Width = columnWidth;
@@ -199,11 +201,18 @@ namespace KaraokeStudio.Config
 			{
 				label.Width = (int)columnWidth;
 			}
+
+			configContainer.ResumeLayout();
+			configContainer.PerformLayout();
 		}
 
-		private void ConfigEditor_Layout(object? sender, LayoutEventArgs e)
+		private void OnPaint(object? sender, PaintEventArgs e)
 		{
-			AdjustLabelColumn();
+			if(ClientSize != _lastSize)
+			{
+				_lastSize = ClientSize;
+				AdjustLabelColumn();
+			}
 		}
 	}
 }

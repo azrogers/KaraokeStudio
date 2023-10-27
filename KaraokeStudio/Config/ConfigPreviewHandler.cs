@@ -25,7 +25,7 @@ mas-sa quis sem. Cur-a-bit-ur cur-sus or-ci vit-ae con-seq-uat hen-dre-rit. Sus-
 			_events = CreateEventsFromText(TEXT).ToArray();
 			_tracks = new LyricsTrack[]
 			{
-				new LyricsTrack(_events)
+				new LyricsTrack(0, LyricsTrackType.Lyrics, _events)
 			};
 		}
 

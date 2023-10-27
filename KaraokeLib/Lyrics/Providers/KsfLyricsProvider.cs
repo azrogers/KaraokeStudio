@@ -8,13 +8,56 @@ using System.IO;
 namespace KaraokeLib.Lyrics.Providers
 {
 	/// <summary>
+	/// Represents a single .ksf file.
+	/// </summary>
+	public class KsfLyricsFile : LyricsFile<KsfLyricsProvider>
+	{
+		/// <summary>
+		/// Sets the given key-value metadata on the file.
+		/// </summary>
+		public void SetMetadata(string key, string value) => _provider.SetMetadata(key, value);
+		/// <summary>
+		/// Obtains the value of metadata for the given key, if present.
+		/// </summary>
+		public string? GetMetadata(string key) => _provider.GetMetadata(key);
+		/// <summary>
+		/// Removes metadata with the given key, if present.
+		/// </summary>
+		public void RemoveMetadata(string key) => _provider.RemoveMetadata(key);
+
+		public KsfLyricsFile(string filename)
+			: base(new KsfLyricsProvider(filename))
+		{
+
+		}
+
+		public KsfLyricsFile(Stream stream)
+			: base(new KsfLyricsProvider(stream))
+		{
+
+		}
+
+		public KsfLyricsFile(ILyricsFile otherFile)
+			: base(new KsfLyricsProvider(otherFile.GetTracks()))
+		{
+
+		}
+
+		public KsfLyricsFile()
+			: base(new KsfLyricsProvider(Enumerable.Empty<LyricsTrack>()))
+		{
+
+		}
+	}
+
+	/// <summary>
 	/// Reads and writes .ksf (Karaoke Studio File) format
 	/// </summary>
 	public class KsfLyricsProvider : ILyricsProvider
 	{
 		// = "KSPF"
 		private const uint MAGIC_NUMBER = 0x4650534B;
-		private const byte VERSION = 1;
+		private const byte VERSION = 2;
 
 		private Dictionary<string, string> _metadata = new Dictionary<string, string>();
 
@@ -44,19 +87,19 @@ namespace KaraokeLib.Lyrics.Providers
 		public string? GetMetadata(string key) => _metadata.ContainsKey(key) ? _metadata[key] : null;
 		public void RemoveMetadata(string key) => _metadata.Remove(key);
 
+		/// <inheritdoc/>
 		public IEnumerable<LyricsTrack> GetTracks()
 		{
 			return _tracks;
 		}
 
+		/// <inheritdoc/>
 		public double GetLengthSeconds()
 		{
 			return _tracks.Max(t => t.Events.Max(e => e.EndTimeSeconds));
 		}
 
-		/// <summary>
-		/// Saves this provider to the given stream.
-		/// </summary>
+		/// <inheritdoc/>
 		public void Save(Stream outStream)
 		{
 			var writer = new BinaryWriter(outStream);
@@ -77,6 +120,7 @@ namespace KaraokeLib.Lyrics.Providers
 			{
 				writer.Write((uint)track.Events.Count());
 				writer.Write((byte)track.Type);
+				writer.Write(track.Id);
 				foreach(var ev in track.Events)
 				{
 					// 0 = no optional fields, 1 = no text, 2 = no linked id, 3 = both
@@ -138,6 +182,7 @@ namespace KaraokeLib.Lyrics.Providers
 				_metadata[key] = reader.ReadNullTerminatedString();
 			}
 
+			var nextId = 0;
 			var trackCount = reader.ReadByte();
 			_tracks = new LyricsTrack[trackCount];
 			for(var i = 0; i < trackCount; i++)
@@ -151,6 +196,8 @@ namespace KaraokeLib.Lyrics.Providers
 				{
 					trackType = (LyricsTrackType)reader.ReadByte();
 				}
+				// ksf version 2 added track id
+				var trackId = version > 1 ? reader.ReadInt32() : nextId++;
 				for(var j = 0; j < eventCount; j++)
 				{
 					var evFields = reader.ReadByte();
@@ -174,7 +221,7 @@ namespace KaraokeLib.Lyrics.Providers
 					events.Add(ev);
 				}
 
-				_tracks[i] = new LyricsTrack(trackType);
+				_tracks[i] = new LyricsTrack(trackId, trackType);
 				_tracks[i].AddEvents(events);
 			}
 		}

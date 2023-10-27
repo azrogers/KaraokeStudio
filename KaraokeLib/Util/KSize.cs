@@ -1,6 +1,7 @@
 ﻿using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,5 +27,7 @@ namespace KaraokeLib.Util
 
 
 		public static implicit operator SKSize(KSize s) => new SKSize(s.Width, s.Height);
+		public static implicit operator Size(KSize s) => new Size(s.Width, s.Height);
+		public static implicit operator KSize(Size s) => new KSize(s.Width, s.Height);
 	}
 }

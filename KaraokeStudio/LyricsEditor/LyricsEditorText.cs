@@ -1,11 +1,16 @@
 ﻿using KaraokeLib.Lyrics;
 using Newtonsoft.Json.Linq;
+using ScintillaNET;
 using System.Text;
+using System.Windows.Documents;
 
 namespace KaraokeStudio.LyricsEditor
 {
 	internal static class LyricsEditorText
 	{
+		/// <summary>
+		/// Creates LyricsEditorTextElement instances from the given stream of events.
+		/// </summary>
 		public static LyricsEditorTextElement[] CreateElements(IEnumerable<LyricsEvent> events)
 		{
 			var elements = new List<LyricsEditorTextElement>();
@@ -52,6 +57,9 @@ namespace KaraokeStudio.LyricsEditor
 			return elements.ToArray();
 		}
 
+		/// <summary>
+		/// Creates a final string to display out of an array of LyricsEditorTextElement instances.
+		/// </summary>
 		public static LyricsEditorTextResult CreateString(LyricsEditorTextElement[] elements)
 		{
 			var offsets = new Dictionary<int, int>();
@@ -75,6 +83,9 @@ namespace KaraokeStudio.LyricsEditor
 			return new LyricsEditorTextResult(builder.ToString(), offsets);
 		}
 
+		/// <summary>
+		/// Uses old LyricsEditorTextElement instances to fill in missing time information for a new body of text.
+		/// </summary>
 		public static IEnumerable<LyricsEditorTextElement> UpdateFromString(string text, LyricsEditorTextElement[] oldElements)
 		{
 			var nextEventId = 0;
@@ -181,5 +192,35 @@ namespace KaraokeStudio.LyricsEditor
 		}
 	}
 
-	public record LyricsEditorTextResult(string Text, Dictionary<int, int> EventOffsets);
+	public class LyricsEditorTextResult
+	{
+		public string Text;
+		public Dictionary<int, int> EventOffsets;
+
+		public LyricsEditorTextResult(string text, Dictionary<int, int> eventOffsets)
+		{
+			Text = text;
+			EventOffsets = eventOffsets;
+		}
+
+		internal int PositionToCharIndex(IEnumerable<LyricsEditorTextElement> textElements, double position)
+		{
+			foreach (var elem in textElements.OrderBy(e => e.StartTime))
+			{
+				if (position < elem.StartTime)
+				{
+					return EventOffsets[elem.Id];
+				}
+				else if (position >= elem.StartTime && position < elem.EndTime)
+				{
+					var start = EventOffsets[elem.Id];
+					var end = start + elem.ToString().Length;
+					var normalizedPos = elem.GetNormalizedPosition(position);
+					return (int)((end - start) * normalizedPos);
+				}
+			}
+
+			return Text.Length - 1;
+		}
+	}
 }

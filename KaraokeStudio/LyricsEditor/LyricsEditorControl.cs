@@ -62,7 +62,7 @@ namespace KaraokeStudio.LyricsEditor
 
 		internal void OnPositionChanged(double newPosition)
 		{
-			var charIndex = PositionToCharIndex(newPosition);
+			var charIndex = _textResult?.PositionToCharIndex(_textElements, newPosition) ?? 0;
 			RestyleArea(charIndex, _previousHighlightIndex, charIndex);
 
 			_previousHighlightIndex = charIndex;
@@ -82,13 +82,13 @@ namespace KaraokeStudio.LyricsEditor
 			_textResult = LyricsEditorText.CreateString(_textElements);
 			_scintilla.Text = _textResult.Text;
 
-			_scintilla.AnchorPosition = _scintilla.CurrentPosition = PositionToCharIndex(previousPosition);
+			_scintilla.AnchorPosition = _scintilla.CurrentPosition = _textResult?.PositionToCharIndex(_textElements, previousPosition) ?? 0;
 			_scintilla.ScrollCaret();
 		}
 
 		private void UpdateTextElements()
 		{
-			var track = _project?.Tracks.Where(t => t.Type == KaraokeLib.Lyrics.LyricsTrackType.Lyrics).FirstOrDefault();
+			var track = _project?.Tracks.Where(t => t.Type == LyricsTrackType.Lyrics).FirstOrDefault();
 			if (track == null)
 			{
 				_textElements = new LyricsEditorTextElement[0];
@@ -118,31 +118,6 @@ namespace KaraokeStudio.LyricsEditor
 			}
 
 			return _textElements.Last();
-		}
-
-		private int PositionToCharIndex(double position)
-		{
-			if (_textResult == null)
-			{
-				return 0;
-			}
-
-			foreach (var elem in _textElements.OrderBy(e => e.StartTime))
-			{
-				if (position < elem.StartTime)
-				{
-					return _textResult.EventOffsets[elem.Id];
-				}
-				else if (position >= elem.StartTime && position < elem.EndTime)
-				{
-					var start = _textResult.EventOffsets[elem.Id];
-					var end = start + elem.ToString().Length;
-					var normalizedPos = elem.GetNormalizedPosition(position);
-					return (int)((end - start) * normalizedPos);
-				}
-			}
-
-			return _scintilla.Text.Length - 1;
 		}
 
 		private void RestyleArea(int highlightIndex, int startIndex, int endIndex)

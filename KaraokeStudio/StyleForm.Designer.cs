@@ -29,6 +29,7 @@
 		private void InitializeComponent()
 		{
 			this.splitContainer = new System.Windows.Forms.SplitContainer();
+			this.configEditor = new KaraokeStudio.Config.ConfigEditor();
 			this.importButton = new System.Windows.Forms.Button();
 			this.exportButton = new System.Windows.Forms.Button();
 			this.applyButton = new System.Windows.Forms.Button();
@@ -36,7 +37,6 @@
 			this.cancelButton = new System.Windows.Forms.Button();
 			this.videoPanel = new System.Windows.Forms.Panel();
 			this.previewSkiaControl = new SkiaSharp.Views.Desktop.SKGLControl();
-			this.configEditor = new KaraokeStudio.Config.ConfigEditor();
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
 			this.splitContainer.Panel1.SuspendLayout();
 			this.splitContainer.Panel2.SuspendLayout();
@@ -65,6 +65,18 @@
 			this.splitContainer.Size = new System.Drawing.Size(800, 512);
 			this.splitContainer.SplitterDistance = 544;
 			this.splitContainer.TabIndex = 0;
+			// 
+			// configEditor
+			// 
+			this.configEditor.AutoSize = true;
+			this.configEditor.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this.configEditor.Config = null;
+			this.configEditor.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.configEditor.Location = new System.Drawing.Point(0, 0);
+			this.configEditor.Name = "configEditor";
+			this.configEditor.Size = new System.Drawing.Size(544, 512);
+			this.configEditor.TabIndex = 0;
+			this.configEditor.OnValueChanged += new System.Action(this.configEditor_OnValueChanged);
 			// 
 			// importButton
 			// 
@@ -143,16 +155,6 @@
 			this.previewSkiaControl.VSync = true;
 			this.previewSkiaControl.PaintSurface += new System.EventHandler<SkiaSharp.Views.Desktop.SKPaintGLSurfaceEventArgs>(this.previewSkiaControl_PaintSurface);
 			// 
-			// configEditor
-			// 
-			this.configEditor.Config = null;
-			this.configEditor.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.configEditor.Location = new System.Drawing.Point(0, 0);
-			this.configEditor.Name = "configEditor";
-			this.configEditor.Size = new System.Drawing.Size(544, 512);
-			this.configEditor.TabIndex = 0;
-			this.configEditor.OnValueChanged += new System.Action(this.configEditor_OnValueChanged);
-			// 
 			// StyleForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -163,6 +165,7 @@
 			this.Text = "Style";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.StyleForm_FormClosing);
 			this.splitContainer.Panel1.ResumeLayout(false);
+			this.splitContainer.Panel1.PerformLayout();
 			this.splitContainer.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer)).EndInit();
 			this.splitContainer.ResumeLayout(false);

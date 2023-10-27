@@ -1,4 +1,4 @@
-﻿namespace KaraokeStudio
+﻿namespace KaraokeStudio.Video
 {
 	partial class KaraokeVideoControl
 	{

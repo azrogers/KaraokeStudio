@@ -1,5 +1,6 @@
 ﻿using KaraokeLib.Config;
 using KaraokeLib.Lyrics;
+using KaraokeLib.Lyrics.Providers;
 using Ookii.Dialogs.WinForms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
@@ -25,6 +26,12 @@ namespace KaraokeStudio.FormHandlers
 		/// Called when the project changes (new project, open project)
 		/// </summary>
 		public event Action<KaraokeProject?>? OnProjectChanged;
+
+		/// <summary>
+		/// Callback that's run when the project is about to change.
+		/// Return false to block the change.
+		/// </summary>
+		public Func<bool>? OnProjectWillChangeCallback;
 
 		/// <summary>
 		/// Are there unsaved changes to the project?
@@ -175,6 +182,11 @@ namespace KaraokeStudio.FormHandlers
 		// returns true if we can continue, or false if we're cancelling the operation after alerting of pending changes
 		public bool AlertPendingChanges()
 		{
+			if (!OnProjectWillChangeCallback?.Invoke() ?? false)
+			{
+				return false;
+			}
+
 			if (!IsPendingChanges)
 			{
 				return true;

@@ -27,6 +27,13 @@ namespace KaraokeStudio
 			{ LyricsEventType.ParagraphBreak, Color.FromArgb(166, 76, 105) }
 		};
 
+		public static readonly Dictionary<LyricsTrackType, Color> TrackColors = new Dictionary<LyricsTrackType, Color>()
+		{
+			{LyricsTrackType.Lyrics, Color.FromArgb(150, 76, 166) },
+			{LyricsTrackType.Graphics, Color.FromArgb(255, 0, 0) },
+			{LyricsTrackType.Audio, Color.FromArgb(255, 0, 255) }
+		};
+
 		private static Dictionary<IconChar, Bitmap> _buttonBitmaps = new Dictionary<IconChar, Bitmap>();
 
 		public static void PaintIconButton(Graphics g, Button button, IconChar icon)

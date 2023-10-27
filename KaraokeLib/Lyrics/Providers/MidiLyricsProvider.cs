@@ -1,14 +1,17 @@
-﻿using Melanchall.DryWetMidi.Common;
-using Melanchall.DryWetMidi.Core;
+﻿using Melanchall.DryWetMidi.Core;
 using Melanchall.DryWetMidi.Interaction;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeLib.Lyrics.Providers
 {
+	public class MidiLyricsFile : LyricsFile<MidiLyricsProvider>
+	{
+		public MidiLyricsFile(string filename)
+			: base(new MidiLyricsProvider(filename)) { }
+
+		public MidiLyricsFile(Stream stream)
+			: base(new MidiLyricsProvider(stream)) { }
+	}
+
 	/// <summary>
 	/// Reads and writes Guitar Hero/Rock Band notes.mid files.
 	/// </summary>
@@ -47,12 +50,13 @@ namespace KaraokeLib.Lyrics.Providers
 
 				long timer = 0;
 
-				bool expectingFollowingLyric = false;
-				int previousId = 0;
-				int nextId = 0;
+				var expectingFollowingLyric = false;
+				var previousId = 0;
+				var nextId = 0;
 				string? lyricText = null;
-				int noteDepth = 0;
+				var noteDepth = 0;
 				IEventTimecode? startTimecode = null;
+				var nextTrackId = 0;
 				foreach(var ev in track.Events)
 				{
 					timer += ev.DeltaTime;
@@ -165,7 +169,7 @@ namespace KaraokeLib.Lyrics.Providers
 					}
 				}
 
-				var newTrack = new LyricsTrack(LyricsTrackType.Lyrics);
+				var newTrack = new LyricsTrack(nextTrackId++, LyricsTrackType.Lyrics);
 				newTrack.AddEvents(events);
 				yield return newTrack;
 			}

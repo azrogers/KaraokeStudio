@@ -1,5 +1,14 @@
 ﻿namespace KaraokeLib.Lyrics.Providers
 {
+	public class LrcLyricsFile : LyricsFile<LrcLyricsProvider>
+	{
+		public LrcLyricsFile(string filename) : base(new LrcLyricsProvider(filename)) { }
+
+		public LrcLyricsFile(Stream stream) : base(new LrcLyricsProvider(stream)) { }
+		public LrcLyricsFile(ILyricsFile otherFile) : base(new LrcLyricsProvider(otherFile.GetTracks())) { }
+		public LrcLyricsFile(IEnumerable<LyricsTrack> tracks) : base(new LrcLyricsProvider(tracks)) { }
+	}
+
 	public class LrcLyricsProvider : ILyricsProvider
 	{
 		private LyricsTrack _track;
@@ -8,20 +17,20 @@
 		{
 			using (var stream = File.OpenRead(fileName))
 			{
-				_track = new LyricsTrack(LyricsTrackType.Lyrics);
+				_track = new LyricsTrack(0, LyricsTrackType.Lyrics);
 				Load(stream);
 			}
 		}
 
 		public LrcLyricsProvider(Stream stream)
 		{
-			_track = new LyricsTrack(LyricsTrackType.Lyrics);
+			_track = new LyricsTrack(0, LyricsTrackType.Lyrics);
 			Load(stream);
 		}
 
 		public LrcLyricsProvider(IEnumerable<LyricsTrack> tracks)
 		{
-			_track = tracks.FirstOrDefault() ?? new LyricsTrack(LyricsTrackType.Lyrics);
+			_track = tracks.Where(t => t.Type == LyricsTrackType.Lyrics).FirstOrDefault() ?? new LyricsTrack(0, LyricsTrackType.Lyrics);
 		}
 
 		public double GetLengthSeconds()
@@ -59,9 +68,9 @@
 				writer.WriteLine("[ti: Exported from KaraokeStudio]");
 
 				IEventTimecode lastTimecode = new TimeSpanTimecode(0);
-				foreach(var line in lines)
+				foreach (var line in lines)
 				{
-					if(!line.Any())
+					if (!line.Any())
 					{
 						continue;
 					}

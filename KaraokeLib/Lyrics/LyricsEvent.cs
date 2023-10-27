@@ -140,10 +140,20 @@ namespace KaraokeLib.Lyrics
 		}
 	}
 
+	/// <summary>
+	/// Identifies a type of event in a LyricsTrack.
+	/// </summary>
+	/// <remarks>
+	/// When updating, also update <see cref="LyricsTrack.ValidEvents"/>.
+	/// </remarks>
 	public enum LyricsEventType : byte
 	{
+		// lyrics
 		Lyric = 0,
 		ParagraphBreak = 1,
-		LineBreak = 2
+		LineBreak = 2,
+
+		// audio
+		AudioClip = 15,
 	}
 }

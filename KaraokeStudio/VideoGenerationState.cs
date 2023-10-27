@@ -38,7 +38,7 @@ namespace KaraokeStudio
 				_layoutState = new VideoLayoutState();
 
 				VideoSection[] sections;
-				if (tracks.Any())
+				if (tracks.Where(t => t.Type == LyricsTrackType.Lyrics).Any())
 				{
 					// TODO: support multiple tracks?
 					sections = VideoSection.SectionsFromTrack(_context, tracks.First(), _layoutState);
