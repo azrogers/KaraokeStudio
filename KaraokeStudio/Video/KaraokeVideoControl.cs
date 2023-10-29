@@ -1,5 +1,6 @@
 ﻿using FontAwesome.Sharp;
 using KaraokeLib.Video;
+using KaraokeStudio.Util;
 using NAudio.Wave;
 using SkiaSharp;
 using System.Diagnostics;
@@ -10,7 +11,6 @@ namespace KaraokeStudio.Video
 	{
 		private bool _isPlayingInternal = false;
 
-		private WaveStream? _waveStream;
 		private WaveOutEvent _output;
 
 		private System.Windows.Forms.Timer _timer;
@@ -41,7 +41,7 @@ namespace KaraokeStudio.Video
 				_timer.Enabled = _isPlayingInternal;
 				OnPlayStateChanged?.Invoke(_isPlayingInternal);
 
-				if (_waveStream != null)
+				if (_lastLoadedProject != null)
 				{
 					if (_isPlayingInternal && _output.PlaybackState != PlaybackState.Playing)
 					{
@@ -181,9 +181,10 @@ namespace KaraokeStudio.Video
 			_currentVideoPosition = pos;
 			videoSkiaControl.Invalidate();
 			UpdateVideoPosition();
-			if(_waveStream != null)
+			
+			if (_lastLoadedProject != null)
 			{
-				_waveStream.CurrentTime = TimeSpan.FromSeconds(_currentVideoPosition);
+				_lastLoadedProject.Mixer.CurrentTime = TimeSpan.FromSeconds(_currentVideoPosition);
 			}
 		}
 
@@ -194,6 +195,7 @@ namespace KaraokeStudio.Video
 				_currentVideoPosition = 0;
 				OnPositionChangedEvent?.Invoke(_currentVideoPosition);
 				IsPlaying = false;
+				_output.Stop();
 			}
 			else if (_lastLoadedProject != null && project != null && _lastLoadedTimespan != project.Length)
 			{
@@ -204,24 +206,17 @@ namespace KaraokeStudio.Video
 					OnPositionChangedEvent?.Invoke(_currentVideoPosition);
 				}
 			}
-			
-			if(project != null)
+
+			if (project != null)
 			{
 				_timer.Interval = (int)Math.Round((1.0 / project.Config.FrameRate) * 1000);
 			}
 
-			volumeSlider.Enabled = project?.AudioStream != null;
+			volumeSlider.Enabled = project?.Tracks.Any(t => t.Type == KaraokeLib.KaraokeTrackType.Audio) ?? false;
 
-			if (_waveStream != null && _waveStream != project?.AudioStream)
+			if(project != null)
 			{
-				_output.Stop();
-				_waveStream.Dispose();
-			}
-
-			_waveStream = project?.AudioStream;
-			if (_waveStream != null)
-			{
-				_output.Init(_waveStream);
+				_output.Init(project.Mixer);
 			}
 
 			_lastLoadedProject = project;
@@ -243,9 +238,9 @@ namespace KaraokeStudio.Video
 		{
 			OnSeek?.Invoke(_currentVideoPosition);
 			OnPositionChangedEvent?.Invoke(_currentVideoPosition);
-			if(_waveStream != null)
+			if (_lastLoadedProject != null)
 			{
-				_waveStream.CurrentTime = TimeSpan.FromSeconds(_currentVideoPosition);
+				_lastLoadedProject.Mixer.CurrentTime = TimeSpan.FromSeconds(_currentVideoPosition);
 			}
 		}
 
@@ -253,7 +248,7 @@ namespace KaraokeStudio.Video
 		{
 			if (_lastLoadedTimespan != null)
 			{
-				endPosLabel.Text = Util.FormatTimespan(_lastLoadedTimespan.Value);
+				endPosLabel.Text = Utility.FormatTimespan(_lastLoadedTimespan.Value);
 				positionBar.Maximum = (int)Math.Ceiling(_lastLoadedTimespan.Value.TotalSeconds);
 				positionBar.Value = (int)Math.Round(_currentVideoPosition);
 			}
@@ -264,7 +259,7 @@ namespace KaraokeStudio.Video
 				positionBar.Value = 0;
 			}
 
-			currentPosLabel.Text = Util.FormatTimespan(TimeSpan.FromSeconds(_currentVideoPosition), true);
+			currentPosLabel.Text = Utility.FormatTimespan(TimeSpan.FromSeconds(_currentVideoPosition), true);
 		}
 
 		private void UpdateButtons()
@@ -291,7 +286,7 @@ namespace KaraokeStudio.Video
 				size = (_lastLoadedProject.Config.VideoSize.Width, _lastLoadedProject.Config.VideoSize.Height);
 			}
 
-			Util.ResizeContainerAspectRatio(videoPanel, videoSkiaControl, size);
+			Utility.ResizeContainerAspectRatio(videoPanel, videoSkiaControl, size);
 		}
 
 		private void OnTimerTick(object? sender, EventArgs e)

@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using KaraokeStudio.Util;
 
 namespace KaraokeStudio.Config
 {
@@ -23,11 +15,11 @@ namespace KaraokeStudio.Config
 			_translatedEnumNames = new string[0];
 		}
 
-		internal override void UpdateValue(object config) 
+		internal override void UpdateValue(object config)
 		{
 			SetOptions();
 
-			if(Field == null)
+			if (Field == null)
 			{
 				return;
 			}
@@ -39,7 +31,7 @@ namespace KaraokeStudio.Config
 			}
 
 			var name = Enum.GetName(Field.FieldType, val);
-			if(name == null)
+			if (name == null)
 			{
 				return;
 			}
@@ -47,9 +39,9 @@ namespace KaraokeStudio.Config
 			comboBox.SelectedIndex = Array.IndexOf(_originalEnumNames, name);
 		}
 
-		internal override void SetValue(object config) 
+		internal override void SetValue(object config)
 		{
-			if(Field != null && _originalEnumNames.Any())
+			if (Field != null && _originalEnumNames.Any())
 			{
 				var realName = _originalEnumNames[comboBox.SelectedIndex];
 				Field.SetValue(config, Enum.Parse(Field.FieldType, realName));
@@ -60,7 +52,7 @@ namespace KaraokeStudio.Config
 		{
 			var item = comboBox.SelectedText;
 			comboBox.Items.Clear();
-			if(Field == null)
+			if (Field == null)
 			{
 				return;
 			}
@@ -69,14 +61,14 @@ namespace KaraokeStudio.Config
 			_translatedEnumNames = new string[names.Length];
 			_originalEnumNames = new string[names.Length];
 
-			for(var i = 0; i < names.Length; i++)
+			for (var i = 0; i < names.Length; i++)
 			{
 				_originalEnumNames[i] = names[i];
-				_translatedEnumNames[i] = Util.HumanizeCamelCase(names[i]);
+				_translatedEnumNames[i] = Utility.HumanizeCamelCase(names[i]);
 			}
 
 			comboBox.Items.AddRange(_translatedEnumNames);
-			if(item != null)
+			if (item != null)
 			{
 				comboBox.SelectedText = item;
 			}

@@ -1,4 +1,4 @@
-﻿using KaraokeLib.Lyrics;
+﻿using KaraokeLib.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace KaraokeStudio.LyricsEditor
 {
-	internal class LyricsMatcher
+    internal class LyricsMatcher
 	{
 		public static void Match(LyricsEditorTextElement[] oldElements, LyricsLexerElement[] newElements)
 		{
@@ -68,14 +68,14 @@ namespace KaraokeStudio.LyricsEditor
 				LongestCommonSubsequence(oldElements, newElements, startOld, startNew.Increment(newElements)));
 		}
 
-		private static bool DoElementsMatch(LyricsEvent oldEvent, LyricsLexerElement newElement, int eventIndex)
+		private static bool DoElementsMatch(KaraokeEvent oldEvent, LyricsLexerElement newElement, int eventIndex)
 		{
 			if (oldEvent.Type != newElement.Type)
 			{
 				return false;
 			}
 
-			if (newElement.Type == LyricsEventType.Lyric)
+			if (newElement.Type == KaraokeEventType.Lyric)
 			{
 				return newElement.Tokens[eventIndex] == oldEvent.GetText(null);
 			}

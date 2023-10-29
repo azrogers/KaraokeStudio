@@ -1,13 +1,13 @@
-﻿using KaraokeLib.Lyrics;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using KaraokeLib.Events;
 
 namespace KaraokeLib.Video
 {
-	public class VideoSection
+    public class VideoSection
 	{
 		private VideoContext _context;
 		private VideoParagraph[] _paragraphs;
@@ -45,18 +45,18 @@ namespace KaraokeLib.Video
 			SectionLength = paragraphs.Max(p => p.EndTimeSeconds) - Start;
 		}
 
-		public void SetEvents(IEnumerable<LyricsEvent> events, VideoLayoutState layoutState)
+		public void SetEvents(IEnumerable<KaraokeEvent> events, VideoLayoutState layoutState)
 		{
 			_paragraphs = VideoParagraph.CreateParagraphs(_context, events.ToArray(), layoutState, _context.NumLines);
 		}
 
-		public static VideoSection[] SectionsFromTrack(VideoContext context, LyricsTrack track, VideoLayoutState layoutState)
+		public static VideoSection[] SectionsFromTrack(VideoContext context, KaraokeTrack track, VideoLayoutState layoutState)
 		{
 			var sections = new List<VideoSection>();
 
 			var lastEventEndTime = 0.0;
 			var firstEventStartTime = track.Events.FirstOrDefault()?.StartTimeSeconds ?? 0.0;
-			var eventsAccumulated = new List<LyricsEvent>();
+			var eventsAccumulated = new List<KaraokeEvent>();
 
 			foreach (var ev in track.Events)
 			{

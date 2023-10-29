@@ -1,15 +1,16 @@
-﻿using KaraokeLib.Lyrics;
+﻿using KaraokeLib.Events;
 using KaraokeLib.Util;
 using KaraokeLib.Video;
+using KaraokeStudio.Util;
 using SkiaSharp;
 
 namespace KaraokeStudio.Timeline
 {
-	/// <summary>
-	/// The actual canvas that the timeline is drawn to.
-	/// The TimelineControl presents a scrolled view into this canvas.
-	/// </summary>
-	internal class TimelineCanvas
+    /// <summary>
+    /// The actual canvas that the timeline is drawn to.
+    /// The TimelineControl presents a scrolled view into this canvas.
+    /// </summary>
+    internal class TimelineCanvas
 	{
 		private const float PIXELS_PER_SECOND = 50.0f;
 		internal const float TRACK_HEIGHT = 50.0f;
@@ -37,20 +38,20 @@ namespace KaraokeStudio.Timeline
 
 		private ClickableItem[][] _clickableItems = new ClickableItem[0][];
 
-		private Dictionary<LyricsEventType, SKPaint> _eventTypePaints = new Dictionary<LyricsEventType, SKPaint>();
-		private Dictionary<int, LyricsEvent> _events = new Dictionary<int, LyricsEvent>();
+		private Dictionary<KaraokeEventType, SKPaint> _eventTypePaints = new Dictionary<KaraokeEventType, SKPaint>();
+		private Dictionary<int, KaraokeEvent> _events = new Dictionary<int, KaraokeEvent>();
 
 		public SKSize Size => _size;
 
 		/// <summary>
-		/// The LyricsEvent currently selected, if any.
+		/// The KaraokeEvent currently selected, if any.
 		/// </summary>
-		public LyricsEvent? SelectedEvent => _selectedEvent == null ? null : _events[_selectedEvent.Value.EventId];
+		public KaraokeEvent? SelectedEvent => _selectedEvent == null ? null : _events[_selectedEvent.Value.EventId];
 
 		/// <summary>
 		/// Called when the currently selected event has changed.
 		/// </summary>
-		public event Action<LyricsEvent?>? OnEventSelectionChanged;
+		public event Action<KaraokeEvent?>? OnEventSelectionChanged;
 
 		public TimelineCanvas()
 		{
@@ -139,7 +140,7 @@ namespace KaraokeStudio.Timeline
 		}
 
 		/// <summary>
-		/// Selects the LyricsEvent at the given point in canvas space, if present.
+		/// Selects the KaraokeEvent at the given point in canvas space, if present.
 		/// </summary>
 		/// <returns>True if an event was selected, false if not.</returns>
 		public bool SelectEventAtPoint(SKPoint point)
@@ -300,7 +301,7 @@ namespace KaraokeStudio.Timeline
 						PIXELS_PER_SECOND * (float)ev.StartTimeSeconds,
 						trackYPos,
 						PIXELS_PER_SECOND * (float)ev.EndTimeSeconds,
-						trackYPos + TRACK_HEIGHT - 1.0f
+						trackYPos + TRACK_HEIGHT - 2.0f
 					);
 
 					if (!_eventTypePaints.TryGetValue(ev.Type, out var paint))
@@ -328,7 +329,7 @@ namespace KaraokeStudio.Timeline
 			_picture = _pictureRecorder.EndRecording();
 		}
 
-		private void TryDrawEventText(SKCanvas canvas, LyricsEvent ev, SKRect rect)
+		private void TryDrawEventText(SKCanvas canvas, KaraokeEvent ev, SKRect rect)
 		{
 			var eventText = ev.GetText(null);
 

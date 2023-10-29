@@ -19,6 +19,7 @@ namespace KaraokeLib.Config
 		private Dictionary<string, EditableConfigField> _fields;
 
 		/// <inheritdoc />
+		[JsonIgnore]
 		public IEnumerable<EditableConfigField> Fields => _fields.Values;
 
 		/// <summary>

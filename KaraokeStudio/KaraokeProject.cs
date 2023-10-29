@@ -1,44 +1,48 @@
-﻿using KaraokeLib.Config;
-using KaraokeLib.Lyrics;
-using KaraokeLib.Lyrics.Providers;
-using NAudio.Vorbis;
-using NAudio.Wave;
+﻿using KaraokeLib;
+using KaraokeLib.Audio;
+using KaraokeLib.Config;
+using KaraokeLib.Events;
+using KaraokeLib.Files;
+using KaraokeStudio.Util;
 using Newtonsoft.Json;
 
 namespace KaraokeStudio
 {
 	internal class KaraokeProject
 	{
-		public bool IsValid => _waveStream != null;
-
-		public string AudioFile { get; private set; } = "";
-
-		public WaveStream? AudioStream => _waveStream;
-
 		public TimeSpan Length { get; private set; }
 
 		public KaraokeConfig Config { get; set; }
 
-		public IEnumerable<LyricsTrack> Tracks => _file.GetTracks();
+		public IEnumerable<KaraokeTrack> Tracks => _file.GetTracks();
 
-		private WaveStream? _waveStream;
-		private KsfLyricsFile _file;
+		public AudioMixer Mixer { get; private set; }
 
-		public KaraokeProject(string audioFile, KsfLyricsFile lyricsFile)
+		private KsfKaraokeFile _file;
+
+		public KaraokeProject(TimeSpan length, KsfKaraokeFile lyricsFile)
 		{
-			SetAudioFile(audioFile);
-			if (_waveStream != null)
-			{
-				Length = _waveStream.TotalTime;
-			}
-
+			Length = length;
 			_file = lyricsFile;
 			Config = new KaraokeConfig();
+			Mixer = new AudioMixer(lyricsFile.GetTracks());
+		}
+
+		public KaraokeTrack AddTrack(KaraokeTrackType type)
+		{
+			var track = _file.AddTrack(type);
+			return track;
+		}
+
+		public void UpdateMixer()
+		{
+			var pos = Mixer.Position;
+			Mixer = new AudioMixer(_file.GetTracks());
+			Mixer.Position = pos;
 		}
 
 		public void Save(string outFile)
 		{
-			_file.SetMetadata("AudioFile", AudioFile);
 			_file.SetMetadata("Length", Length.TotalSeconds.ToString());
 			_file.SetMetadata("ProjectConfig", JsonConvert.SerializeObject(Config));
 
@@ -48,55 +52,43 @@ namespace KaraokeStudio
 			}
 		}
 
-		private void LoadAudioFile()
-		{
-			var ext = Path.GetExtension(AudioFile);
-			if (ext.Equals(".wav", StringComparison.CurrentCultureIgnoreCase))
-			{
-				_waveStream = new WaveFileReader(AudioFile);
-			}
-			else if (ext.Equals(".ogg", StringComparison.CurrentCultureIgnoreCase))
-			{
-				_waveStream = new VorbisWaveReader(AudioFile);
-			}
-			else
-			{
-				Logger.ShowError(new UserException($"Unknown file extension {ext}"));
-			}
-		}
-
-		private void SetAudioFile(string audioFile)
-		{
-			AudioFile = audioFile;
-			LoadAudioFile();
-		}
-
-		public static KaraokeProject? Create(string audioPath)
-		{
-			var project = new KaraokeProject(audioPath, new KsfLyricsFile());
-
-			return project.IsValid ? project : null;
-		}
-
 		public static KaraokeProject? FromMidi(string midiPath, string audioPath)
 		{
-			var midiFile = new MidiLyricsFile(midiPath);
+			var midiFile = new MidiKaraokeFile(midiPath);
 			if (!midiFile.GetTracks().Any())
 			{
 				Logger.ShowError(new UserException("MIDI file contains no lyric tracks"));
 				return null;
 			}
 
-			var project = new KaraokeProject(audioPath, new KsfLyricsFile(midiFile));
-			return project.IsValid ? project : null;
+			return Create(audioPath, new KsfKaraokeFile(midiFile));
+		}
+
+		public static KaraokeProject? Create(string audioPath) => Create(audioPath, new KsfKaraokeFile());
+
+		private static KaraokeProject Create(string audioPath, KsfKaraokeFile file)
+		{
+			var fileInfo = AudioUtil.GetFileInfo(audioPath);
+			if (fileInfo == null)
+			{
+				throw new UserException($"Not a valid audio file: {audioPath}");
+			}
+
+			var settings = new AudioClipSettings(audioPath);
+			var track = file.AddTrack(KaraokeTrackType.Audio);
+			track.AddAudioClipEvent(settings, new TimeSpanTimecode(0), new TimeSpanTimecode(fileInfo.LengthSeconds));
+
+			var project = new KaraokeProject(TimeSpan.FromSeconds(fileInfo.LengthSeconds), file);
+
+			return project;
 		}
 
 		public static KaraokeProject? Load(string projectPath)
 		{
-			KsfLyricsFile file;
+			KsfKaraokeFile file;
 			try
 			{
-				file = new KsfLyricsFile(projectPath);
+				file = new KsfKaraokeFile(projectPath);
 			}
 			catch (Exception e)
 			{
@@ -104,14 +96,6 @@ namespace KaraokeStudio
 				return null;
 			}
 
-			var audioFile = file.GetMetadata("AudioFile");
-			if (audioFile == null)
-			{
-				Logger.ShowError(new UserException("Can't find AudioFile in KSF metadata"));
-				return null;
-			}
-
-			var project = new KaraokeProject(audioFile, file);
 			var length = file.GetMetadata("Length");
 			if (!double.TryParse(length, out var lengthDouble))
 			{
@@ -119,7 +103,20 @@ namespace KaraokeStudio
 				return null;
 			}
 
-			project.Length = TimeSpan.FromSeconds(lengthDouble);
+			var endTimespan = TimeSpan.FromSeconds(lengthDouble);
+
+			var audioFile = file.GetMetadata("AudioFile");
+			if (audioFile != null)
+			{
+				// port over to new audio clip
+				var audioTrack = file.AddTrack(KaraokeTrackType.Audio);
+				var settings = new AudioClipSettings(audioFile);
+				audioTrack.AddAudioClipEvent(settings, new TimeSpanTimecode(0), new TimeSpanTimecode(endTimespan));
+
+				file.RemoveMetadata("AudioFile");
+			}
+
+			var project = new KaraokeProject(endTimespan, file);
 
 			var config = file.GetMetadata("ProjectConfig");
 			if (config == null)
@@ -129,7 +126,7 @@ namespace KaraokeStudio
 			}
 
 			project.Config = new KaraokeConfig(config);
-			return project.IsValid ? project : null;
+			return project;
 		}
 	}
 }

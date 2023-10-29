@@ -1,11 +1,11 @@
-﻿using KaraokeLib.Lyrics;
+﻿using KaraokeLib.Events;
 
 namespace KaraokeLib.Video
 {
-	public class VideoParagraph
+    public class VideoParagraph
 	{
 		private VideoContext _context;
-		private LyricsEvent[][] _lines;
+		private KaraokeEvent[][] _lines;
 		private float[] _lineWidths;
 		private int _usedLines = 0;
 		private IEventTimecode? _startTimecode;
@@ -15,9 +15,9 @@ namespace KaraokeLib.Video
 
 		public double EndTimeSeconds => _endTimecode?.GetTimeSeconds() ?? 0.0;
 
-		public IEnumerable<LyricsEvent[]> Lines => _lines;
+		public IEnumerable<KaraokeEvent[]> Lines => _lines;
 
-		public VideoParagraph(VideoContext context, IEnumerable<LyricsEvent[]> lines, IEnumerable<float> lineWidths)
+		public VideoParagraph(VideoContext context, IEnumerable<KaraokeEvent[]> lines, IEnumerable<float> lineWidths)
 		{
 			_context = context;
 			_lines = lines.ToArray();
@@ -25,17 +25,17 @@ namespace KaraokeLib.Video
 			_usedLines = lines.Count();
 		}
 
-		public IEnumerable<LyricsEvent> GetLineEvents(int lineIndex)
+		public IEnumerable<KaraokeEvent> GetLineEvents(int lineIndex)
 		{
 			if (lineIndex < 0 || lineIndex >= _usedLines)
 			{
-				return new LyricsEvent[0];
+				return new KaraokeEvent[0];
 			}
 
 			return _lines[lineIndex];
 		}
 
-		public static VideoParagraph[] CreateParagraphs(VideoContext context, LyricsEvent[] lyrics, VideoLayoutState layoutState, int numLines)
+		public static VideoParagraph[] CreateParagraphs(VideoContext context, KaraokeEvent[] lyrics, VideoLayoutState layoutState, int numLines)
 		{
 			var newParagraphs = new List<VideoParagraph>();
 			var i = 0;
@@ -64,7 +64,7 @@ namespace KaraokeLib.Video
 		/// <param name="numEventsConsumed">Returns how many events were included in this paragraph.</param>
 		private static VideoParagraph FillParagraph(
 			VideoContext context,
-			LyricsEvent[] lyrics,
+			KaraokeEvent[] lyrics,
 			int offset,
 			VideoLayoutState layoutState,
 			int numLines,
@@ -72,10 +72,10 @@ namespace KaraokeLib.Video
 		{
 			numEventsConsumed = 0;
 			var currentLine = 0;
-			var lines = new List<LyricsEvent[]>();
+			var lines = new List<KaraokeEvent[]>();
 			var lineWidths = new List<float>();
 			var currentLineWidth = 0.0f;
-			var currentLineEvents = new List<LyricsEvent>();
+			var currentLineEvents = new List<KaraokeEvent>();
 
 			var safeArea = context.Style.GetSafeArea(context.Size);
 
@@ -83,13 +83,13 @@ namespace KaraokeLib.Video
 			{
 				var ev = lyrics[i];
 
-				if (ev.Type == LyricsEventType.ParagraphBreak)
+				if (ev.Type == KaraokeEventType.ParagraphBreak)
 				{
 					numEventsConsumed++;
 					break;
 				}
 
-				if (ev.Type == LyricsEventType.LineBreak && currentLine == 0 && !currentLineEvents.Any())
+				if (ev.Type == KaraokeEventType.LineBreak && currentLine == 0 && !currentLineEvents.Any())
 				{
 					// ignore line breaks at the start of paragraphs
 					numEventsConsumed++;
@@ -100,7 +100,7 @@ namespace KaraokeLib.Video
 				var hasSpace = ev.LinkedId == -1 && currentLineEvents.Any();
 				var textToMeasure = (hasSpace ? " " : "") + ev.GetText(layoutState);
 				var width = context.Style.GetTextWidth(textToMeasure);
-				if (ev.Type == LyricsEventType.Lyric && (currentLineWidth + width) <= safeArea.Width)
+				if (ev.Type == KaraokeEventType.Lyric && (currentLineWidth + width) <= safeArea.Width)
 				{
 					// we can fit it on the current line
 					currentLineEvents.Add(ev);
@@ -126,7 +126,7 @@ namespace KaraokeLib.Video
 						break;
 					}
 
-					if (ev.Type != LyricsEventType.LineBreak)
+					if (ev.Type != KaraokeEventType.LineBreak)
 					{
 						// get this event recorded in the new line if we have an event worth recording
 						currentLineWidth = width;

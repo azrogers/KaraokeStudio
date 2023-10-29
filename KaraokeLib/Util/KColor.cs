@@ -1,11 +1,4 @@
 ﻿using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Newtonsoft.Json;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Drawing;
 
 namespace KaraokeLib.Util
@@ -15,7 +8,7 @@ namespace KaraokeLib.Util
 		public byte Red;
 		public byte Green;
 		public byte Blue;
-		public byte Alpha;
+		public byte Alpha = 255;
 
 		public KColor(byte r, byte g, byte b)
 		{

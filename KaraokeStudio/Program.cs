@@ -1,3 +1,4 @@
+using KaraokeLib.Video;
 using System.Drawing.Text;
 using System.Runtime.InteropServices;
 
@@ -11,6 +12,8 @@ namespace KaraokeStudio
 		[STAThread]
 		static void Main(string[] args)
 		{
+			FFMpegUtil.SetupFfmpegPath();
+
 			// To customize application configuration such as set high DPI settings or default font,
 			// see https://aka.ms/applicationconfiguration.
 			ApplicationConfiguration.Initialize();

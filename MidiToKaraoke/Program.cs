@@ -1,5 +1,4 @@
-﻿using KaraokeLib.Audio;
-using KaraokeLib.Lyrics;
+﻿using KaraokeLib.Files;
 using KaraokeLib.Video;
 
 namespace MidiToKaraoke
@@ -8,7 +7,7 @@ namespace MidiToKaraoke
 	{
 		static void Main(string[] args)
 		{
-			var lyricsFile = new MidiLyricsFile("notes.mid");
+			var lyricsFile = new MidiKaraokeFile("notes.mid");
 			var video = new VideoGenerator(lyricsFile, "song.ogg");
 			video.RenderFrameToFile(new VideoTimecode(20.0, 30), "test.png");
 			//video.RenderVideo(0.0, 185.0, "test.mp4");

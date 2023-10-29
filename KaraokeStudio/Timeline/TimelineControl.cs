@@ -1,20 +1,22 @@
-﻿using KaraokeLib.Lyrics;
+﻿using KaraokeLib;
+using KaraokeLib.Events;
 using KaraokeLib.Util;
+using KaraokeStudio.Util;
 using SkiaSharp;
 using System.Data;
 
 namespace KaraokeStudio.Timeline
 {
-	/// <summary>
-	/// Represents the timeline that displays events and allows the user to modify them.
-	/// </summary>
-	/// <remarks>
-	/// The control contains a canvas. The canvas is larger than the client rect of the control - it's as long as is needed to display every event.
-	/// We use the concept of "canvas space" and "control space" to distinguish between these. 
-	/// A coordinate in control space is in screen coordinates, relative to the location of the control on the screen.
-	/// A coordinate in canvas space is in the coordinates of the full canvas, which may be scaled or scrolled depending on the user's inputs.
-	/// </remarks>
-	public partial class TimelineControl : UserControl
+    /// <summary>
+    /// Represents the timeline that displays events and allows the user to modify them.
+    /// </summary>
+    /// <remarks>
+    /// The control contains a canvas. The canvas is larger than the client rect of the control - it's as long as is needed to display every event.
+    /// We use the concept of "canvas space" and "control space" to distinguish between these. 
+    /// A coordinate in control space is in screen coordinates, relative to the location of the control on the screen.
+    /// A coordinate in canvas space is in the coordinates of the full canvas, which may be scaled or scrolled depending on the user's inputs.
+    /// </remarks>
+    public partial class TimelineControl : UserControl
 	{
 		private const float PADDING_TOP = 5.0f;
 		private const float TRACK_HEADER_WIDTH = 200.0f;
@@ -27,7 +29,7 @@ namespace KaraokeStudio.Timeline
 		private SKPaint _highlightPaint;
 		private SKPaint _trackHeaderTypePaint;
 		private SKPaint _trackHeaderTitlePaint;
-		private Dictionary<LyricsTrackType, SKPaint> _trackHeaderPaints;
+		private Dictionary<KaraokeTrackType, SKPaint> _trackHeaderPaints;
 
 		private TimelineCanvas _timelineCanvas;
 		private int _selectedTrackId = -1;
@@ -47,12 +49,12 @@ namespace KaraokeStudio.Timeline
 		/// <summary>
 		/// Called when the currently selected event has changed.
 		/// </summary>
-		public event Action<LyricsEvent?>? OnEventSelectionChanged;
+		public event Action<KaraokeEvent?>? OnEventSelectionChanged;
 
 		/// <summary>
 		/// Called when the currently selected track has changed.
 		/// </summary>
-		public event Action<LyricsTrack?>? OnTrackSelectionChanged;
+		public event Action<KaraokeTrack?>? OnTrackSelectionChanged;
 
 		public TimelineControl()
 		{
@@ -132,11 +134,11 @@ namespace KaraokeStudio.Timeline
 				return false;
 			}
 
-			var yPos = pos.Y - PADDING_TOP;
+			var canvasPos = CreateInverseMatrix().MapPoint(new SKPoint(pos.X, pos.Y - PADDING_TOP));
 
-			if(pos.X < TRACK_HEADER_WIDTH && yPos < _currentProject.Tracks.Count() * TimelineCanvas.TRACK_HEIGHT)
+			if(canvasPos.X < TRACK_HEADER_WIDTH && canvasPos.Y < _currentProject.Tracks.Count() * TimelineCanvas.TRACK_HEIGHT)
 			{
-				_selectedTrackId = _currentProject.Tracks.Skip((int)(yPos / TimelineCanvas.TRACK_HEIGHT)).FirstOrDefault()?.Id ?? -1;
+				_selectedTrackId = _currentProject.Tracks.Skip((int)(canvasPos.Y / TimelineCanvas.TRACK_HEIGHT)).FirstOrDefault()?.Id ?? -1;
 				return _selectedTrackId != -1;
 			}
 
@@ -197,8 +199,8 @@ namespace KaraokeStudio.Timeline
 			}
 
 			var clientRect = GetViewportClientRect();
-			var rect = CreateMatrix().MapRect(new SKRect(0, 0, _timelineCanvas.Size.Width, _timelineCanvas.Size.Height));
-			var size = new SKSize(rect.Width, rect.Height);
+			var rect = CreateMatrix().MapRect(new SKRect(0, 0, _timelineCanvas.Size.Width, _timelineCanvas.Size.Height + 5));
+			var size = new SKSize(rect.Width, rect.Height + PADDING_TOP);
 
 			verticalScroll.Enabled = size.Height > clientRect.Height;
 			horizScroll.Enabled = size.Width > clientRect.Width;
@@ -255,26 +257,28 @@ namespace KaraokeStudio.Timeline
 
 			savePoint = canvas.Save();
 
-			var nextY = PADDING_TOP;
+			var nextY = PADDING_TOP - (Math.Max(0, verticalScroll.Value));/// _verticalZoomFactor);
 			var rightPadding = 3.0f;
 			foreach (var track in _currentProject.Tracks)
 			{
-				canvas.DrawRect(0, nextY, TRACK_HEADER_WIDTH - rightPadding, TimelineCanvas.TRACK_HEIGHT, _trackHeaderPaints[track.Type]);
-				canvas.DrawRect(0, nextY + TimelineCanvas.TRACK_HEIGHT - 2, TRACK_HEADER_WIDTH - rightPadding, 2, _shadowPaint);
+				var height = TimelineCanvas.TRACK_HEIGHT * _verticalZoomFactor;
+				var rectHeight = (TimelineCanvas.TRACK_HEIGHT - 1.0f) * _verticalZoomFactor;
+				canvas.DrawRect(0, nextY, TRACK_HEADER_WIDTH - rightPadding, rectHeight, _trackHeaderPaints[track.Type]);
+				canvas.DrawRect(0, nextY + rectHeight - 2.0f, TRACK_HEADER_WIDTH - rightPadding, 2, _shadowPaint);
 
 				// draw light overlay for selected track
 				if(_selectedTrackId == track.Id)
 				{
-					canvas.DrawRect(0, nextY, TRACK_HEADER_WIDTH - rightPadding, TimelineCanvas.TRACK_HEIGHT, _selectTrackPaint);
+					canvas.DrawRect(0, nextY, TRACK_HEADER_WIDTH - rightPadding, rectHeight, _selectTrackPaint);
 				}
 
 				var trackTypeStr = track.Type.ToString();
 				var trackTypeWidth = _trackHeaderTypePaint.MeasureText(trackTypeStr);
 
-				canvas.DrawText(trackTypeStr, new SKPoint(TRACK_HEADER_WIDTH - trackTypeWidth - 5 - rightPadding, TimelineCanvas.TRACK_HEIGHT - 5), _trackHeaderTypePaint);
+				canvas.DrawText(trackTypeStr, new SKPoint(TRACK_HEADER_WIDTH - trackTypeWidth - 5 - rightPadding, nextY + rectHeight - 5), _trackHeaderTypePaint);
 				var trackTitleHeight = StyleUtil.GetFontHeight(_trackHeaderTitlePaint.ToFont());
-				canvas.DrawText("Track " + track.Id, new SKPoint(5, 5 + trackTitleHeight), _trackHeaderTitlePaint);
-				nextY += TimelineCanvas.TRACK_HEIGHT;
+				canvas.DrawText("Track " + track.Id, new SKPoint(5, nextY + 5 + trackTitleHeight), _trackHeaderTitlePaint);
+				nextY += height;
 			}
 
 			canvas.RestoreToCount(savePoint);
@@ -373,7 +377,7 @@ namespace KaraokeStudio.Timeline
 			}
 		}
 
-		private void _timelineCanvas_OnEventSelectionChanged(LyricsEvent? obj)
+		private void _timelineCanvas_OnEventSelectionChanged(KaraokeEvent? obj)
 		{
 			OnEventSelectionChanged?.Invoke(obj);
 		}

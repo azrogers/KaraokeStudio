@@ -1,4 +1,4 @@
-﻿using KaraokeLib.Lyrics;
+﻿using KaraokeLib.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace KaraokeStudio.LyricsEditor
 {
-	internal class LyricsLexer
+    internal class LyricsLexer
 	{
 		public static IEnumerable<LyricsLexerElement> Process(IEnumerable<LyricsToken> tokens)
 		{
@@ -22,17 +22,17 @@ namespace KaraokeStudio.LyricsEditor
 
 				if(currentTokens.Any())
 				{
-					yield return new LyricsLexerElement(LyricsEventType.Lyric, currentTokens.Select(t => t.Value).ToArray());
+					yield return new LyricsLexerElement(KaraokeEventType.Lyric, currentTokens.Select(t => t.Value).ToArray());
 					currentTokens.Clear();
 				}
 
 				if(token.Type == LyricsTokenType.LineBreak)
 				{
-					yield return new LyricsLexerElement(LyricsEventType.LineBreak);
+					yield return new LyricsLexerElement(KaraokeEventType.LineBreak);
 				}
 				else if(token.Type == LyricsTokenType.ParagraphBreak)
 				{
-					yield return new LyricsLexerElement(LyricsEventType.ParagraphBreak);
+					yield return new LyricsLexerElement(KaraokeEventType.ParagraphBreak);
 				}
 			}
 		}
@@ -42,12 +42,12 @@ namespace KaraokeStudio.LyricsEditor
 	{
 		private static readonly FastHashes.XxHash32 Hash = new FastHashes.XxHash32();
 
-		public LyricsEventType Type { get; private set; }
+		public KaraokeEventType Type { get; private set; }
 		public string[] Tokens => _tokens;
 
 		private string[] _tokens;
 
-		public LyricsLexerElement(LyricsEventType type, string[]? tokens = null)
+		public LyricsLexerElement(KaraokeEventType type, string[]? tokens = null)
 		{
 			_tokens = tokens ?? new string[0];
 			Type = type;
@@ -60,7 +60,7 @@ namespace KaraokeStudio.LyricsEditor
 				(byte)Type
 			};
 
-			if (Type == LyricsEventType.Lyric)
+			if (Type == KaraokeEventType.Lyric)
 			{
 				bytes.AddRange(BitConverter.GetBytes(Tokens.Length));
 				foreach (var token in Tokens)

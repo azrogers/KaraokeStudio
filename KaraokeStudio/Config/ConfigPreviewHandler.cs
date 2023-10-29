@@ -1,10 +1,11 @@
-﻿using KaraokeLib.Config;
-using KaraokeLib.Lyrics;
+﻿using KaraokeLib;
+using KaraokeLib.Config;
+using KaraokeLib.Events;
 using SkiaSharp;
 
 namespace KaraokeStudio.Config
 {
-	internal class ConfigPreviewHandler
+    internal class ConfigPreviewHandler
 	{
 		private const string TEXT = @"Lo-rem ip-sum do-lor sit am-et, con-sect-te-tur ad-ip-is-cing el-it.
 Vest-ib-u-lum vi-tae ar-cu vel el-it sus-ci-pit ul-tri-cies ac quis do-lor. In-te-ger a con-gue la-cus.
@@ -15,17 +16,17 @@ vi-ver-ra el-it ia-cu-lis tem-pus e-ros. In vol-ut-pat, el-it a ul-tri-ces con-v
 mas-sa quis sem. Cur-a-bit-ur cur-sus or-ci vit-ae con-seq-uat hen-dre-rit. Sus-pen-disse lao-reet mal-es-ua-da quam.";
 
 		private VideoGenerationState _generationState;
-		private LyricsEvent[] _events;
-		private LyricsTrack[] _tracks;
+		private KaraokeEvent[] _events;
+		private KaraokeTrack[] _tracks;
 		private int _frameRate;
 
 		public ConfigPreviewHandler()
 		{
 			_generationState = new VideoGenerationState();
 			_events = CreateEventsFromText(TEXT).ToArray();
-			_tracks = new LyricsTrack[]
+			_tracks = new KaraokeTrack[]
 			{
-				new LyricsTrack(0, LyricsTrackType.Lyrics, _events)
+				new KaraokeTrack(0, KaraokeTrackType.Lyrics, _events)
 			};
 		}
 
@@ -41,7 +42,7 @@ mas-sa quis sem. Cur-a-bit-ur cur-sus or-ci vit-ae con-seq-uat hen-dre-rit. Sus-
 			_generationState.UpdateVideoContext(_events.Last().EndTimeSeconds, config, size);
 		}
 
-		private IEnumerable<LyricsEvent> CreateEventsFromText(string text)
+		private IEnumerable<KaraokeEvent> CreateEventsFromText(string text)
 		{
 			var words = text.Split(' ');
 			var id = 0;
@@ -52,15 +53,15 @@ mas-sa quis sem. Cur-a-bit-ur cur-sus or-ci vit-ae con-seq-uat hen-dre-rit. Sus-
 				var firstId = id;
 				foreach (var part in parts)
 				{
-					var ev = new LyricsEvent(
-						LyricsEventType.Lyric,
+					var ev = new KaraokeEvent(
+						KaraokeEventType.Lyric,
 						id,
 						new TimeSpanTimecode(TimeSpan.FromSeconds(time)),
 						new TimeSpanTimecode(TimeSpan.FromSeconds(time + 0.25f)),
 						(firstId != id ? firstId : -1));
 					id++;
 					time += 0.5f;
-					ev.RawText = part.Trim();
+					ev.RawValue = part.Trim();
 					yield return ev;
 				}
 			}

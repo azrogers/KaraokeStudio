@@ -1,11 +1,6 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace KaraokeStudio
+namespace KaraokeStudio.Util
 {
 	internal class AppSettings
 	{
@@ -27,7 +22,7 @@ namespace KaraokeStudio
 		public void AddRecentFile(string file)
 		{
 			RecentFiles.Add(file);
-			if(RecentFiles.Count > MAX_RECENT_FILES)
+			if (RecentFiles.Count > MAX_RECENT_FILES)
 			{
 				RecentFiles.Remove(RecentFiles.First());
 			}
@@ -44,7 +39,7 @@ namespace KaraokeStudio
 		public void Save()
 		{
 			var dir = Path.GetDirectoryName(Filename);
-			if(dir != null && !Directory.Exists(dir))
+			if (dir != null && !Directory.Exists(dir))
 			{
 				Directory.CreateDirectory(dir);
 			}

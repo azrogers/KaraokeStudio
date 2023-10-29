@@ -1,4 +1,4 @@
-﻿using KaraokeLib.Lyrics;
+﻿using KaraokeLib;
 using KaraokeLib.Util;
 using KaraokeLib.Video.Elements;
 using KaraokeLib.Video.Plan;
@@ -27,6 +27,7 @@ namespace KaraokeLib.Video
 
 		public void RenderFrame(VideoPlan videoPlan, VideoTimecode videoTimecode, SKCanvas canvas)
 		{
+			canvas.Clear();
 			canvas.DrawRect(
 				new SKRect(0, 0, _context.Size.Width, _context.Size.Height),
 				_context.Style.BackgroundPaint);

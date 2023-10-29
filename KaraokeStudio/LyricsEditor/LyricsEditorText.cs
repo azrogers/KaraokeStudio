@@ -1,4 +1,5 @@
-﻿using KaraokeLib.Lyrics;
+﻿using KaraokeLib.Events;
+using KaraokeStudio.Util;
 using Newtonsoft.Json.Linq;
 using ScintillaNET;
 using System.Text;
@@ -6,21 +7,21 @@ using System.Windows.Documents;
 
 namespace KaraokeStudio.LyricsEditor
 {
-	internal static class LyricsEditorText
+    internal static class LyricsEditorText
 	{
 		/// <summary>
 		/// Creates LyricsEditorTextElement instances from the given stream of events.
 		/// </summary>
-		public static LyricsEditorTextElement[] CreateElements(IEnumerable<LyricsEvent> events)
+		public static LyricsEditorTextElement[] CreateElements(IEnumerable<KaraokeEvent> events)
 		{
 			var elements = new List<LyricsEditorTextElement>();
-			var currentLyricEvents = new List<LyricsEvent>();
+			var currentLyricEvents = new List<KaraokeEvent>();
 			var lastLyricEventId = int.MinValue;
 			var nextId = 0;
 
 			foreach (var e in events)
 			{
-				if (e.Type == LyricsEventType.Lyric && e.LinkedId == lastLyricEventId)
+				if (e.Type == KaraokeEventType.Lyric && e.LinkedId == lastLyricEventId)
 				{
 					// this is another syllable of the existing word
 					currentLyricEvents.Add(e);
@@ -31,12 +32,12 @@ namespace KaraokeStudio.LyricsEditor
 				if (currentLyricEvents.Any())
 				{
 					// we're starting a new element, push the old one
-					elements.Add(new LyricsEditorTextElement(nextId++, LyricsEventType.Lyric, currentLyricEvents));
+					elements.Add(new LyricsEditorTextElement(nextId++, KaraokeEventType.Lyric, currentLyricEvents));
 					currentLyricEvents.Clear();
 					lastLyricEventId = int.MinValue;
 				}
 
-				if (e.Type == LyricsEventType.Lyric)
+				if (e.Type == KaraokeEventType.Lyric)
 				{
 					// this is the first lyric of a new word
 					currentLyricEvents.Add(e);
@@ -44,14 +45,14 @@ namespace KaraokeStudio.LyricsEditor
 				}
 				else
 				{
-					elements.Add(new LyricsEditorTextElement(nextId++, e.Type, new LyricsEvent[] { e }));
+					elements.Add(new LyricsEditorTextElement(nextId++, e.Type, new KaraokeEvent[] { e }));
 				}
 			}
 
 			// push the last word
 			if (currentLyricEvents.Any())
 			{
-				elements.Add(new LyricsEditorTextElement(nextId++, LyricsEventType.Lyric, currentLyricEvents));
+				elements.Add(new LyricsEditorTextElement(nextId++, KaraokeEventType.Lyric, currentLyricEvents));
 			}
 
 			return elements.ToArray();
@@ -128,11 +129,11 @@ namespace KaraokeStudio.LyricsEditor
 				}
 
 				var oldElem = oldElements[oldIndex];
-				var events = new List<LyricsEvent>(oldElem.Events.Length);
+				var events = new List<KaraokeEvent>(oldElem.Events.Length);
 				var lastId = -1;
 				foreach (var ev in oldElem.Events)
 				{
-					events.Add(new LyricsEvent(ev.Type, nextEventId, ev.StartTime, ev.EndTime, lastId) { RawText = ev.RawText });
+					events.Add(new KaraokeEvent(ev.Type, nextEventId, ev.StartTime, ev.EndTime, lastId) { RawValue = ev.RawValue });
 					lastId = nextEventId++;
 				}
 
@@ -154,17 +155,17 @@ namespace KaraokeStudio.LyricsEditor
 		{
 			var pos = startPos;
 
-			if (elem.Type == LyricsEventType.Lyric)
+			if (elem.Type == KaraokeEventType.Lyric)
 			{
-				var events = new List<LyricsEvent>();
+				var events = new List<KaraokeEvent>();
 				var lastId = -1;
 				foreach (var token in elem.Tokens)
 				{
-					var startTime = Util.Lerp(timeStart, timeEnd, pos / (double)totalLen);
+					var startTime = Utility.Lerp(timeStart, timeEnd, pos / (double)totalLen);
 					pos += token.Length;
-					var endTime = Util.Lerp(timeStart, timeEnd, pos / (double)totalLen);
+					var endTime = Utility.Lerp(timeStart, timeEnd, pos / (double)totalLen);
 
-					events.Add(new LyricsEvent(LyricsEventType.Lyric, nextEventId, new TimeSpanTimecode(startTime), new TimeSpanTimecode(endTime), lastId) { RawText = token });
+					events.Add(new KaraokeEvent(KaraokeEventType.Lyric, nextEventId, new TimeSpanTimecode(startTime), new TimeSpanTimecode(endTime), lastId) { RawValue = token });
 
 					lastId = nextEventId++;
 				}
@@ -173,20 +174,20 @@ namespace KaraokeStudio.LyricsEditor
 				pos++;
 
 				len = pos - startPos;
-				return new LyricsEditorTextElement(nextElementId++, LyricsEventType.Lyric, events);
+				return new LyricsEditorTextElement(nextElementId++, KaraokeEventType.Lyric, events);
 			}
 			else
 			{
-				var startTime = Util.Lerp(timeStart, timeEnd, pos / (double)totalLen);
+				var startTime = Utility.Lerp(timeStart, timeEnd, pos / (double)totalLen);
 				pos++;
-				var endTime = Util.Lerp(timeStart, timeEnd, pos / (double)totalLen);
+				var endTime = Utility.Lerp(timeStart, timeEnd, pos / (double)totalLen);
 
 				len = pos - startPos;
 				return new LyricsEditorTextElement(
 					nextElementId++, 
 					elem.Type, 
-					new LyricsEvent[] {
-						new LyricsEvent(elem.Type, nextEventId++, new TimeSpanTimecode(startTime), new TimeSpanTimecode(endTime)) 
+					new KaraokeEvent[] {
+						new KaraokeEvent(elem.Type, nextEventId++, new TimeSpanTimecode(startTime), new TimeSpanTimecode(endTime)) 
 					});
 			}
 		}

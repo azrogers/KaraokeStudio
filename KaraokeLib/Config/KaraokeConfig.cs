@@ -20,7 +20,7 @@ namespace KaraokeLib.Config
         public KColor NormalColor = new KColor(255, 255, 255);
         public KColor HighlightColor = new KColor(70, 175, 90);
         public KColor StrokeColor = new KColor(0, 0, 0);
-        // TODO: replace with Graphics LyricsTrack background element
+        // TODO: replace with Graphics KaraokeTrack background element
         public KColor BackgroundColor = new KColor(230, 230, 230);
 
         [ConfigRange(0.0)]

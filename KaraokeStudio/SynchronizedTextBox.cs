@@ -1,4 +1,4 @@
-﻿using KaraokeLib.Lyrics;
+﻿using KaraokeLib.Events;
 using KaraokeStudio.LyricsEditor;
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace KaraokeStudio
 {
-	public partial class SynchronizedTextBox : TextBox
+    public partial class SynchronizedTextBox : TextBox
 	{
 		private double _currentPosition = 0;
 		private LyricsEditorTextElement[] _elements;
@@ -26,7 +26,7 @@ namespace KaraokeStudio
 			_textResult = new LyricsEditorTextResult("", new Dictionary<int, int>());
 		}
 
-		public void Initialize(IEnumerable<LyricsEvent> events)
+		public void Initialize(IEnumerable<KaraokeEvent> events)
 		{
 			_elements = LyricsEditorText.CreateElements(events).OrderBy(e => e.StartTime).ToArray();
 			_textResult = LyricsEditorText.CreateString(_elements);

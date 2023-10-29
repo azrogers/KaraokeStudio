@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
+﻿using KaraokeLib.Events;
 
-namespace KaraokeLib.Lyrics.Providers
+namespace KaraokeLib.Files
 {
 	/// <summary>
 	/// Represents a single .ksf file.
 	/// </summary>
-	public class KsfLyricsFile : LyricsFile<KsfLyricsProvider>
+	public class KsfKaraokeFile : KaraokeFile<KsfKaraokeProvider>
 	{
 		/// <summary>
 		/// Sets the given key-value metadata on the file.
@@ -25,26 +20,26 @@ namespace KaraokeLib.Lyrics.Providers
 		/// </summary>
 		public void RemoveMetadata(string key) => _provider.RemoveMetadata(key);
 
-		public KsfLyricsFile(string filename)
-			: base(new KsfLyricsProvider(filename))
+		public KsfKaraokeFile(string filename)
+			: base(new KsfKaraokeProvider(filename))
 		{
 
 		}
 
-		public KsfLyricsFile(Stream stream)
-			: base(new KsfLyricsProvider(stream))
+		public KsfKaraokeFile(Stream stream)
+			: base(new KsfKaraokeProvider(stream))
 		{
 
 		}
 
-		public KsfLyricsFile(ILyricsFile otherFile)
-			: base(new KsfLyricsProvider(otherFile.GetTracks()))
+		public KsfKaraokeFile(IKaraokeFile otherFile)
+			: base(new KsfKaraokeProvider(otherFile.GetTracks()))
 		{
 
 		}
 
-		public KsfLyricsFile()
-			: base(new KsfLyricsProvider(Enumerable.Empty<LyricsTrack>()))
+		public KsfKaraokeFile()
+			: base(new KsfKaraokeProvider(Enumerable.Empty<KaraokeTrack>()))
 		{
 
 		}
@@ -53,7 +48,7 @@ namespace KaraokeLib.Lyrics.Providers
 	/// <summary>
 	/// Reads and writes .ksf (Karaoke Studio File) format
 	/// </summary>
-	public class KsfLyricsProvider : ILyricsProvider
+	public class KsfKaraokeProvider : IKaraokeProvider
 	{
 		// = "KSPF"
 		private const uint MAGIC_NUMBER = 0x4650534B;
@@ -61,24 +56,24 @@ namespace KaraokeLib.Lyrics.Providers
 
 		private Dictionary<string, string> _metadata = new Dictionary<string, string>();
 
-		private LyricsTrack[] _tracks;
+		private KaraokeTrack[] _tracks;
 
-		public KsfLyricsProvider(string fileName)
+		public KsfKaraokeProvider(string fileName)
 		{
 			using (var stream = File.OpenRead(fileName))
 			{
-				_tracks = new LyricsTrack[0];
+				_tracks = new KaraokeTrack[0];
 				Load(stream);
 			}
 		}
 
-		public KsfLyricsProvider(Stream stream)
+		public KsfKaraokeProvider(Stream stream)
 		{
-			_tracks = new LyricsTrack[0];
+			_tracks = new KaraokeTrack[0];
 			Load(stream);
 		}
 
-		public KsfLyricsProvider(IEnumerable<LyricsTrack> tracks)
+		public KsfKaraokeProvider(IEnumerable<KaraokeTrack> tracks)
 		{
 			_tracks = tracks.ToArray();
 		}
@@ -88,7 +83,7 @@ namespace KaraokeLib.Lyrics.Providers
 		public void RemoveMetadata(string key) => _metadata.Remove(key);
 
 		/// <inheritdoc/>
-		public IEnumerable<LyricsTrack> GetTracks()
+		public IEnumerable<KaraokeTrack> GetTracks()
 		{
 			return _tracks;
 		}
@@ -97,6 +92,15 @@ namespace KaraokeLib.Lyrics.Providers
 		public double GetLengthSeconds()
 		{
 			return _tracks.Max(t => t.Events.Max(e => e.EndTimeSeconds));
+		}
+
+		/// <inheritdoc />
+		public KaraokeTrack AddTrack(KaraokeTrackType type)
+		{
+			var nextId = _tracks.Any() ? _tracks.Select(t => t.Id).Max() + 1 : 0;
+			var track = new KaraokeTrack(nextId, type);
+			_tracks = _tracks.Concat(new KaraokeTrack[] { track }).ToArray();
+			return track;
 		}
 
 		/// <inheritdoc/>
@@ -108,7 +112,7 @@ namespace KaraokeLib.Lyrics.Providers
 			writer.Write(VERSION);
 			// write metadata
 			writer.Write((ushort)_metadata.Count);
-			foreach(var kv in _metadata)
+			foreach (var kv in _metadata)
 			{
 				writer.WriteNullTerminatedString(kv.Key);
 				writer.WriteNullTerminatedString(kv.Value);
@@ -116,23 +120,23 @@ namespace KaraokeLib.Lyrics.Providers
 
 			// write tracks
 			writer.Write((byte)_tracks.Length);
-			foreach(var track in _tracks)
+			foreach (var track in _tracks)
 			{
 				writer.Write((uint)track.Events.Count());
 				writer.Write((byte)track.Type);
 				writer.Write(track.Id);
-				foreach(var ev in track.Events)
+				foreach (var ev in track.Events)
 				{
 					// 0 = no optional fields, 1 = no text, 2 = no linked id, 3 = both
-					if(ev.LinkedId == -1 && ev.RawText == null)
+					if (ev.LinkedId == -1 && ev.RawValue == null)
 					{
 						writer.Write((byte)0);
 					}
-					else if(ev.LinkedId != -1 && ev.RawText == null)
+					else if (ev.LinkedId != -1 && ev.RawValue == null)
 					{
 						writer.Write((byte)1);
 					}
-					else if(ev.LinkedId == -1 && ev.RawText != null)
+					else if (ev.LinkedId == -1 && ev.RawValue != null)
 					{
 						writer.Write((byte)2);
 					}
@@ -146,13 +150,13 @@ namespace KaraokeLib.Lyrics.Providers
 					writer.Write(ev.Id);
 					writer.Write((uint)ev.StartTimeMilliseconds);
 					writer.Write((uint)ev.EndTimeMilliseconds);
-					if(ev.LinkedId != -1)
+					if (ev.LinkedId != -1)
 					{
 						writer.Write(ev.LinkedId);
 					}
-					if(ev.RawText != null)
+					if (ev.RawValue != null)
 					{
-						writer.WriteNullTerminatedString(ev.RawText);
+						writer.WriteNullTerminatedString(ev.RawValue);
 					}
 				}
 			}
@@ -163,20 +167,20 @@ namespace KaraokeLib.Lyrics.Providers
 			var reader = new BinaryReader(stream);
 
 			var magic = reader.ReadUInt32();
-			if(magic != MAGIC_NUMBER)
+			if (magic != MAGIC_NUMBER)
 			{
 				throw new InvalidDataException($"Unknown magic number {magic:X}");
 			}
 
 			var version = reader.ReadByte();
-			if(version > VERSION)
+			if (version > VERSION)
 			{
 				throw new NotImplementedException($"Can't read format version {version}");
 			}
 
 			var metadataCount = reader.ReadUInt16();
 			_metadata.EnsureCapacity(metadataCount);
-			for(var i = 0; i < metadataCount; i++)
+			for (var i = 0; i < metadataCount; i++)
 			{
 				var key = reader.ReadNullTerminatedString();
 				_metadata[key] = reader.ReadNullTerminatedString();
@@ -184,44 +188,49 @@ namespace KaraokeLib.Lyrics.Providers
 
 			var nextId = 0;
 			var trackCount = reader.ReadByte();
-			_tracks = new LyricsTrack[trackCount];
-			for(var i = 0; i < trackCount; i++)
+			_tracks = new KaraokeTrack[trackCount];
+			for (var i = 0; i < trackCount; i++)
 			{
-				var events = new List<LyricsEvent>();
+				var events = new List<KaraokeEvent>();
 
 				var eventCount = reader.ReadUInt32();
-				var trackType = LyricsTrackType.Lyrics;
+				var trackType = KaraokeTrackType.Lyrics;
 				// KSF version 1 added track type
-				if(version > 0)
+				if (version > 0)
 				{
-					trackType = (LyricsTrackType)reader.ReadByte();
+					trackType = (KaraokeTrackType)reader.ReadByte();
 				}
 				// ksf version 2 added track id
 				var trackId = version > 1 ? reader.ReadInt32() : nextId++;
-				for(var j = 0; j < eventCount; j++)
+				for (var j = 0; j < eventCount; j++)
 				{
 					var evFields = reader.ReadByte();
 
-					var type = (LyricsEventType)reader.ReadByte();
+					var type = (KaraokeEventType)reader.ReadByte();
 					var id = reader.ReadInt32();
 					var startTimeMs = reader.ReadUInt32();
 					var endTimeMs = reader.ReadUInt32();
 					var linkedId = -1;
-					if(evFields == 1 || evFields == 3)
+					if (evFields == 1 || evFields == 3)
 					{
 						linkedId = reader.ReadInt32();
 					}
-					var ev = new LyricsEvent(type, id, new TimeSpanTimecode(startTimeMs), new TimeSpanTimecode(endTimeMs), linkedId);
+					var ev = new KaraokeEvent(type, id, new TimeSpanTimecode(startTimeMs), new TimeSpanTimecode(endTimeMs), linkedId);
 
-					if(evFields == 2 || evFields == 3)
+					if (evFields == 2 || evFields == 3)
 					{
-						ev.RawText = reader.ReadNullTerminatedString();
+						ev.RawValue = reader.ReadNullTerminatedString();
+					}
+
+					if(ev.Type == KaraokeEventType.AudioClip)
+					{
+						ev = new AudioClipKaraokeEvent(ev);
 					}
 
 					events.Add(ev);
 				}
 
-				_tracks[i] = new LyricsTrack(trackId, trackType);
+				_tracks[i] = new KaraokeTrack(trackId, trackType);
 				_tracks[i].AddEvents(events);
 			}
 		}

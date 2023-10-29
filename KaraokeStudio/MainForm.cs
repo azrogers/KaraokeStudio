@@ -1,8 +1,9 @@
-using KaraokeStudio.FormHandlers;
-using Ookii.Dialogs.WinForms;
-using KaraokeStudio.Timeline;
-using KaraokeLib.Lyrics;
+using KaraokeLib;
 using KaraokeLib.Config;
+using KaraokeLib.Events;
+using KaraokeStudio.FormHandlers;
+using KaraokeStudio.Util;
+using KaraokeStudio.Video;
 
 namespace KaraokeStudio
 {
@@ -12,8 +13,8 @@ namespace KaraokeStudio
 		private StyleForm _styleForm;
 		private SyncForm _syncForm;
 
-		private LyricsEvent? _selectedEvent = null;
-		private LyricsTrack? _selectedTrack = null;
+		private KaraokeEvent? _selectedEvent = null;
+		private KaraokeTrack? _selectedTrack = null;
 
 		public MainForm()
 		{
@@ -32,6 +33,7 @@ namespace KaraokeStudio
 			_projectHandler.OnProjectChanged += OnProjectChanged;
 			_projectHandler.OnPendingStateChanged += OnPendingStateChanged;
 			_projectHandler.OnProjectWillChangeCallback = OnProjectWillChange;
+			_projectHandler.OnTrackChanged += OnTrackChanged;
 
 			lyricsEditor.OnLyricsEventsChanged += OnLyricsEventsChanged;
 
@@ -48,14 +50,14 @@ namespace KaraokeStudio
 			OnProjectChanged(null);
 		}
 
-		private void OnSyncDataApplied(LyricsTrack obj)
-		{
-			_projectHandler.SetEvents(obj, obj.Events);
-		}
-
 		public void LoadProject(string path)
 		{
 			_projectHandler.OpenProject(path);
+		}
+
+		private void OnSyncDataApplied(KaraokeTrack obj)
+		{
+			_projectHandler.SetEvents(obj, obj.Events);
 		}
 
 		private bool OnProjectWillChange()
@@ -75,13 +77,20 @@ namespace KaraokeStudio
 			video.UpdateGenerationContext();
 		}
 
-		private void OnLyricsEventsChanged((LyricsTrack Track, IEnumerable<LyricsEvent> NewEvents) obj)
+		private void OnLyricsEventsChanged((KaraokeTrack Track, IEnumerable<KaraokeEvent> NewEvents) obj)
 		{
 			_projectHandler.SetEvents(obj.Track, obj.NewEvents);
 			video.OnProjectEventsChanged(_projectHandler.Project);
 			timeline.OnProjectEventsChanged(_projectHandler.Project);
 			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
 			_syncForm.OnProjectEventsChanged(_projectHandler.Project);
+		}
+
+		private void OnTrackChanged(KaraokeTrack obj)
+		{
+			video.OnProjectEventsChanged(_projectHandler.Project);
+			timeline.OnProjectEventsChanged(_projectHandler.Project);
+			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
 		}
 
 		private void OnPendingStateChanged(bool obj)
@@ -100,13 +109,13 @@ namespace KaraokeStudio
 			_syncForm.Hide();
 		}
 
-		private void OnTrackSelectionChanged(LyricsTrack? obj)
+		private void OnTrackSelectionChanged(KaraokeTrack? obj)
 		{
 			_selectedTrack = obj;
 			UpdateTitleAndMenu();
 		}
 
-		private void OnEventSelectionChanged(LyricsEvent? obj)
+		private void OnEventSelectionChanged(KaraokeEvent? obj)
 		{
 			_selectedEvent = obj;
 			UpdateTitleAndMenu();
@@ -137,17 +146,32 @@ namespace KaraokeStudio
 
 		private void syncLyricsToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if(_projectHandler.Project == null || _selectedTrack == null)
+			if (_projectHandler.Project == null || _selectedTrack == null)
 			{
 				return;
 			}
 
-			if(_syncForm.IsDisposed)
+			if (_syncForm.IsDisposed)
 			{
 				_syncForm = new SyncForm();
 			}
 
 			_syncForm.Open(_projectHandler.Project, _selectedTrack);
+		}
+
+		private void audioToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			_projectHandler.AddNewAudioTrack();
+		}
+
+		private void removeTrackToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if(_selectedTrack == null)
+			{
+				return;
+			}
+
+			// remove track
 		}
 
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -190,7 +214,8 @@ namespace KaraokeStudio
 
 			openRecentToolStripMenuItem.Enabled = openRecentToolStripMenuItem.HasDropDownItems;
 
-			syncLyricsToolStripMenuItem.Enabled = _selectedTrack?.Type == LyricsTrackType.Lyrics;
+			syncLyricsToolStripMenuItem.Enabled = _selectedTrack?.Type == KaraokeTrackType.Lyrics;
+			removeTrackToolStripMenuItem.Enabled = _selectedTrack != null;
 		}
 	}
 }

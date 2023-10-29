@@ -1,10 +1,11 @@
-﻿using KaraokeLib.Lyrics;
+﻿using KaraokeLib;
+using KaraokeLib.Events;
 using ScintillaNET;
 using System.Data;
 
 namespace KaraokeStudio.LyricsEditor
 {
-	public partial class LyricsEditorControl : UserControl
+    public partial class LyricsEditorControl : UserControl
 	{
 		private const int LYRIC_STYLE = 11;
 		private const int LYRIC_HIGHLIGHT_STYLE = 12;
@@ -15,7 +16,7 @@ namespace KaraokeStudio.LyricsEditor
 		private Scintilla _scintilla;
 		private int _previousHighlightIndex = 0;
 
-		public event Action<(LyricsTrack Track, IEnumerable<LyricsEvent> NewEvents)>? OnLyricsEventsChanged;
+		public event Action<(KaraokeTrack Track, IEnumerable<KaraokeEvent> NewEvents)>? OnLyricsEventsChanged;
 
 		public LyricsEditorControl()
 		{
@@ -88,7 +89,7 @@ namespace KaraokeStudio.LyricsEditor
 
 		private void UpdateTextElements()
 		{
-			var track = _project?.Tracks.Where(t => t.Type == LyricsTrackType.Lyrics).FirstOrDefault();
+			var track = _project?.Tracks.Where(t => t.Type == KaraokeTrackType.Lyrics).FirstOrDefault();
 			if (track == null)
 			{
 				_textElements = new LyricsEditorTextElement[0];
@@ -159,7 +160,7 @@ namespace KaraokeStudio.LyricsEditor
 
 		private void updateLyricsButton_ButtonClick(object sender, EventArgs e)
 		{
-			var track = _project?.Tracks.FirstOrDefault(t => t.Type == LyricsTrackType.Lyrics);
+			var track = _project?.Tracks.FirstOrDefault(t => t.Type == KaraokeTrackType.Lyrics);
 			if (track == null)
 			{
 				return;

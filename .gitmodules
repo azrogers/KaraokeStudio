@@ -1,3 +1,6 @@
 [submodule "ScintillaNET"]
 	path = ScintillaNET
 	url = git@github.com:azrogers/ScintillaNET.git
+[submodule "NAudio.WaveFormRenderer"]
+	path = NAudio.WaveFormRenderer
+	url = https://github.com/azrogers/NAudio.WaveFormRenderer

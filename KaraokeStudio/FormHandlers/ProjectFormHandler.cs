@@ -1,13 +1,15 @@
-﻿using KaraokeLib.Config;
-using KaraokeLib.Lyrics;
-using KaraokeLib.Lyrics.Providers;
+﻿using KaraokeLib;
+using KaraokeLib.Audio;
+using KaraokeLib.Config;
+using KaraokeLib.Events;
+using KaraokeLib.Files;
+using KaraokeStudio.Util;
 using Ookii.Dialogs.WinForms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace KaraokeStudio.FormHandlers
 {
-    // handles behaviors for the MainForm related to the current project
-    internal class ProjectFormHandler
+	// handles behaviors for the MainForm related to the current project
+	internal class ProjectFormHandler
 	{
 		private KaraokeProject? _loadedProject;
 		private string? _loadedProjectPath = null;
@@ -26,6 +28,11 @@ namespace KaraokeStudio.FormHandlers
 		/// Called when the project changes (new project, open project)
 		/// </summary>
 		public event Action<KaraokeProject?>? OnProjectChanged;
+
+		/// <summary>
+		/// Called when a track is added or removed.
+		/// </summary>
+		public event Action<KaraokeTrack>? OnTrackChanged;
 
 		/// <summary>
 		/// Callback that's run when the project is about to change.
@@ -48,16 +55,17 @@ namespace KaraokeStudio.FormHandlers
 
 		public void SetConfig(KaraokeConfig config)
 		{
-			if(Project != null)
+			if (Project != null)
 			{
 				Project.Config = config;
 				IsPendingChanges = true;
 			}
 		}
 
-		public void SetEvents(LyricsTrack track, IEnumerable<LyricsEvent> events)
+		public void SetEvents(KaraokeTrack track, IEnumerable<KaraokeEvent> events)
 		{
 			track.ReplaceEvents(events);
+			_loadedProject?.UpdateMixer();
 			IsPendingChanges = true;
 		}
 
@@ -96,7 +104,7 @@ namespace KaraokeStudio.FormHandlers
 			_loadedProject = KaraokeProject.Load(file);
 			_loadedProjectPath = _loadedProject != null ? file : null;
 			IsPendingChanges = false;
-			if(_loadedProjectPath != null)
+			if (_loadedProjectPath != null)
 			{
 				AppSettings.Instance.AddRecentFile(_loadedProjectPath);
 			}
@@ -156,7 +164,7 @@ namespace KaraokeStudio.FormHandlers
 
 		public void ExportLrcFile()
 		{
-			if(_loadedProject == null)
+			if (_loadedProject == null)
 			{
 				return;
 			}
@@ -172,7 +180,7 @@ namespace KaraokeStudio.FormHandlers
 			}
 
 			var outPath = dialog.FileName;
-			var lrcFile = new LrcLyricsFile(_loadedProject.Tracks);
+			var lrcFile = new LrcKaraokeFile(_loadedProject.Tracks);
 			using (var output = File.OpenWrite(outPath))
 			{
 				lrcFile.Save(output);
@@ -244,13 +252,44 @@ namespace KaraokeStudio.FormHandlers
 			return true;
 		}
 
+		public bool AddNewAudioTrack()
+		{
+			if (_loadedProjectPath == null || _loadedProject == null)
+			{
+				return false;
+			}
+
+			var audioFile = OpenAudioFile(_loadedProjectPath);
+			if (audioFile == null)
+			{
+				return false;
+			}
+
+			var info = AudioUtil.GetFileInfo(audioFile);
+			if (info == null)
+			{
+				return false;
+			}
+
+			var settings = new AudioClipSettings(audioFile);
+
+			var track = _loadedProject.AddTrack(KaraokeTrackType.Audio);
+			track.AddAudioClipEvent(settings, new TimeSpanTimecode(0), new TimeSpanTimecode(info.LengthSeconds));
+
+			IsPendingChanges = true;
+			OnTrackChanged?.Invoke(track);
+			_loadedProject?.UpdateMixer();
+
+			return true;
+		}
+
 		private string? OpenAudioFile(string? baseDir)
 		{
 			var dialog = new VistaOpenFileDialog();
 			dialog.CheckFileExists = true;
 			dialog.Multiselect = false;
 			dialog.Title = "Open audio file";
-			dialog.Filter = "Vorbis audio|*.ogg|Wave audio|*.wav|All files|*.*";
+			dialog.Filter = "Audio file|*.mp3;*.ogg;*.wav|All files|*.*";
 			dialog.InitialDirectory = baseDir;
 			if (dialog.ShowDialog() != DialogResult.OK || !File.Exists(dialog.FileName))
 			{

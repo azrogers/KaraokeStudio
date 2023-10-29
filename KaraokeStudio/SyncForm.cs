@@ -1,5 +1,6 @@
-﻿using KaraokeLib.Config;
-using KaraokeLib.Lyrics;
+﻿using KaraokeLib;
+using KaraokeLib.Config;
+using KaraokeLib.Events;
 using KaraokeLib.Util;
 using KaraokeLib.Video;
 using KaraokeLib.Video.Elements;
@@ -11,21 +12,21 @@ using System.Windows.Controls;
 
 namespace KaraokeStudio
 {
-	public partial class SyncForm : Form
+    public partial class SyncForm : Form
 	{
 		private KaraokeProject? _currentProject;
-		private LyricsTrack? _lyricsTrack;
+		private KaraokeTrack? _lyricsTrack;
 
 		public bool IsDirty { get; private set; } = false;
 
-		public event Action<LyricsTrack>? OnSyncDataApplied;
+		public event Action<KaraokeTrack>? OnSyncDataApplied;
 
 		public SyncForm()
 		{
 			InitializeComponent();
 		}
 
-		internal void Open(KaraokeProject project, LyricsTrack track)
+		internal void Open(KaraokeProject project, KaraokeTrack track)
 		{
 			_currentProject = project;
 			_lyricsTrack = track;
@@ -170,14 +171,14 @@ namespace KaraokeStudio
 	internal class SyncFormVideoGenerator : IVideoGenerator
 	{
 		private bool _isElementsStale = true;
-		private LyricsTrack _currentTrack;
+		private KaraokeTrack _currentTrack;
 		private VideoContext? _context;
 		private VideoStyle? _style;
 		private KaraokeConfig? _config;
 		private SKMatrix? _matrix;
 		private IVideoElement[] _elements;
 
-		public SyncFormVideoGenerator(KaraokeProject project, LyricsTrack currentTrack)
+		public SyncFormVideoGenerator(KaraokeProject project, KaraokeTrack currentTrack)
 		{
 			_currentTrack = currentTrack;
 			_elements = new IVideoElement[0];
@@ -208,7 +209,7 @@ namespace KaraokeStudio
 				var videoElements = new List<IVideoElement>();
 				foreach (var elem in textElements)
 				{
-					if ((elem.Type == LyricsEventType.LineBreak || elem.Type == LyricsEventType.ParagraphBreak) && lineElements.Any())
+					if ((elem.Type == KaraokeEventType.LineBreak || elem.Type == KaraokeEventType.ParagraphBreak) && lineElements.Any())
 					{
 						videoElements.Add(new VideoTextElement(_context, layoutState, lineElements.SelectMany(e => e.Events), line * _style.LineHeight, nextElementId++, 0));
 						lineElements.Clear();
@@ -216,17 +217,17 @@ namespace KaraokeStudio
 
 					switch(elem.Type)
 					{
-						case LyricsEventType.LineBreak:
+						case KaraokeEventType.LineBreak:
 							line++;
 							break;
-						case LyricsEventType.ParagraphBreak:
+						case KaraokeEventType.ParagraphBreak:
 							line += 2;
 							break;
-						case LyricsEventType.Lyric:
+						case KaraokeEventType.Lyric:
 							lineElements.Add(elem);
 							break;
 						default:
-							throw new NotSupportedException($"Unknown LyricsEventType {elem.Type}");
+							throw new NotSupportedException($"Unknown KaraokeEventType {elem.Type}");
 					}
 				}
 

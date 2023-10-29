@@ -1,23 +1,24 @@
-﻿using KaraokeLib.Lyrics;
+﻿using KaraokeLib.Events;
+using KaraokeStudio.Util;
 using System.Text;
 
 namespace KaraokeStudio.LyricsEditor
 {
-	/// <summary>
-	/// Represents a single section of text within the lyrics editor.
-	/// This is a single line break, single paragraph break, or a word with one or more syllables.
-	/// </summary>
-	internal class LyricsEditorTextElement
+    /// <summary>
+    /// Represents a single section of text within the lyrics editor.
+    /// This is a single line break, single paragraph break, or a word with one or more syllables.
+    /// </summary>
+    internal class LyricsEditorTextElement
 	{
 		private static readonly FastHashes.XxHash32 Hash = new FastHashes.XxHash32();
 
 		/// <summary>
-		/// The <see cref="LyricsEventType"/> of the underlying <see cref="LyricsEvent" /> objects.
+		/// The <see cref="KaraokeEventType"/> of the underlying <see cref="KaraokeEvent" /> objects.
 		/// </summary>
 		/// <remarks>
 		/// A <see cref="LyricsEditorTextElement"/> contains only a single type of events.
 		/// </remarks>
-		public LyricsEventType Type { get; private set; }
+		public KaraokeEventType Type { get; private set; }
 		/// <summary>
 		/// The ID of this element.
 		/// </summary>
@@ -31,11 +32,11 @@ namespace KaraokeStudio.LyricsEditor
 		/// </summary>
 		public double EndTime { get; private set; }
 
-		public LyricsEvent[] Events => _events;
+		public KaraokeEvent[] Events => _events;
 
-		private LyricsEvent[] _events;
+		private KaraokeEvent[] _events;
 
-		public LyricsEditorTextElement(int id, LyricsEventType type, IEnumerable<LyricsEvent> events)
+		public LyricsEditorTextElement(int id, KaraokeEventType type, IEnumerable<KaraokeEvent> events)
 		{
 			Id = id;
 			Type = type;
@@ -67,23 +68,23 @@ namespace KaraokeStudio.LyricsEditor
 			foreach(var ev in _events)
 			{
 				var len = 0;
-				if(ev.Type == LyricsEventType.LineBreak)
+				if(ev.Type == KaraokeEventType.LineBreak)
 				{
 					len = 1;
 				}
-				else if(ev.Type == LyricsEventType.ParagraphBreak)
+				else if(ev.Type == KaraokeEventType.ParagraphBreak)
 				{
 					len = 2;
 				}
-				else if (ev.Type == LyricsEventType.Lyric)
+				else if (ev.Type == KaraokeEventType.Lyric)
 				{
-					len = ev.RawText?.Length ?? 0;
+					len = ev.RawValue?.Length ?? 0;
 				}
 
 				if(index >= currentIndex && index < currentIndex + len)
 				{
 					var normalizedPos = (index - currentIndex) / (double)len;
-					return Util.Lerp(ev.StartTimeSeconds, ev.EndTimeSeconds, normalizedPos);
+					return Utility.Lerp(ev.StartTimeSeconds, ev.EndTimeSeconds, normalizedPos);
 				}
 			}
 
@@ -94,12 +95,12 @@ namespace KaraokeStudio.LyricsEditor
 		{
 			switch (Type)
 			{
-				case LyricsEventType.LineBreak:
+				case KaraokeEventType.LineBreak:
 					return "\n";
-				case LyricsEventType.ParagraphBreak:
+				case KaraokeEventType.ParagraphBreak:
 					return "\n\n";
-				case LyricsEventType.Lyric:
-					return string.Join(LyricsConstants.SYLLABLE_SEPERATOR, _events.Select(e => EscapeStr(e.RawText ?? "")));
+				case KaraokeEventType.Lyric:
+					return string.Join(LyricsConstants.SYLLABLE_SEPERATOR, _events.Select(e => EscapeStr(e.RawValue ?? "")));
 				default:
 					throw new NotImplementedException($"Unknown event type {Type}");
 			}
@@ -112,12 +113,12 @@ namespace KaraokeStudio.LyricsEditor
 				(byte)Type
 			};
 
-			if (Type == LyricsEventType.Lyric)
+			if (Type == KaraokeEventType.Lyric)
 			{
 				bytes.AddRange(BitConverter.GetBytes(Events.Length));
 				foreach(var ev in Events)
 				{
-					bytes.AddRange(Encoding.UTF8.GetBytes(ev.RawText ?? ""));
+					bytes.AddRange(Encoding.UTF8.GetBytes(ev.RawValue ?? ""));
 				}
 			}
 

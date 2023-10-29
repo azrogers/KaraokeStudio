@@ -1,16 +1,16 @@
-﻿using KaraokeLib.Config;
-using KaraokeLib.Lyrics;
+﻿using KaraokeLib;
+using KaraokeLib.Config;
 using KaraokeLib.Video;
 using KaraokeLib.Video.Plan;
 using SkiaSharp;
 
 namespace KaraokeStudio
 {
-	/// <summary>
-	/// Contains the contexts required to generate video frames from a given set of events.
-	/// Handles regenerating video data when lyrics change.
-	/// </summary>
-	internal class VideoGenerationState
+    /// <summary>
+    /// Contains the contexts required to generate video frames from a given set of events.
+    /// Handles regenerating video data when lyrics change.
+    /// </summary>
+    internal class VideoGenerationState
 	{
 		private VideoContext? _context;
 		private VideoStyle? _style;
@@ -26,7 +26,7 @@ namespace KaraokeStudio
 		/// <param name="tracks">The tracks to build the video from.</param>
 		/// <param name="position">The position in the video of the frame to render.</param>
 		/// <param name="surface">The Skia surface to render to.</param>
-		public void Render(IEnumerable<LyricsTrack> tracks, VideoTimecode position, SKSurface surface)
+		public void Render(IEnumerable<KaraokeTrack> tracks, VideoTimecode position, SKSurface surface)
 		{
 			if(_context == null)
 			{
@@ -38,7 +38,7 @@ namespace KaraokeStudio
 				_layoutState = new VideoLayoutState();
 
 				VideoSection[] sections;
-				if (tracks.Where(t => t.Type == LyricsTrackType.Lyrics).Any())
+				if (tracks.Where(t => t.Type == KaraokeTrackType.Lyrics).Any())
 				{
 					// TODO: support multiple tracks?
 					sections = VideoSection.SectionsFromTrack(_context, tracks.First(), _layoutState);

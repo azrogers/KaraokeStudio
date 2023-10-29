@@ -1,19 +1,14 @@
 ﻿using FFMediaToolkit;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeLib.Video
 {
-	internal class FFMpegUtil
+	public class FFMpegUtil
 	{
 		public static void MuxVideoAudio(
-			string videoPath, 
-			string audioPath, 
-			double audioPosition, 
+			string videoPath,
+			string audioPath,
+			double audioPosition,
 			double length,
 			string outputPath
 		)
@@ -43,6 +38,11 @@ namespace KaraokeLib.Video
 			process.EnableRaisingEvents = true;
 			process.Start();
 			process.WaitForExit();
+		}
+
+		public static void SetupFfmpegPath()
+		{
+			FFmpegLoader.FFmpegPath = Path.Join(Environment.CurrentDirectory, "ffmpeg", "x86_64");
 		}
 
 		private static string GetFFmpegPath()

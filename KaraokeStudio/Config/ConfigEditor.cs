@@ -7,13 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using KaraokeStudio.Util;
 using static KaraokeLib.Config.EditableConfigField;
 
 namespace KaraokeStudio.Config
 {
-	/// <summary>
-	/// A reusable editor component for classes deriving from EditorConfig.
-	/// </summary>
+    /// <summary>
+    /// A reusable editor component for classes deriving from EditorConfig.
+    /// </summary>
     public partial class ConfigEditor : UserControl
 	{
 		private IEditableConfig? _temporaryConfig = null;
@@ -151,7 +152,7 @@ namespace KaraokeStudio.Config
 			var labelWidth = configContainer.ColumnStyles[0].Width;
 
 			var label = new Label();
-			label.Text = Util.HumanizeCamelCase(name);
+			label.Text = Utility.HumanizeCamelCase(name);
 			label.Size = new Size((int)labelWidth, 15);
 			label.AutoSize = true;
 

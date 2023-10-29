@@ -3,7 +3,7 @@ using FFMediaToolkit.Encoding;
 using FFMediaToolkit.Graphics;
 using KaraokeLib.Audio;
 using KaraokeLib.Config;
-using KaraokeLib.Lyrics;
+using KaraokeLib.Files;
 using KaraokeLib.Video.Plan;
 using SkiaSharp;
 
@@ -15,7 +15,7 @@ namespace KaraokeLib.Video
     /// </summary>
     public class VideoGenerator
 	{
-		private LyricsTrack[] _tracks;
+		private KaraokeTrack[] _tracks;
 		private VideoSection[] _sections;
 		private VideoContext _context;
 		private VideoLayoutState _layoutState;
@@ -28,9 +28,9 @@ namespace KaraokeLib.Video
 		/// <param name="lyricsFile">The lyrics file that the video will be generated from.</param>
 		/// <param name="audioFilePath">The path of the audio file that will be paired with the generated video.</param>
 		/// <param name="videoLength">The length of the generated video in seconds.</param>
-		public VideoGenerator(ILyricsFile lyricsFile, string audioFilePath, double videoLength = -1)
+		public VideoGenerator(IKaraokeFile lyricsFile, string audioFilePath, double videoLength = -1)
 		{
-			FFmpegLoader.FFmpegPath = Path.Join(Environment.CurrentDirectory, "ffmpeg", "x86_64");
+			FFMpegUtil.SetupFfmpegPath();
 			var audioFile = new AudioFile(audioFilePath);
 
 			_tracks = lyricsFile.GetTracks().ToArray();

@@ -1,5 +1,6 @@
 ﻿using FontAwesome.Sharp;
-using KaraokeLib.Lyrics;
+using KaraokeLib;
+using KaraokeLib.Events;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -20,25 +21,26 @@ namespace KaraokeStudio
 
 		public static readonly SKTypeface DefaultTypeface;
 
-		public static readonly Dictionary<LyricsEventType, Color> EventColors = new Dictionary<LyricsEventType, Color>()
+		public static readonly Dictionary<KaraokeEventType, Color> EventColors = new Dictionary<KaraokeEventType, Color>()
 		{
-			{ LyricsEventType.Lyric, Color.FromArgb(150, 76, 166) },
-			{ LyricsEventType.LineBreak, Color.FromArgb(117, 166,51) },
-			{ LyricsEventType.ParagraphBreak, Color.FromArgb(166, 76, 105) }
+			{ KaraokeEventType.Lyric, Color.FromArgb(150, 76, 166) },
+			{ KaraokeEventType.LineBreak, Color.FromArgb(117, 166,51) },
+			{ KaraokeEventType.ParagraphBreak, Color.FromArgb(166, 76, 105) },
+			{ KaraokeEventType.AudioClip, Color.FromArgb(1, 117, 106) },
 		};
 
-		public static readonly Dictionary<LyricsTrackType, Color> TrackColors = new Dictionary<LyricsTrackType, Color>()
+		public static readonly Dictionary<KaraokeTrackType, Color> TrackColors = new Dictionary<KaraokeTrackType, Color>()
 		{
-			{LyricsTrackType.Lyrics, Color.FromArgb(150, 76, 166) },
-			{LyricsTrackType.Graphics, Color.FromArgb(255, 0, 0) },
-			{LyricsTrackType.Audio, Color.FromArgb(255, 0, 255) }
+			{KaraokeTrackType.Lyrics, Color.FromArgb(150, 76, 166) },
+			{KaraokeTrackType.Graphics, Color.FromArgb(255, 0, 0) },
+			{KaraokeTrackType.Audio, Color.FromArgb(1, 117, 106)  }
 		};
 
 		private static Dictionary<IconChar, Bitmap> _buttonBitmaps = new Dictionary<IconChar, Bitmap>();
 
 		public static void PaintIconButton(Graphics g, Button button, IconChar icon)
 		{
-			if(!_buttonBitmaps.TryGetValue(icon, out var bitmap))
+			if (!_buttonBitmaps.TryGetValue(icon, out var bitmap))
 			{
 				bitmap = _buttonBitmaps[icon] = icon.ToBitmap(HighlightColor, 32);
 			}
@@ -46,9 +48,9 @@ namespace KaraokeStudio
 			g.FillRectangle(new SolidBrush(NeutralDarkColor), button.ClientRectangle);
 			var height = button.ClientRectangle.Height * 0.8f;
 			var rect = new RectangleF(
-				(float)button.ClientRectangle.Width / 2 - height / 2, 
-				(float)button.ClientRectangle.Height / 2 - height / 2, 
-				height, 
+				(float)button.ClientRectangle.Width / 2 - height / 2,
+				(float)button.ClientRectangle.Height / 2 - height / 2,
+				height,
 				height);
 			g.DrawImage(bitmap, rect);
 		}

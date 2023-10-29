@@ -121,6 +121,11 @@ namespace KaraokeLib.Config
 				return ConfigControlType.Padding;
 			}
 
+			if(fieldType == typeof(String))
+			{
+				return ConfigControlType.String;
+			}
+
 			throw new NotImplementedException($"No config control for {fieldType}");
 		}
 
@@ -154,7 +159,8 @@ namespace KaraokeLib.Config
 			Font,
 			Enum,
 			Bool,
-			Padding
+			Padding,
+			String
 		}
 	}
 }

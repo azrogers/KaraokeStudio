@@ -1,5 +1,5 @@
 ﻿using KaraokeLib.Config;
-using KaraokeLib.Lyrics;
+using KaraokeLib.Events;
 using KaraokeLib.Video.Transitions;
 using SkiaSharp;
 using System;
@@ -50,7 +50,7 @@ namespace KaraokeLib.Video.Elements
 		private string _text;
 		private VideoContext _context;
 		private float _width;
-		private LyricsEvent[] _events;
+		private KaraokeEvent[] _events;
 		private float[] _elementWidths;
 
 		/// <summary>
@@ -65,9 +65,9 @@ namespace KaraokeLib.Video.Elements
 			IEventTimecode endTimecode,
 			int id,
 			int paragraphId = -1)
-			: this(context, layoutState, new LyricsEvent[]
+			: this(context, layoutState, new KaraokeEvent[]
 			{
-				new LyricsEvent(LyricsEventType.Lyric, -1, startTimecode, endTimecode) { RawText = text }
+				new KaraokeEvent(KaraokeEventType.Lyric, -1, startTimecode, endTimecode) { RawValue = text }
 			}, 0, id, paragraphId) { }
 
 		/// <summary>
@@ -76,7 +76,7 @@ namespace KaraokeLib.Video.Elements
 		public VideoTextElement(
 			VideoContext context,
 			VideoLayoutState layoutState,
-			IEnumerable<LyricsEvent> events,
+			IEnumerable<KaraokeEvent> events,
 			float yPos,
 			int id,
 			int paragraphId)
