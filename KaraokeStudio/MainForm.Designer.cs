@@ -46,26 +46,24 @@ namespace KaraokeStudio
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.projectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.editStyleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.lyricsEditor = new KaraokeStudio.LyricsEditor.LyricsEditorControl();
 			this.trackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.addTrackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.addAudioTrackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.removeTrackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.syncLyricsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.eventToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.debugToolStripMenuItem = new ToolStripMenuItem();
-			this.consoleToolStripMenuItem = new ToolStripMenuItem();
-			this.timelineSplit = new System.Windows.Forms.SplitContainer();
+			this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.consoleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.verticalSplit = new System.Windows.Forms.SplitContainer();
 			this.videoSplit = new System.Windows.Forms.SplitContainer();
 			this.video = new KaraokeStudio.Video.KaraokeVideoControl();
-			this.timeline = new KaraokeStudio.Timeline.TimelineControl();
-			this.addTrackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.removeTrackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.addAudioTrackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.timelineContainer = new KaraokeStudio.Timeline.TimelineContainerControl();
 			this.menuStrip.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.timelineSplit)).BeginInit();
-			this.timelineSplit.Panel1.SuspendLayout();
-			this.timelineSplit.Panel2.SuspendLayout();
-			this.timelineSplit.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.verticalSplit)).BeginInit();
+			this.verticalSplit.Panel1.SuspendLayout();
+			this.verticalSplit.Panel2.SuspendLayout();
+			this.verticalSplit.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.videoSplit)).BeginInit();
-			this.videoSplit.Panel1.SuspendLayout();
 			this.videoSplit.Panel2.SuspendLayout();
 			this.videoSplit.SuspendLayout();
 			this.SuspendLayout();
@@ -77,7 +75,7 @@ namespace KaraokeStudio
             this.projectToolStripMenuItem,
             this.trackToolStripMenuItem,
             this.eventToolStripMenuItem,
-			this.debugToolStripMenuItem});
+            this.debugToolStripMenuItem});
 			this.menuStrip.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip.Name = "menuStrip";
 			this.menuStrip.Size = new System.Drawing.Size(884, 24);
@@ -206,16 +204,38 @@ namespace KaraokeStudio
 			// 
 			this.trackToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addTrackToolStripMenuItem,
-			this.removeTrackToolStripMenuItem,
+            this.removeTrackToolStripMenuItem,
             this.syncLyricsToolStripMenuItem});
 			this.trackToolStripMenuItem.Name = "trackToolStripMenuItem";
 			this.trackToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
 			this.trackToolStripMenuItem.Text = "Track";
 			// 
+			// addTrackToolStripMenuItem
+			// 
+			this.addTrackToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.addAudioTrackToolStripMenuItem});
+			this.addTrackToolStripMenuItem.Name = "addTrackToolStripMenuItem";
+			this.addTrackToolStripMenuItem.Size = new System.Drawing.Size(131, 22);
+			this.addTrackToolStripMenuItem.Text = "Add";
+			// 
+			// addAudioTrackToolStripMenuItem
+			// 
+			this.addAudioTrackToolStripMenuItem.Name = "addAudioTrackToolStripMenuItem";
+			this.addAudioTrackToolStripMenuItem.Size = new System.Drawing.Size(115, 22);
+			this.addAudioTrackToolStripMenuItem.Text = "Audio...";
+			this.addAudioTrackToolStripMenuItem.Click += new System.EventHandler(this.audioToolStripMenuItem_Click);
+			// 
+			// removeTrackToolStripMenuItem
+			// 
+			this.removeTrackToolStripMenuItem.Name = "removeTrackToolStripMenuItem";
+			this.removeTrackToolStripMenuItem.Size = new System.Drawing.Size(131, 22);
+			this.removeTrackToolStripMenuItem.Text = "Remove";
+			this.removeTrackToolStripMenuItem.Click += new System.EventHandler(this.removeTrackToolStripMenuItem_Click);
+			// 
 			// syncLyricsToolStripMenuItem
 			// 
 			this.syncLyricsToolStripMenuItem.Name = "syncLyricsToolStripMenuItem";
-			this.syncLyricsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.syncLyricsToolStripMenuItem.Size = new System.Drawing.Size(131, 22);
 			this.syncLyricsToolStripMenuItem.Text = "Sync Lyrics";
 			this.syncLyricsToolStripMenuItem.Click += new System.EventHandler(this.syncLyricsToolStripMenuItem_Click);
 			// 
@@ -227,39 +247,37 @@ namespace KaraokeStudio
 			// 
 			// debugToolStripMenuItem
 			// 
+			this.debugToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.consoleToolStripMenuItem});
 			this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
-			this.debugToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
+			this.debugToolStripMenuItem.Size = new System.Drawing.Size(54, 20);
 			this.debugToolStripMenuItem.Text = "Debug";
-			this.debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[]
-			{
-				this.consoleToolStripMenuItem
-			});
 			// 
 			// consoleToolStripMenuItem
 			// 
 			this.consoleToolStripMenuItem.Name = "consoleToolStripMenuItem";
-			this.consoleToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
+			this.consoleToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
 			this.consoleToolStripMenuItem.Text = "Console";
-			this.consoleToolStripMenuItem.Click += consoleToolStripMenuItem_Click;
+			this.consoleToolStripMenuItem.Click += new System.EventHandler(this.consoleToolStripMenuItem_Click);
 			// 
-			// timelineSplit
+			// verticalSplit
 			// 
-			this.timelineSplit.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.timelineSplit.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.timelineSplit.Location = new System.Drawing.Point(0, 24);
-			this.timelineSplit.Name = "timelineSplit";
-			this.timelineSplit.Orientation = System.Windows.Forms.Orientation.Horizontal;
+			this.verticalSplit.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.verticalSplit.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.verticalSplit.Location = new System.Drawing.Point(0, 24);
+			this.verticalSplit.Name = "verticalSplit";
+			this.verticalSplit.Orientation = System.Windows.Forms.Orientation.Horizontal;
 			// 
-			// timelineSplit.Panel1
+			// verticalSplit.Panel1
 			// 
-			this.timelineSplit.Panel1.Controls.Add(this.videoSplit);
+			this.verticalSplit.Panel1.Controls.Add(this.videoSplit);
 			// 
-			// timelineSplit.Panel2
+			// verticalSplit.Panel2
 			// 
-			this.timelineSplit.Panel2.Controls.Add(this.timeline);
-			this.timelineSplit.Size = new System.Drawing.Size(884, 426);
-			this.timelineSplit.SplitterDistance = 299;
-			this.timelineSplit.TabIndex = 1;
+			this.verticalSplit.Panel2.Controls.Add(this.timelineContainer);
+			this.verticalSplit.Size = new System.Drawing.Size(884, 426);
+			this.verticalSplit.SplitterDistance = 299;
+			this.verticalSplit.TabIndex = 1;
 			// 
 			// videoSplit
 			// 
@@ -268,10 +286,6 @@ namespace KaraokeStudio
 			this.videoSplit.Location = new System.Drawing.Point(0, 0);
 			this.videoSplit.Name = "videoSplit";
 			// 
-			// videoSplit.Panel1
-			//
-			this.videoSplit.Panel1.Controls.Add(this.lyricsEditor);
-			// 
 			// videoSplit.Panel2
 			// 
 			this.videoSplit.Panel2.Controls.Add(this.video);
@@ -279,14 +293,6 @@ namespace KaraokeStudio
 			this.videoSplit.SplitterDistance = 551;
 			this.videoSplit.TabIndex = 0;
 			// 
-			// lyricsEditor
-			//
-			this.lyricsEditor.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.lyricsEditor.Location = new System.Drawing.Point(0, 0);
-			this.lyricsEditor.Name = "lyricsEditor";
-			this.lyricsEditor.Size = new System.Drawing.Size(549, 297);
-			this.lyricsEditor.TabIndex = 0;
-			//
 			// video
 			// 
 			this.video.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -295,42 +301,20 @@ namespace KaraokeStudio
 			this.video.Size = new System.Drawing.Size(327, 297);
 			this.video.TabIndex = 0;
 			// 
-			// timeline
+			// timelineContainer
 			// 
-			this.timeline.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.timeline.Location = new System.Drawing.Point(0, 0);
-			this.timeline.Name = "timeline";
-			this.timeline.Size = new System.Drawing.Size(882, 121);
-			this.timeline.TabIndex = 0;
-			// 
-			// addTrackToolStripMenuItem
-			// 
-			this.addTrackToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.addAudioTrackToolStripMenuItem});
-			this.addTrackToolStripMenuItem.Name = "addTrackToolStripMenuItem";
-			this.addTrackToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.addTrackToolStripMenuItem.Text = "Add";
-			// 
-			// removeTrackToolStripMenuItem
-			// 
-			this.removeTrackToolStripMenuItem.Name = "removeTrackToolStripMenuItem";
-			this.removeTrackToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.removeTrackToolStripMenuItem.Text = "Remove";
-			this.removeTrackToolStripMenuItem.Click += new System.EventHandler(this.removeTrackToolStripMenuItem_Click);
-			// 
-			// addAudioTrackToolStripMenuItem
-			// 
-			this.addAudioTrackToolStripMenuItem.Name = "addAudioTrackToolStripMenuItem";
-			this.addAudioTrackToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.addAudioTrackToolStripMenuItem.Text = "Audio...";
-			this.addAudioTrackToolStripMenuItem.Click += new System.EventHandler(this.audioToolStripMenuItem_Click);
+			this.timelineContainer.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.timelineContainer.Location = new System.Drawing.Point(0, 0);
+			this.timelineContainer.Name = "timelineContainer";
+			this.timelineContainer.Size = new System.Drawing.Size(882, 121);
+			this.timelineContainer.TabIndex = 0;
 			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(884, 450);
-			this.Controls.Add(this.timelineSplit);
+			this.Controls.Add(this.verticalSplit);
 			this.Controls.Add(this.menuStrip);
 			this.MainMenuStrip = this.menuStrip;
 			this.Name = "MainForm";
@@ -338,11 +322,10 @@ namespace KaraokeStudio
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
 			this.menuStrip.ResumeLayout(false);
 			this.menuStrip.PerformLayout();
-			this.timelineSplit.Panel1.ResumeLayout(false);
-			this.timelineSplit.Panel2.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.timelineSplit)).EndInit();
-			this.timelineSplit.ResumeLayout(false);
-			this.videoSplit.Panel1.ResumeLayout(false);
+			this.verticalSplit.Panel1.ResumeLayout(false);
+			this.verticalSplit.Panel2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.verticalSplit)).EndInit();
+			this.verticalSplit.ResumeLayout(false);
 			this.videoSplit.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.videoSplit)).EndInit();
 			this.videoSplit.ResumeLayout(false);
@@ -355,7 +338,7 @@ namespace KaraokeStudio
 
 		private MenuStrip menuStrip;
 		private ToolStripMenuItem fileToolStripMenuItem;
-		private SplitContainer timelineSplit;
+		private SplitContainer verticalSplit;
 		private SplitContainer videoSplit;
 		private ToolStripMenuItem newToolStripMenuItem;
 		private ToolStripMenuItem openToolStripMenuItem;
@@ -370,8 +353,6 @@ namespace KaraokeStudio
 		private ToolStripMenuItem editStyleToolStripMenuItem;
 		private ToolStripMenuItem openRecentToolStripMenuItem;
 		private Video.KaraokeVideoControl video;
-		private TimelineControl timeline;
-		private LyricsEditor.LyricsEditorControl lyricsEditor;
 		private ToolStripMenuItem exportToolStripMenuItem;
 		private ToolStripMenuItem lRCFileToolStripMenuItem;
 		private ToolStripMenuItem trackToolStripMenuItem;
@@ -382,5 +363,6 @@ namespace KaraokeStudio
 		private ToolStripMenuItem addTrackToolStripMenuItem;
 		private ToolStripMenuItem removeTrackToolStripMenuItem;
 		private ToolStripMenuItem addAudioTrackToolStripMenuItem;
+		private TimelineContainerControl timelineContainer;
 	}
 }

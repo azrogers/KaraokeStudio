@@ -272,7 +272,7 @@ namespace KaraokeStudio.Timeline
 				return;
 			}
 
-			var projectTracks = _project.Tracks.ToArray();
+			var projectTracks = _project.Tracks.OrderBy(t => t.Id).ToArray();
 
 			if (_clickableItems.GetLength(0) != projectTracks.Length)
 			{

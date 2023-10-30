@@ -57,7 +57,7 @@ namespace KaraokeStudio
 			var midiFile = new MidiKaraokeFile(midiPath);
 			if (!midiFile.GetTracks().Any())
 			{
-				Logger.ShowError(new UserException("MIDI file contains no lyric tracks"));
+				ExceptionLogger.ShowError(new UserException("MIDI file contains no lyric tracks"));
 				return null;
 			}
 
@@ -103,7 +103,7 @@ namespace KaraokeStudio
 			var length = file.GetMetadata("Length");
 			if (!double.TryParse(length, out var lengthDouble))
 			{
-				Logger.ShowError(new UserException("Can't parse Length from KSF metadata"));
+				ExceptionLogger.ShowError(new UserException("Can't parse Length from KSF metadata"));
 				return null;
 			}
 
@@ -125,7 +125,7 @@ namespace KaraokeStudio
 			var config = file.GetMetadata("ProjectConfig");
 			if (config == null)
 			{
-				Logger.ShowError(new UserException("Can't find ProjectConfig in KSF metadata"));
+				ExceptionLogger.ShowError(new UserException("Can't find ProjectConfig in KSF metadata"));
 				return null;
 			}
 

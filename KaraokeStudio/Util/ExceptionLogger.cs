@@ -2,7 +2,7 @@
 
 namespace KaraokeStudio.Util
 {
-	internal static class Logger
+	internal static class ExceptionLogger
 	{
 		public static Form? ParentForm { get; set; } = null;
 

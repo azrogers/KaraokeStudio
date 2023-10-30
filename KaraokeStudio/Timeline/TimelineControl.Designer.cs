@@ -81,6 +81,7 @@
 			// 
 			// verticalMinusButton
 			// 
+			this.verticalMinusButton.BackColor = System.Drawing.Color.WhiteSmoke;
 			this.verticalMinusButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.verticalMinusButton.IconChar = FontAwesome.Sharp.IconChar.CircleMinus;
 			this.verticalMinusButton.IconColor = System.Drawing.Color.Black;
@@ -90,11 +91,12 @@
 			this.verticalMinusButton.Name = "verticalMinusButton";
 			this.verticalMinusButton.Size = new System.Drawing.Size(17, 17);
 			this.verticalMinusButton.TabIndex = 3;
-			this.verticalMinusButton.UseVisualStyleBackColor = true;
+			this.verticalMinusButton.UseVisualStyleBackColor = false;
 			this.verticalMinusButton.Click += new System.EventHandler(this.verticalMinusButton_Click);
 			// 
 			// verticalPlusButton
 			// 
+			this.verticalPlusButton.BackColor = System.Drawing.Color.WhiteSmoke;
 			this.verticalPlusButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.verticalPlusButton.IconChar = FontAwesome.Sharp.IconChar.PlusCircle;
 			this.verticalPlusButton.IconColor = System.Drawing.Color.Black;
@@ -104,7 +106,7 @@
 			this.verticalPlusButton.Name = "verticalPlusButton";
 			this.verticalPlusButton.Size = new System.Drawing.Size(17, 17);
 			this.verticalPlusButton.TabIndex = 2;
-			this.verticalPlusButton.UseVisualStyleBackColor = true;
+			this.verticalPlusButton.UseVisualStyleBackColor = false;
 			this.verticalPlusButton.Click += new System.EventHandler(this.verticalPlusButton_Click);
 			// 
 			// verticalScrollLayout
@@ -162,6 +164,7 @@
 			// 
 			// horizMinusButton
 			// 
+			this.horizMinusButton.BackColor = System.Drawing.Color.WhiteSmoke;
 			this.horizMinusButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.horizMinusButton.IconChar = FontAwesome.Sharp.IconChar.CircleMinus;
 			this.horizMinusButton.IconColor = System.Drawing.Color.Black;
@@ -171,11 +174,12 @@
 			this.horizMinusButton.Name = "horizMinusButton";
 			this.horizMinusButton.Size = new System.Drawing.Size(17, 17);
 			this.horizMinusButton.TabIndex = 3;
-			this.horizMinusButton.UseVisualStyleBackColor = true;
+			this.horizMinusButton.UseVisualStyleBackColor = false;
 			this.horizMinusButton.Click += new System.EventHandler(this.horizMinusButton_Click);
 			// 
 			// horizPlusButton
 			// 
+			this.horizPlusButton.BackColor = System.Drawing.Color.WhiteSmoke;
 			this.horizPlusButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.horizPlusButton.IconChar = FontAwesome.Sharp.IconChar.PlusCircle;
 			this.horizPlusButton.IconColor = System.Drawing.Color.Black;
@@ -185,7 +189,7 @@
 			this.horizPlusButton.Name = "horizPlusButton";
 			this.horizPlusButton.Size = new System.Drawing.Size(17, 17);
 			this.horizPlusButton.TabIndex = 2;
-			this.horizPlusButton.UseVisualStyleBackColor = true;
+			this.horizPlusButton.UseVisualStyleBackColor = false;
 			this.horizPlusButton.Click += new System.EventHandler(this.horizPlusButton_Click);
 			// 
 			// TimelineControl

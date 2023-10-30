@@ -4,6 +4,7 @@ using KaraokeLib.Events;
 using KaraokeStudio.FormHandlers;
 using KaraokeStudio.Util;
 using KaraokeStudio.Video;
+using KaraokeStudio.LyricsEditor;
 
 namespace KaraokeStudio
 {
@@ -14,18 +15,44 @@ namespace KaraokeStudio
 		private SyncForm _syncForm;
 		private ConsoleForm _consoleForm;
 
+		// designer doesn't like handling this one itself so we set it up manually
+		private LyricsEditorControl lyricsEditor;
+
 		private KaraokeEvent? _selectedEvent = null;
 		private KaraokeTrack? _selectedTrack = null;
 
 		public MainForm()
 		{
-			Logger.ParentForm = this;
+			ExceptionLogger.ParentForm = this;
 
 			InitializeComponent();
 
-			_projectHandler = new ProjectFormHandler();
+			lyricsEditor = new LyricsEditorControl();
+			videoSplit.Panel1.Controls.Add(lyricsEditor);
+			lyricsEditor.Dock = DockStyle.Fill;
+			lyricsEditor.Location = new Point(0, 0);
+			lyricsEditor.Name = "lyricsEditor";
+			lyricsEditor.Size = new Size(549, 297);
+			lyricsEditor.TabIndex = 0;
 
-			_consoleForm = new ConsoleForm();
+			lyricsEditor.OnLyricsEventsChanged += OnLyricsEventsChanged;
+
+			video.OnPositionChangedEvent += OnPositionChanged;
+			timelineContainer.OnPositionChangedEvent += (newTime) =>
+			{
+				timelineContainer.OnPositionChanged(newTime);
+				video.OnPositionChanged(newTime);
+			};
+
+			timelineContainer.OnEventSelectionChanged += OnEventSelectionChanged;
+			timelineContainer.OnTrackSelectionChanged += OnTrackSelectionChanged;
+
+			// handles the project itself
+			_projectHandler = new ProjectFormHandler();
+			_projectHandler.OnProjectChanged += OnProjectChanged;
+			_projectHandler.OnPendingStateChanged += OnPendingStateChanged;
+			_projectHandler.OnProjectWillChangeCallback = OnProjectWillChange;
+			_projectHandler.OnTrackChanged += OnTrackChanged;
 
 			_styleForm = new StyleForm();
 			_styleForm.OnProjectConfigApplied += OnProjectConfigApplied;
@@ -33,22 +60,7 @@ namespace KaraokeStudio
 			_syncForm = new SyncForm();
 			_syncForm.OnSyncDataApplied += OnSyncDataApplied;
 
-			_projectHandler.OnProjectChanged += OnProjectChanged;
-			_projectHandler.OnPendingStateChanged += OnPendingStateChanged;
-			_projectHandler.OnProjectWillChangeCallback = OnProjectWillChange;
-			_projectHandler.OnTrackChanged += OnTrackChanged;
-
-			lyricsEditor.OnLyricsEventsChanged += OnLyricsEventsChanged;
-
-			video.OnPositionChangedEvent += OnPositionChanged;
-			timeline.OnPositionChangedEvent += (newTime) =>
-			{
-				timeline.OnPositionChanged(newTime);
-				video.OnPositionChanged(newTime);
-			};
-
-			timeline.OnEventSelectionChanged += OnEventSelectionChanged;
-			timeline.OnTrackSelectionChanged += OnTrackSelectionChanged;
+			_consoleForm = new ConsoleForm();
 
 			OnProjectChanged(null);
 		}
@@ -70,7 +82,7 @@ namespace KaraokeStudio
 
 		private void OnPositionChanged(double newTime)
 		{
-			timeline.OnPositionChanged(newTime);
+			timelineContainer.OnPositionChanged(newTime);
 			lyricsEditor.OnPositionChanged(newTime);
 		}
 
@@ -84,7 +96,7 @@ namespace KaraokeStudio
 		{
 			_projectHandler.SetEvents(obj.Track, obj.NewEvents);
 			video.OnProjectEventsChanged(_projectHandler.Project);
-			timeline.OnProjectEventsChanged(_projectHandler.Project);
+			timelineContainer.OnProjectEventsChanged(_projectHandler.Project);
 			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
 			_syncForm.OnProjectEventsChanged(_projectHandler.Project);
 		}
@@ -92,7 +104,7 @@ namespace KaraokeStudio
 		private void OnTrackChanged(KaraokeTrack obj)
 		{
 			video.OnProjectEventsChanged(_projectHandler.Project);
-			timeline.OnProjectEventsChanged(_projectHandler.Project);
+			timelineContainer.OnProjectEventsChanged(_projectHandler.Project);
 			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
 		}
 
@@ -107,7 +119,7 @@ namespace KaraokeStudio
 
 			video.OnProjectChanged(project);
 			_styleForm.OnProjectChanged(project);
-			timeline.OnProjectChanged(project);
+			timelineContainer.OnProjectChanged(project);
 			lyricsEditor.OnProjectChanged(project);
 			_syncForm.Hide();
 		}

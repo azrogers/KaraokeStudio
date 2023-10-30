@@ -2,6 +2,7 @@
 using KaraokeLib.Events;
 using KaraokeLib.Util;
 using KaraokeStudio.Util;
+using NLog;
 using SkiaSharp;
 using System.Data;
 
@@ -19,21 +20,16 @@ namespace KaraokeStudio.Timeline
     public partial class TimelineControl : UserControl
 	{
 		private const float PADDING_TOP = 5.0f;
-		private const float TRACK_HEADER_WIDTH = 200.0f;
+
+		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
 		private SKColor _backgroundColor;
-		private SKPaint _backgroundPaint;
-		private SKPaint _shadowPaint;
-		private SKPaint _selectTrackPaint;
 		private SKPaint _lightPaint;
 		private SKPaint _highlightPaint;
-		private SKPaint _trackHeaderTypePaint;
-		private SKPaint _trackHeaderTitlePaint;
-		private Dictionary<KaraokeTrackType, SKPaint> _trackHeaderPaints;
 
 		private TimelineCanvas _timelineCanvas;
-		private int _selectedTrackId = -1;
 		private KaraokeProject? _currentProject;
+		private KaraokeTrack[] _tracks;
 		private float _horizZoomFactor = 1.0f;
 		private float _verticalZoomFactor = 1.0f;
 		private double _currentVideoPosition;
@@ -52,22 +48,20 @@ namespace KaraokeStudio.Timeline
 		public event Action<KaraokeEvent?>? OnEventSelectionChanged;
 
 		/// <summary>
-		/// Called when the currently selected track has changed.
+		/// Called when the positioning of tracks has changed.
 		/// </summary>
-		public event Action<KaraokeTrack?>? OnTrackSelectionChanged;
+		public event Action? OnTrackPositioningChanged;
 
 		public TimelineControl()
 		{
 			InitializeComponent();
 
+			_tracks = new KaraokeTrack[0];
+
 			_timelineCanvas = new TimelineCanvas();
 			_timelineCanvas.OnEventSelectionChanged += _timelineCanvas_OnEventSelectionChanged;
 
 			_backgroundColor = VisualStyle.NeutralDarkColor.ToSKColor();
-			_backgroundPaint = new SKPaint() { Color = _backgroundColor };
-
-			_shadowPaint = new SKPaint() { Color = new SKColor(0, 0, 0, 127) };
-			_selectTrackPaint = new SKPaint() { Color = new SKColor(255, 255, 255, 25) };
 
 			_lightPaint = new SKPaint() { Color = VisualStyle.NeutralLightColor.ToSKColor() };
 			_highlightPaint = new SKPaint() { 
@@ -75,32 +69,46 @@ namespace KaraokeStudio.Timeline
 				IsAntialias = true
 			};
 
-			_trackHeaderPaints = VisualStyle.TrackColors.Select(kv => (kv.Key, new SKPaint() { Color = kv.Value.ToSKColor() })).ToDictionary(k => k.Key, v => v.Item2);
-
-			_trackHeaderTitlePaint = new SKPaint()
-			{
-				Color = new SKColor(255, 255, 255, 255),
-				Typeface = SKTypeface.FromFamilyName("Open Sans", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright),
-				TextSize = 18,
-				IsAntialias = true
-			};
-
-			_trackHeaderTypePaint = new SKPaint()
-			{
-				Color = new SKColor(255, 255, 255, 127),
-				Typeface = SKTypeface.FromFamilyName("Open Sans", SKFontStyleWeight.Normal, SKFontStyleWidth.Normal, SKFontStyleSlant.Italic),
-				TextSize = 12,
-				IsAntialias = true
-			};
-
 			horizScroll.Enabled = false;
 			verticalScroll.Enabled = false;
 		}
 
+		public void DeselectEvent()
+		{
+			_timelineCanvas.Deselect();
+			skiaControl.Invalidate();
+		}
+
+		public RectangleF GetTrackRect(int trackId)
+		{
+			var trackIndex = -1;
+			for(var i = 0; i < _tracks.Length; i++)
+			{
+				if (_tracks[i].Id == trackId)
+				{
+					trackIndex = i;
+					break;
+				}
+			}
+
+			if(trackIndex == -1)
+			{
+				Logger.Warn($"Track rect requested for ID {trackId} but no such track found?");
+				return RectangleF.Empty;
+			}
+
+			var skRect = CreateMatrix().MapRect(new SKRect(
+				0, 
+				trackIndex * TimelineCanvas.TRACK_HEIGHT, 
+				_timelineCanvas.Size.Width, 
+				(trackIndex + 1) * TimelineCanvas.TRACK_HEIGHT - 2));
+			return new RectangleF(skRect.Left, skRect.Top, skRect.Width, skRect.Height);
+		}
+
 		internal void OnProjectChanged(KaraokeProject? project)
 		{
+			_tracks = project?.Tracks.OrderBy(t => t.Id).ToArray() ?? new KaraokeTrack[0];
 			_currentProject = project;
-			_selectedTrackId = -1;
 			_timelineCanvas.OnProjectChanged(project);
 
 			RecalculateScrollBars();
@@ -109,6 +117,7 @@ namespace KaraokeStudio.Timeline
 
 		internal void OnProjectEventsChanged(KaraokeProject? project)
 		{
+			_tracks = project?.Tracks.OrderBy(t => t.Id).ToArray() ?? new KaraokeTrack[0];
 			_timelineCanvas.OnProjectChanged(project);
 			RecalculateScrollBars();
 			skiaControl.Invalidate();
@@ -126,31 +135,11 @@ namespace KaraokeStudio.Timeline
 			return result;
 		}
 
-		private bool SelectTrackAtPosition(Point pos)
-		{
-			_selectedTrackId = -1;
-			if (_currentProject == null)
-			{
-				return false;
-			}
-
-			var canvasPos = CreateInverseMatrix().MapPoint(new SKPoint(pos.X, pos.Y - PADDING_TOP));
-
-			if(canvasPos.X < TRACK_HEADER_WIDTH && canvasPos.Y < _currentProject.Tracks.Count() * TimelineCanvas.TRACK_HEIGHT)
-			{
-				_selectedTrackId = _currentProject.Tracks.Skip((int)(canvasPos.Y / TimelineCanvas.TRACK_HEIGHT)).FirstOrDefault()?.Id ?? -1;
-				return _selectedTrackId != -1;
-			}
-
-			return false;
-		}
-
 		private bool HandleSelection(Point pos)
 		{
-			_selectedTrackId = -1;
 			_timelineCanvas.Deselect();
 
-			if (!SelectEventAtPosition(pos) && !SelectTrackAtPosition(pos))
+			if (!SelectEventAtPosition(pos))
 			{
 				return false;
 			}
@@ -165,7 +154,7 @@ namespace KaraokeStudio.Timeline
 		private SKPoint GetCanvasOffset()
 		{
 			return new SKPoint(
-				-(horizScroll.Enabled ? horizScroll.Value : 0.0f) + TRACK_HEADER_WIDTH,
+				-(horizScroll.Enabled ? horizScroll.Value : 0.0f),
 				-(verticalScroll.Enabled ? verticalScroll.Value : 0.0f) + PADDING_TOP
 			);
 		}
@@ -224,8 +213,6 @@ namespace KaraokeStudio.Timeline
 
 			canvas.RestoreToCount(savePoint);
 
-			PaintTrackHeaders(canvas);
-
 			var playheadXPos = CreateMatrix().MapPoint(new SKPoint((float)(_timelineCanvas.GetXPosOfTime(_currentVideoPosition)), 0)).X;
 
 			savePoint = canvas.Save();
@@ -240,47 +227,6 @@ namespace KaraokeStudio.Timeline
 			});
 
 			canvas.DrawPath(tri, _highlightPaint);
-			canvas.RestoreToCount(savePoint);
-		}
-
-		private void PaintTrackHeaders(SKCanvas canvas)
-		{
-			int savePoint = canvas.Save();
-			canvas.DrawRect(0, 0, TRACK_HEADER_WIDTH, ClientSize.Height, _backgroundPaint);
-
-			canvas.RestoreToCount(savePoint);
-
-			if (_currentProject == null)
-			{
-				return;
-			}
-
-			savePoint = canvas.Save();
-
-			var nextY = PADDING_TOP - (Math.Max(0, verticalScroll.Value));/// _verticalZoomFactor);
-			var rightPadding = 3.0f;
-			foreach (var track in _currentProject.Tracks)
-			{
-				var height = TimelineCanvas.TRACK_HEIGHT * _verticalZoomFactor;
-				var rectHeight = (TimelineCanvas.TRACK_HEIGHT - 1.0f) * _verticalZoomFactor;
-				canvas.DrawRect(0, nextY, TRACK_HEADER_WIDTH - rightPadding, rectHeight, _trackHeaderPaints[track.Type]);
-				canvas.DrawRect(0, nextY + rectHeight - 2.0f, TRACK_HEADER_WIDTH - rightPadding, 2, _shadowPaint);
-
-				// draw light overlay for selected track
-				if(_selectedTrackId == track.Id)
-				{
-					canvas.DrawRect(0, nextY, TRACK_HEADER_WIDTH - rightPadding, rectHeight, _selectTrackPaint);
-				}
-
-				var trackTypeStr = track.Type.ToString();
-				var trackTypeWidth = _trackHeaderTypePaint.MeasureText(trackTypeStr);
-
-				canvas.DrawText(trackTypeStr, new SKPoint(TRACK_HEADER_WIDTH - trackTypeWidth - 5 - rightPadding, nextY + rectHeight - 5), _trackHeaderTypePaint);
-				var trackTitleHeight = StyleUtil.GetFontHeight(_trackHeaderTitlePaint.ToFont());
-				canvas.DrawText("Track " + track.Id, new SKPoint(5, nextY + 5 + trackTitleHeight), _trackHeaderTitlePaint);
-				nextY += height;
-			}
-
 			canvas.RestoreToCount(savePoint);
 		}
 
@@ -299,15 +245,16 @@ namespace KaraokeStudio.Timeline
 			// we need to position half a screen before the new center pos, so it remains the center
 			var offsetWidth = CreateInverseMatrix().MapPoint(new SKPoint(ClientSize.Width / 2.0f, 0)).X;
 			horizScroll.Value = Math.Clamp((int)(scrollOffset - ClientSize.Width / 2.0f), horizScroll.Minimum, horizScroll.Maximum);
+			OnTrackPositioningChanged?.Invoke();
 		}
 
 		private RectangleF GetViewportClientRect()
 		{
 			return new RectangleF(
-				TRACK_HEADER_WIDTH, 
+				0, 
 				PADDING_TOP,
-				ClientSize.Width - TRACK_HEADER_WIDTH,
-				ClientSize.Height - PADDING_TOP
+				ClientSize.Width - 20,
+				ClientSize.Height - PADDING_TOP - 20
 			);
 		}
 
@@ -345,22 +292,18 @@ namespace KaraokeStudio.Timeline
 		private void verticalScroll_Scroll(object sender, ScrollEventArgs e)
 		{
 			skiaControl.Invalidate();
+			OnTrackPositioningChanged?.Invoke();
 		}
 
 		private void horizScroll_Scroll(object sender, ScrollEventArgs e)
 		{
 			skiaControl.Invalidate();
+			OnTrackPositioningChanged?.Invoke();
 		}
 
 		private void skiaControl_MouseDown(object sender, MouseEventArgs e)
 		{
-			var oldSelectedTrackId = _selectedTrackId;
 			_mouseDown = !HandleSelection(e.Location);
-
-			if (_selectedTrackId != oldSelectedTrackId)
-			{
-				OnTrackSelectionChanged?.Invoke(_currentProject?.Tracks.Where(t => t.Id == _selectedTrackId).FirstOrDefault());
-			}
 		}
 
 		private void skiaControl_MouseUp(object sender, MouseEventArgs e)
