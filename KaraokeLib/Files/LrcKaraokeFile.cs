@@ -15,6 +15,13 @@ namespace KaraokeLib.Files
 	{
 		private KaraokeTrack _track;
 
+		// TODO: implement reading
+		/// <inheritdoc />
+		public bool CanRead => false;
+
+		/// <inheritdoc />
+		public bool CanWrite => true;
+
 		public LrcKaraokeProvider(string fileName)
 		{
 			using (var stream = File.OpenRead(fileName))
@@ -35,18 +42,22 @@ namespace KaraokeLib.Files
 			_track = tracks.Where(t => t.Type == KaraokeTrackType.Lyrics).FirstOrDefault() ?? new KaraokeTrack(0, KaraokeTrackType.Lyrics);
 		}
 
+		/// <inheritdoc />
 		public double GetLengthSeconds()
 		{
 			return _track.Events.Max(ev => ev.EndTimeSeconds);
 		}
 
+		/// <inheritdoc />
 		public IEnumerable<KaraokeTrack> GetTracks()
 		{
 			yield return _track;
 		}
 
-		public KaraokeTrack AddTrack(KaraokeTrackType type) => throw new NotImplementedException("LrcLyricsProvider.AddTrack not implemented");
+		/// <inheritdoc />
+		public KaraokeTrack AddTrack(IKaraokeFile file, KaraokeTrackType type) => throw new NotImplementedException("LrcLyricsProvider.AddTrack not implemented");
 
+		/// <inheritdoc />
 		public void Save(Stream outStream)
 		{
 			var lineEvents = new List<KaraokeEvent>();

@@ -2,34 +2,27 @@
 {
 	public interface IKaraokeFile
 	{
-		IEnumerable<KaraokeTrack> GetTracks();
-
-		double GetLengthSeconds();
-
-		void Save(Stream outStream);
-	}
-
-	public interface IKaraokeProvider
-	{
 		/// <summary>
-		/// Obtains the tracks this provider represents.
+		/// Keeps track of IDs for events and tracks.
+		/// </summary>
+		FileIdTracker IdTracker { get; }
+
+		/// <summary>
+		/// Returns all tracks within this file.
 		/// </summary>
 		IEnumerable<KaraokeTrack> GetTracks();
 
 		/// <summary>
-		/// Adds a track of the given type to the provider.
-		/// </summary>
-		KaraokeTrack AddTrack(KaraokeTrackType type);
-
-		/// <summary>
-		/// The total duration in seconds of the lyrics content of this provider.
+		/// Gets the length in seconds of the events in this file.
 		/// </summary>
 		double GetLengthSeconds();
 
 		/// <summary>
-		/// Saves this provider to the given stream.
-		/// Not every provider supports saving.
+		/// Saves this file to the given stream.
 		/// </summary>
+		/// <remarks>If this provider doesn't support writing, it will throw an <see cref="InvalidOperationException"/>.</remarks>
+		/// <param name="outStream">The stream that will be written to. Should support writing.</param>
+		/// <exception cref="InvalidOperationException" />
 		void Save(Stream outStream);
 	}
 
@@ -37,11 +30,21 @@
 	{
 		protected T _provider;
 
+		public FileIdTracker IdTracker { get; private set; } = new FileIdTracker();
+
 		public KaraokeFile(T provider)
 		{
 			_provider = provider;
+			var tracks = _provider.GetTracks().ToArray();
+			foreach(var track in tracks)
+			{
+				track.SetFile(this);
+			}
+
+			IdTracker.BuildMaps(tracks);
 		}
 
+		/// <inheritdoc />
 		public IEnumerable<KaraokeTrack> GetTracks()
 		{
 			return _provider.GetTracks();
@@ -52,16 +55,23 @@
 		/// </summary>
 		public KaraokeTrack AddTrack(KaraokeTrackType newTrackType)
 		{
-			return _provider.AddTrack(newTrackType);
+			return _provider.AddTrack(this, newTrackType);
 		}
 
+		/// <inheritdoc />
 		public double GetLengthSeconds()
 		{
 			return _provider.GetLengthSeconds();
 		}
 
+		/// <inheritdoc />
 		public void Save(Stream outStream)
 		{
+			if(!_provider.CanWrite)
+			{
+				throw new InvalidOperationException($"Can't write to a provider of type {_provider.GetType()}");
+			}
+
 			_provider.Save(outStream);
 		}
 	}

@@ -1,4 +1,5 @@
 using KaraokeLib.Video;
+using NLog;
 using System.Drawing.Text;
 using System.Runtime.InteropServices;
 
@@ -21,6 +22,15 @@ namespace KaraokeStudio
 			var fontCollection = CreateFontCollection(Properties.Resources.OpenSans);
 			var family = new FontFamily("Open Sans", fontCollection);
 			Application.SetDefaultFont(new Font(family, 9f));
+
+			var config = new NLog.Config.LoggingConfiguration();
+			var logConsole = new NLog.Targets.ConsoleTarget("Console");
+			config.AddRule(LogLevel.Info, LogLevel.Fatal, logConsole);
+
+			var logMethodCall = new NLog.Targets.MethodCallTarget("MethodCall", ConsoleForm.LogEvent);
+			config.AddRule(LogLevel.Info, LogLevel.Fatal, logMethodCall);
+
+			NLog.LogManager.Configuration = config;
 
 			var form = new MainForm();
 			if (args.Length > 0)

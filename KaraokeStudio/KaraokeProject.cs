@@ -86,15 +86,19 @@ namespace KaraokeStudio
 		public static KaraokeProject? Load(string projectPath)
 		{
 			KsfKaraokeFile file;
+#if !DEBUG
 			try
 			{
+#endif
 				file = new KsfKaraokeFile(projectPath);
-			}
+#if !DEBUG
+		}
 			catch (Exception e)
 			{
 				Logger.ShowError(new UserException(e));
 				return null;
 			}
+#endif
 
 			var length = file.GetMetadata("Length");
 			if (!double.TryParse(length, out var lengthDouble))

@@ -4,6 +4,9 @@ using NAudio.Wave;
 
 namespace KaraokeLib.Audio
 {
+	/// <summary>
+	/// Mixes together multiple Audio KaraokeTracks into a single audio stream playable by NAudio.
+	/// </summary>
 	public class AudioMixer : WaveStream
 	{
 		private const int TARGET_SAMPLE_RATE = 44100;
@@ -121,6 +124,7 @@ namespace KaraokeLib.Audio
 
 			var bufferWriter = new BinaryWriter(new MemoryStream(buffer, offset, count));
 
+			// read each float from the stream and sum them
 			for (var i = 0; i < count / sizeof(float); i++)
 			{
 				var total = 0.0f;
@@ -129,7 +133,7 @@ namespace KaraokeLib.Audio
 					total += readers[j].ReadSingle();
 				}
 
-				if(i >= buffer.Length)
+				if (i >= buffer.Length)
 				{
 					break;
 				}

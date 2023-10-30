@@ -50,6 +50,8 @@ namespace KaraokeStudio
 			this.trackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.syncLyricsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.eventToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.debugToolStripMenuItem = new ToolStripMenuItem();
+			this.consoleToolStripMenuItem = new ToolStripMenuItem();
 			this.timelineSplit = new System.Windows.Forms.SplitContainer();
 			this.videoSplit = new System.Windows.Forms.SplitContainer();
 			this.video = new KaraokeStudio.Video.KaraokeVideoControl();
@@ -74,7 +76,8 @@ namespace KaraokeStudio
             this.fileToolStripMenuItem,
             this.projectToolStripMenuItem,
             this.trackToolStripMenuItem,
-            this.eventToolStripMenuItem});
+            this.eventToolStripMenuItem,
+			this.debugToolStripMenuItem});
 			this.menuStrip.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip.Name = "menuStrip";
 			this.menuStrip.Size = new System.Drawing.Size(884, 24);
@@ -222,6 +225,23 @@ namespace KaraokeStudio
 			this.eventToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
 			this.eventToolStripMenuItem.Text = "Event";
 			// 
+			// debugToolStripMenuItem
+			// 
+			this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
+			this.debugToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
+			this.debugToolStripMenuItem.Text = "Debug";
+			this.debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[]
+			{
+				this.consoleToolStripMenuItem
+			});
+			// 
+			// consoleToolStripMenuItem
+			// 
+			this.consoleToolStripMenuItem.Name = "consoleToolStripMenuItem";
+			this.consoleToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
+			this.consoleToolStripMenuItem.Text = "Console";
+			this.consoleToolStripMenuItem.Click += consoleToolStripMenuItem_Click;
+			// 
 			// timelineSplit
 			// 
 			this.timelineSplit.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -357,6 +377,8 @@ namespace KaraokeStudio
 		private ToolStripMenuItem trackToolStripMenuItem;
 		private ToolStripMenuItem syncLyricsToolStripMenuItem;
 		private ToolStripMenuItem eventToolStripMenuItem;
+		private ToolStripMenuItem debugToolStripMenuItem;
+		private ToolStripMenuItem consoleToolStripMenuItem;
 		private ToolStripMenuItem addTrackToolStripMenuItem;
 		private ToolStripMenuItem removeTrackToolStripMenuItem;
 		private ToolStripMenuItem addAudioTrackToolStripMenuItem;

@@ -1,4 +1,5 @@
 ﻿using KaraokeLib.Events;
+using KaraokeLib.Files;
 
 namespace KaraokeLib
 {
@@ -30,20 +31,38 @@ namespace KaraokeLib
 		/// <summary>
 		/// The id used to uniquely identify this track.
 		/// </summary>
-		public int Id { get; private set; }
+		public int Id { get; internal set; }
 
-		public KaraokeTrack(int id, KaraokeTrackType type)
+		private IKaraokeFile? _karaokeFile;
+
+		internal KaraokeTrack(int id, KaraokeTrackType type)
 		{
 			_events = new List<KaraokeEvent>();
 			Type = type;
 			Id = id;
 		}
 
-		public KaraokeTrack(int id, KaraokeTrackType type, IEnumerable<KaraokeEvent> events)
+		internal KaraokeTrack(int id, KaraokeTrackType type, IEnumerable<KaraokeEvent> events)
 		{
-			_events = new List<KaraokeEvent>(events);
+			_events = events.ToList();
 			Type = type;
 			Id = id;
+		}
+
+		public KaraokeTrack(IKaraokeFile file, KaraokeTrackType type)
+		{
+			_karaokeFile = file;
+			_events = new List<KaraokeEvent>();
+			Type = type;
+			Id = _karaokeFile.IdTracker.AddNewTrack(this);
+		}
+
+		public KaraokeTrack(IKaraokeFile file, KaraokeTrackType type, IEnumerable<KaraokeEvent> events)
+		{
+			_karaokeFile = file;
+			_events = new List<KaraokeEvent>(events);
+			Type = type;
+			Id = _karaokeFile.IdTracker.AddNewTrack(this);
 		}
 
 		/// <summary>
@@ -55,8 +74,12 @@ namespace KaraokeLib
 		/// <returns></returns>
 		public KaraokeEvent AddEvent(KaraokeEventType type, IEventTimecode start, IEventTimecode end, int linkedId = -1)
 		{
-			var nextId = (_events.Any() ? _events.Max(e => e.Id) + 1 : 0);
-			return new KaraokeEvent(type, nextId, start, end, linkedId);
+			if(_karaokeFile == null)
+			{
+				throw new InvalidOperationException("KaraokeTrack missing KaraokeFile");
+			}
+
+			return new KaraokeEvent(type, _karaokeFile.IdTracker, start, end, linkedId);
 		}
 
 		/// <summary>
@@ -73,9 +96,15 @@ namespace KaraokeLib
 		/// </remarks>
 		public void AddEvents(IEnumerable<KaraokeEvent> events)
 		{
+			if (_karaokeFile == null)
+			{
+				throw new InvalidOperationException("KaraokeTrack missing KaraokeFile");
+			}
+
 			_events.AddRange(events);
 			ValidateEvents();
 			ConformEvents();
+			_karaokeFile.IdTracker.AddEvents(Id, events);
 		}
 
 		/// <summary>
@@ -83,7 +112,13 @@ namespace KaraokeLib
 		/// </summary>
 		public void ReplaceEvents(IEnumerable<KaraokeEvent> events)
 		{
+			if(_karaokeFile == null)
+			{
+				throw new InvalidOperationException("KaraokeTrack missing KaraokeFile");
+			}
+
 			_events.Clear();
+			_karaokeFile.IdTracker.ReplaceTrack(Id, this);
 			AddEvents(events);
 		}
 
@@ -103,6 +138,11 @@ namespace KaraokeLib
 					yield return ev;
 				}
 			}
+		}
+
+		internal void SetFile(IKaraokeFile file)
+		{
+			_karaokeFile = file;
 		}
 
 		private void ConformEvents()

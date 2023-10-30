@@ -23,7 +23,6 @@ namespace KaraokeLib.Files
 		public KsfKaraokeFile(string filename)
 			: base(new KsfKaraokeProvider(filename))
 		{
-
 		}
 
 		public KsfKaraokeFile(Stream stream)
@@ -57,6 +56,12 @@ namespace KaraokeLib.Files
 		private Dictionary<string, string> _metadata = new Dictionary<string, string>();
 
 		private KaraokeTrack[] _tracks;
+
+		/// <inheritdoc />
+		public bool CanRead => true;
+
+		/// <inheritdoc />
+		public bool CanWrite => true;
 
 		public KsfKaraokeProvider(string fileName)
 		{
@@ -95,10 +100,9 @@ namespace KaraokeLib.Files
 		}
 
 		/// <inheritdoc />
-		public KaraokeTrack AddTrack(KaraokeTrackType type)
+		public KaraokeTrack AddTrack(IKaraokeFile file, KaraokeTrackType type)
 		{
-			var nextId = _tracks.Any() ? _tracks.Select(t => t.Id).Max() + 1 : 0;
-			var track = new KaraokeTrack(nextId, type);
+			var track = new KaraokeTrack(file, type);
 			_tracks = _tracks.Concat(new KaraokeTrack[] { track }).ToArray();
 			return track;
 		}
@@ -230,8 +234,7 @@ namespace KaraokeLib.Files
 					events.Add(ev);
 				}
 
-				_tracks[i] = new KaraokeTrack(trackId, trackType);
-				_tracks[i].AddEvents(events);
+				_tracks[i] = new KaraokeTrack(trackId, trackType, events);
 			}
 		}
 	}

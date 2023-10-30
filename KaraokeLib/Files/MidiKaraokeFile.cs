@@ -21,6 +21,12 @@ namespace KaraokeLib.Files
 		private MidiFile _file;
 		private List<TrackChunk> _lyricChunks = new List<TrackChunk>();
 
+		/// <inheritdoc />
+		public bool CanRead => true;
+
+		/// <inheritdoc />
+		public bool CanWrite => false;
+
 		public MidiKaraokeProvider(string filename)
 		{
 			_file = MidiFile.Read(filename);
@@ -33,18 +39,23 @@ namespace KaraokeLib.Files
 			PopulateLyricChunks();
 		}
 
+		/// <inheritdoc />
 		public double GetLengthSeconds()
 		{
 			return _file.GetDuration<MetricTimeSpan>().TotalSeconds;
 		}
 
-		public KaraokeTrack AddTrack(KaraokeTrackType type) => throw new NotImplementedException("MidiKaraokeProvider.AddTrack not implemented");
+		/// <inheritdoc />
+		public KaraokeTrack AddTrack(IKaraokeFile file, KaraokeTrackType type) => 
+			throw new NotImplementedException("MidiKaraokeProvider.AddTrack not implemented");
 
+		/// <inheritdoc />
 		public void Save(Stream outStream)
 		{
 			throw new NotImplementedException("Can't save MidiKaraokeProvider");
 		}
 
+		/// <inheritdoc />
 		public IEnumerable<KaraokeTrack> GetTracks()
 		{
 			foreach (var track in _lyricChunks)

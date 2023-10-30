@@ -1,11 +1,12 @@
 ﻿using KaraokeLib;
 using KaraokeLib.Config;
 using KaraokeLib.Events;
+using KaraokeLib.Files;
 using SkiaSharp;
 
 namespace KaraokeStudio.Config
 {
-    internal class ConfigPreviewHandler
+	internal class ConfigPreviewHandler
 	{
 		private const string TEXT = @"Lo-rem ip-sum do-lor sit am-et, con-sect-te-tur ad-ip-is-cing el-it.
 Vest-ib-u-lum vi-tae ar-cu vel el-it sus-ci-pit ul-tri-cies ac quis do-lor. In-te-ger a con-gue la-cus.
@@ -18,16 +19,17 @@ mas-sa quis sem. Cur-a-bit-ur cur-sus or-ci vit-ae con-seq-uat hen-dre-rit. Sus-
 		private VideoGenerationState _generationState;
 		private KaraokeEvent[] _events;
 		private KaraokeTrack[] _tracks;
+		private DummyKaraokeFile _file;
 		private int _frameRate;
 
 		public ConfigPreviewHandler()
 		{
 			_generationState = new VideoGenerationState();
+			_file = new DummyKaraokeFile();
 			_events = CreateEventsFromText(TEXT).ToArray();
-			_tracks = new KaraokeTrack[]
-			{
-				new KaraokeTrack(0, KaraokeTrackType.Lyrics, _events)
-			};
+			var track = _file.AddTrack(KaraokeTrackType.Lyrics);
+			track.AddEvents(_events);
+			_tracks = _file.GetTracks().ToArray();
 		}
 
 		public void Render(SKSurface surface)

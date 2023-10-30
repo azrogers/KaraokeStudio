@@ -12,6 +12,7 @@ namespace KaraokeStudio
 		private ProjectFormHandler _projectHandler;
 		private StyleForm _styleForm;
 		private SyncForm _syncForm;
+		private ConsoleForm _consoleForm;
 
 		private KaraokeEvent? _selectedEvent = null;
 		private KaraokeTrack? _selectedTrack = null;
@@ -23,6 +24,8 @@ namespace KaraokeStudio
 			InitializeComponent();
 
 			_projectHandler = new ProjectFormHandler();
+
+			_consoleForm = new ConsoleForm();
 
 			_styleForm = new StyleForm();
 			_styleForm.OnProjectConfigApplied += OnProjectConfigApplied;
@@ -172,6 +175,11 @@ namespace KaraokeStudio
 			}
 
 			// remove track
+		}
+
+		private void consoleToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			_consoleForm.Show();
 		}
 
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)

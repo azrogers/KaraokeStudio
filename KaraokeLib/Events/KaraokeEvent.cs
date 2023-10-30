@@ -1,4 +1,5 @@
-﻿using KaraokeLib.Video;
+﻿using KaraokeLib.Files;
+using KaraokeLib.Video;
 
 namespace KaraokeLib.Events
 {
@@ -34,7 +35,11 @@ namespace KaraokeLib.Events
             set => _value = value;
         }
 
-        public int Id => _id;
+        public int Id
+        {
+            get => _id;
+            internal set => _id = value;
+        }
 
         /// <summary>
         /// The ID of a previous event that this one is linked to.
@@ -60,6 +65,20 @@ namespace KaraokeLib.Events
             _type = type;
             _id = id;
             _linkedId = linkedId;
+            _startTimecode = startTimecode;
+            _endTimecode = endTimecode;
+            _value = null;
+        }
+
+        public KaraokeEvent(
+            KaraokeEventType type,
+            FileIdTracker idTracker,
+            IEventTimecode startTimecode,
+            IEventTimecode endTimecode,
+            int linkedId = -1)
+        {
+            _type = type;
+            _id = idTracker.AddNewEvent(this);
             _startTimecode = startTimecode;
             _endTimecode = endTimecode;
             _value = null;
