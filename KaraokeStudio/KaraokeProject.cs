@@ -4,15 +4,22 @@ using KaraokeLib.Config;
 using KaraokeLib.Events;
 using KaraokeLib.Files;
 using KaraokeStudio.Util;
-using Newtonsoft.Json;
 
 namespace KaraokeStudio
 {
 	internal class KaraokeProject
 	{
-		public TimeSpan Length { get; private set; }
+		public TimeSpan Length
+		{
+			get => TimeSpan.FromSeconds(_file.LengthSeconds);
+			set => _file.LengthSeconds = value.TotalSeconds;
+		}
 
-		public KaraokeConfig Config { get; set; }
+		public KaraokeConfig Config
+		{
+			get => _file.Config;
+			set => _file.Config = value;
+		}
 
 		public IEnumerable<KaraokeTrack> Tracks => _file.GetTracks();
 
@@ -20,9 +27,8 @@ namespace KaraokeStudio
 
 		private KsfKaraokeFile _file;
 
-		public KaraokeProject(TimeSpan length, KsfKaraokeFile lyricsFile)
+		public KaraokeProject(KsfKaraokeFile lyricsFile)
 		{
-			Length = length;
 			_file = lyricsFile;
 			Config = new KaraokeConfig();
 			Mixer = new AudioMixer(lyricsFile.GetTracks());
@@ -43,9 +49,6 @@ namespace KaraokeStudio
 
 		public void Save(string outFile)
 		{
-			_file.SetMetadata("Length", Length.TotalSeconds.ToString());
-			_file.SetMetadata("ProjectConfig", JsonConvert.SerializeObject(Config));
-
 			using (var stream = File.OpenWrite(outFile))
 			{
 				_file.Save(stream);
@@ -78,7 +81,8 @@ namespace KaraokeStudio
 			var track = file.AddTrack(KaraokeTrackType.Audio);
 			track.AddAudioClipEvent(settings, new TimeSpanTimecode(0), new TimeSpanTimecode(fileInfo.LengthSeconds));
 
-			var project = new KaraokeProject(TimeSpan.FromSeconds(fileInfo.LengthSeconds), file);
+			var project = new KaraokeProject(file);
+			project.Length = TimeSpan.FromSeconds(fileInfo.LengthSeconds);
 
 			return project;
 		}
@@ -90,7 +94,7 @@ namespace KaraokeStudio
 			try
 			{
 #endif
-				file = new KsfKaraokeFile(projectPath);
+			file = new KsfKaraokeFile(projectPath);
 #if !DEBUG
 		}
 			catch (Exception e)
@@ -99,37 +103,7 @@ namespace KaraokeStudio
 				return null;
 			}
 #endif
-
-			var length = file.GetMetadata("Length");
-			if (!double.TryParse(length, out var lengthDouble))
-			{
-				ExceptionLogger.ShowError(new UserException("Can't parse Length from KSF metadata"));
-				return null;
-			}
-
-			var endTimespan = TimeSpan.FromSeconds(lengthDouble);
-
-			var audioFile = file.GetMetadata("AudioFile");
-			if (audioFile != null)
-			{
-				// port over to new audio clip
-				var audioTrack = file.AddTrack(KaraokeTrackType.Audio);
-				var settings = new AudioClipSettings(audioFile);
-				audioTrack.AddAudioClipEvent(settings, new TimeSpanTimecode(0), new TimeSpanTimecode(endTimespan));
-
-				file.RemoveMetadata("AudioFile");
-			}
-
-			var project = new KaraokeProject(endTimespan, file);
-
-			var config = file.GetMetadata("ProjectConfig");
-			if (config == null)
-			{
-				ExceptionLogger.ShowError(new UserException("Can't find ProjectConfig in KSF metadata"));
-				return null;
-			}
-
-			project.Config = new KaraokeConfig(config);
+			var project = new KaraokeProject(file);
 			return project;
 		}
 	}

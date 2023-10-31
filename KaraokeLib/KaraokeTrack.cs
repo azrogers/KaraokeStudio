@@ -1,5 +1,6 @@
 ﻿using KaraokeLib.Events;
 using KaraokeLib.Files;
+using KaraokeLib.Files.Ksf;
 
 namespace KaraokeLib
 {
@@ -7,6 +8,7 @@ namespace KaraokeLib
 	/// A single track within a KaraokeFile. 
 	/// A track can be more than just text - see <see cref="KaraokeTrackType"/>.
 	/// </summary>
+	[KsfSerializable(KsfObjectType.Track)]
 	public class KaraokeTrack
 	{
 		private static readonly Dictionary<KaraokeTrackType, HashSet<KaraokeEventType>> ValidEvents = new Dictionary<KaraokeTrackType, HashSet<KaraokeEventType>>()
@@ -16,6 +18,7 @@ namespace KaraokeLib
 			{ KaraokeTrackType.Graphics, new HashSet<KaraokeEventType>() { } }
 		};
 
+		[KsfSerialize]
 		private List<KaraokeEvent> _events;
 
 		/// <summary>
@@ -26,14 +29,22 @@ namespace KaraokeLib
 		/// <summary>
 		/// The type of this track.
 		/// </summary>
+		[KsfSerialize]
 		public KaraokeTrackType Type { get; private set; }
 
 		/// <summary>
 		/// The id used to uniquely identify this track.
 		/// </summary>
+		[KsfSerialize]
 		public int Id { get; internal set; }
 
 		private IKaraokeFile? _karaokeFile;
+
+		// used for serialization
+		private KaraokeTrack()
+			: this(0, KaraokeTrackType.Lyrics)
+		{
+		}
 
 		internal KaraokeTrack(int id, KaraokeTrackType type)
 		{
@@ -74,19 +85,20 @@ namespace KaraokeLib
 		/// <returns></returns>
 		public KaraokeEvent AddEvent(KaraokeEventType type, IEventTimecode start, IEventTimecode end, int linkedId = -1)
 		{
-			if(_karaokeFile == null)
-			{
-				throw new InvalidOperationException("KaraokeTrack missing KaraokeFile");
-			}
-
-			return new KaraokeEvent(type, _karaokeFile.IdTracker, start, end, linkedId);
+			var ev = CreateEvent(type, start, end, linkedId);
+			_events.Add(ev);
+			return ev;
 		}
 
 		/// <summary>
 		/// Adds a new event to this track of type KaraokeEventType.AudioClip.
 		/// </summary>
-		public AudioClipKaraokeEvent AddAudioClipEvent(AudioClipSettings settings, IEventTimecode start, IEventTimecode end) => 
-			new AudioClipKaraokeEvent(AddEvent(KaraokeEventType.AudioClip, start, end));
+		public AudioClipKaraokeEvent AddAudioClipEvent(AudioClipSettings settings, IEventTimecode start, IEventTimecode end)
+		{
+			var ev = new AudioClipKaraokeEvent(settings, CreateEvent(KaraokeEventType.AudioClip, start, end));
+			_events.Add(ev);
+			return ev;
+		}
 
 		/// <summary>
 		/// Adds the given events to this track.
@@ -143,6 +155,16 @@ namespace KaraokeLib
 		internal void SetFile(IKaraokeFile file)
 		{
 			_karaokeFile = file;
+		}
+
+		private KaraokeEvent CreateEvent(KaraokeEventType type, IEventTimecode start, IEventTimecode end, int linkedId = -1)
+		{
+			if (_karaokeFile == null)
+			{
+				throw new InvalidOperationException("KaraokeTrack missing KaraokeFile");
+			}
+
+			return new KaraokeEvent(type, _karaokeFile.IdTracker, start, end, linkedId);
 		}
 
 		private void ConformEvents()

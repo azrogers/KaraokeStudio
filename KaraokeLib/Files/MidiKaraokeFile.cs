@@ -183,8 +183,7 @@ namespace KaraokeLib.Files
 					}
 				}
 
-				var newTrack = new KaraokeTrack(nextTrackId++, KaraokeTrackType.Lyrics);
-				newTrack.AddEvents(events);
+				var newTrack = new KaraokeTrack(nextTrackId++, KaraokeTrackType.Lyrics, events);
 				yield return newTrack;
 			}
 		}

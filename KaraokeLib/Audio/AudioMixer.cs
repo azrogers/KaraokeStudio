@@ -30,7 +30,7 @@ namespace KaraokeLib.Audio
 				}
 			}
 
-			_duration = _audioTracks.Any() ? _audioTracks.Max(t => t.Events.Max(t => t.EndTimeSeconds)) : 0;
+			_duration = _audioTracks.Any() ? _audioTracks.Max(t => t.Events.Any() ? t.Events.Max(t => t.EndTimeSeconds) : 0) : 0;
 		}
 
 		public override WaveFormat WaveFormat => WaveFormat.CreateIeeeFloatWaveFormat(TARGET_SAMPLE_RATE, TARGET_CHANNELS);

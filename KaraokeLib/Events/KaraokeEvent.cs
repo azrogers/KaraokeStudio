@@ -1,9 +1,11 @@
 ﻿using KaraokeLib.Files;
+using KaraokeLib.Files.Ksf;
 using KaraokeLib.Video;
 
 namespace KaraokeLib.Events
 {
-    public class KaraokeEvent
+    [KsfSerializable(KsfObjectType.Event)]
+    public class KaraokeEvent : IKsfBinaryObject
     {
         private KaraokeEventType _type;
         private int _id;
@@ -84,6 +86,12 @@ namespace KaraokeLib.Events
             _value = null;
         }
 
+        // used for serialization
+        private KaraokeEvent() : this(KaraokeEventType.Lyric, 0, new TimeSpanTimecode(0), new TimeSpanTimecode(0))
+        {
+
+        }
+
         /// <summary>
         /// Returns the position of the cursor within this event, normalized between [0, 1]
         /// </summary>
@@ -117,7 +125,62 @@ namespace KaraokeLib.Events
             _startTimecode = start;
             _endTimecode = end;
         }
-    }
+
+		public void Write(BinaryWriter writer)
+		{
+            byte infoByte = 0;
+            infoByte |= (byte)(LinkedId != -1 ? 1 : 0);
+            infoByte |= (byte)((RawValue != null ? 1 : 0) << 1);
+
+            writer.Write(infoByte);
+
+			// write event
+			writer.Write((byte)Type);
+			writer.Write(Id);
+			writer.Write((uint)StartTimeMilliseconds);
+			writer.Write((uint)EndTimeMilliseconds);
+			if (LinkedId != -1)
+			{
+				writer.Write(LinkedId);
+			}
+			if (RawValue != null)
+			{
+				writer.WriteNullTerminatedString(RawValue);
+			}
+		}
+
+        public static KaraokeEvent Read(BinaryReader reader)
+        {
+            var infoByte = reader.ReadByte();
+			var hasLinkedId = ((infoByte >> 0) & 1) == 1;
+			var hasRawValue = ((infoByte >> 1) & 1) == 1;
+
+			var type = (KaraokeEventType)reader.ReadByte();
+            var id = reader.ReadInt32();
+            var startTime = reader.ReadUInt32();
+            var endTime = reader.ReadUInt32();
+
+            var linkedId = -1;
+            if (hasLinkedId)
+            {
+                linkedId = reader.ReadInt32();
+            }
+
+            string? rawValue = null;
+            if (hasRawValue)
+            {
+                rawValue = reader.ReadNullTerminatedString();
+            }
+
+            var ev = new KaraokeEvent(type, id, new TimeSpanTimecode(startTime), new TimeSpanTimecode(endTime), linkedId) { RawValue = rawValue };
+            if(type == KaraokeEventType.AudioClip)
+            {
+                return new AudioClipKaraokeEvent(ev);
+            }
+
+            return ev;
+		}
+	}
 
     /// <summary>
     /// Identifies a type of event in a KaraokeTrack.
