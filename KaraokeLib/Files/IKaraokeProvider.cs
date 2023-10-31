@@ -1,9 +1,11 @@
-﻿namespace KaraokeLib.Files
+﻿using KaraokeLib.Tracks;
+
+namespace KaraokeLib.Files
 {
-	/// <summary>
-	/// Represents a single format that karaoke data can be read from and written to.
-	/// </summary>
-	public interface IKaraokeProvider
+    /// <summary>
+    /// Represents a single format that karaoke data can be read from and written to.
+    /// </summary>
+    public interface IKaraokeProvider
 	{
 		/// <summary>
 		/// Obtains the tracks this provider represents.

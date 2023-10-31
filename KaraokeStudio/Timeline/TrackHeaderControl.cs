@@ -1,5 +1,5 @@
 ﻿using FontAwesome.Sharp;
-using KaraokeLib;
+using KaraokeLib.Tracks;
 using KaraokeStudio.Util;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ using System.Windows.Forms;
 
 namespace KaraokeStudio.Timeline
 {
-	public partial class TrackHeaderControl : UserControl
+    public partial class TrackHeaderControl : UserControl
 	{
 		public KaraokeTrack? Track
 		{
@@ -23,6 +23,11 @@ namespace KaraokeStudio.Timeline
 				UpdateComponent();
 			}
 		}
+
+		/// <summary>
+		/// Called when the settings of the track this header is for have been changed.
+		/// </summary>
+		public event Action<KaraokeTrack>? OnTrackSettingsChanged;
 
 		private Pen _selectedTrackPen;
 		private Brush _highlightBrush;
@@ -66,13 +71,29 @@ namespace KaraokeStudio.Timeline
 
 			if(Track != null && Track.Type == KaraokeTrackType.Audio)
 			{
-				CreateButton(IconChar.VolumeMute, (o, e) => { });
+				var config = Track.GetTrackConfig<AudioTrackSettings>();
+				var b = CreateButton(IconChar.VolumeMute, (o, e) => {
+					var button = o as IconButton;
+					if(button == null)
+					{
+						return;
+					}
+
+					var oldConfig = Track.GetTrackConfig<AudioTrackSettings>();
+					oldConfig.Muted = !oldConfig.Muted;
+					button.BackColor = oldConfig.Muted ? Color.Red : Color.Transparent;
+					Track.SetTrackConfig(oldConfig);
+
+					OnTrackSettingsChanged?.Invoke(Track);
+				});
+
+				b.BackColor = config.Muted ? Color.Red : Color.Transparent;
 			}
 
 			trackButtonsContainer.PerformLayout();
 		}
 
-		private void CreateButton(IconChar icon, EventHandler onClick)
+		private IconButton CreateButton(IconChar icon, EventHandler onClick)
 		{
 			var button = new IconButton();
 			button.IconChar = icon;
@@ -80,6 +101,7 @@ namespace KaraokeStudio.Timeline
 			button.Size = new Size(trackButtonsContainer.Height, trackButtonsContainer.Height);
 			button.Click += _buttonOnClickHandlers[button] = onClick;
 			trackButtonsContainer.Controls.Add(button);
+			return button;
 		}
 
 		#region UI Events

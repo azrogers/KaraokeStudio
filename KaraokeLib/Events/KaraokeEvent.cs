@@ -1,5 +1,6 @@
 ﻿using KaraokeLib.Files;
 using KaraokeLib.Files.Ksf;
+using KaraokeLib.Tracks;
 using KaraokeLib.Video;
 
 namespace KaraokeLib.Events

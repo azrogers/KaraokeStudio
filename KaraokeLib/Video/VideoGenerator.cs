@@ -4,6 +4,7 @@ using FFMediaToolkit.Graphics;
 using KaraokeLib.Audio;
 using KaraokeLib.Config;
 using KaraokeLib.Files;
+using KaraokeLib.Tracks;
 using KaraokeLib.Video.Plan;
 using SkiaSharp;
 

@@ -1,5 +1,5 @@
-﻿using KaraokeLib;
-using KaraokeLib.Config;
+﻿using KaraokeLib.Config;
+using KaraokeLib.Tracks;
 using KaraokeLib.Video;
 using KaraokeLib.Video.Plan;
 using SkiaSharp;

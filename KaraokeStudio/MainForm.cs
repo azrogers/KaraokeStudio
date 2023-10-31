@@ -1,14 +1,14 @@
-using KaraokeLib;
 using KaraokeLib.Config;
 using KaraokeLib.Events;
 using KaraokeStudio.FormHandlers;
 using KaraokeStudio.Util;
 using KaraokeStudio.Video;
 using KaraokeStudio.LyricsEditor;
+using KaraokeLib.Tracks;
 
 namespace KaraokeStudio
 {
-	public partial class MainForm : Form
+    public partial class MainForm : Form
 	{
 		private ProjectFormHandler _projectHandler;
 		private StyleForm _styleForm;
@@ -37,15 +37,9 @@ namespace KaraokeStudio
 
 			lyricsEditor.OnLyricsEventsChanged += OnLyricsEventsChanged;
 
-			video.OnPositionChangedEvent += OnPositionChanged;
-			timelineContainer.OnPositionChangedEvent += (newTime) =>
-			{
-				timelineContainer.OnPositionChanged(newTime);
-				video.OnPositionChanged(newTime);
-			};
-
 			timelineContainer.OnEventSelectionChanged += OnEventSelectionChanged;
 			timelineContainer.OnTrackSelectionChanged += OnTrackSelectionChanged;
+			timelineContainer.OnTrackSettingsChanged += OnTrackSettingsChanged;
 
 			// handles the project itself
 			_projectHandler = new ProjectFormHandler();
@@ -65,6 +59,11 @@ namespace KaraokeStudio
 			OnProjectChanged(null);
 		}
 
+		private void OnTrackSettingsChanged(KaraokeTrack obj)
+		{
+			_projectHandler.UpdateTrackSettings(obj);
+		}
+
 		public void LoadProject(string path)
 		{
 			_projectHandler.OpenProject(path);
@@ -80,14 +79,13 @@ namespace KaraokeStudio
 			return _syncForm.OnProjectWillChange();
 		}
 
-		private void OnPositionChanged(double newTime)
-		{
-			timelineContainer.OnPositionChanged(newTime);
-			lyricsEditor.OnPositionChanged(newTime);
-		}
-
 		private void OnProjectConfigApplied(KaraokeConfig obj)
 		{
+			if(_projectHandler.Project != null)
+			{
+				_projectHandler.Project.PlaybackState.OnProjectConfigChanged(_projectHandler.Project);
+			}
+
 			_projectHandler.SetConfig(obj);
 			video.UpdateGenerationContext();
 		}

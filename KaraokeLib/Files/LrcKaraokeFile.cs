@@ -1,8 +1,9 @@
 ﻿using KaraokeLib.Events;
+using KaraokeLib.Tracks;
 
 namespace KaraokeLib.Files
 {
-	public class LrcKaraokeFile : KaraokeFile<LrcKaraokeProvider>
+    public class LrcKaraokeFile : KaraokeFile<LrcKaraokeProvider>
 	{
 		public LrcKaraokeFile(string filename) : base(new LrcKaraokeProvider(filename)) { }
 

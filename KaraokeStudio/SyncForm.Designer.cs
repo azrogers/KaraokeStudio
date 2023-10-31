@@ -226,7 +226,6 @@
 			this.Name = "SyncForm";
 			this.Text = "Sync Lyrics";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SyncForm_FormClosing);
-			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SyncForm_FormClosed);
 			this.splitContainer.Panel1.ResumeLayout(false);
 			this.splitContainer.Panel1.PerformLayout();
 			this.splitContainer.Panel2.ResumeLayout(false);

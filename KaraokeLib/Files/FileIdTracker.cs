@@ -1,4 +1,5 @@
 ﻿using KaraokeLib.Events;
+using KaraokeLib.Tracks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace KaraokeLib.Files
 {
-	/// <summary>
-	/// Keeps track of IDs for events and tracks to make sure they don't overlap.
-	/// This is necessary as event IDs are per-file unique, not per-track unique.
-	/// </summary>
-	public class FileIdTracker
+    /// <summary>
+    /// Keeps track of IDs for events and tracks to make sure they don't overlap.
+    /// This is necessary as event IDs are per-file unique, not per-track unique.
+    /// </summary>
+    public class FileIdTracker
 	{
 		private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 

@@ -1,5 +1,5 @@
-﻿using KaraokeLib;
-using KaraokeLib.Events;
+﻿using KaraokeLib.Events;
+using KaraokeLib.Tracks;
 using KaraokeLib.Util;
 using KaraokeStudio.Util;
 using NLog;
@@ -32,13 +32,8 @@ namespace KaraokeStudio.Timeline
 		private KaraokeTrack[] _tracks;
 		private float _horizZoomFactor = 1.0f;
 		private float _verticalZoomFactor = 1.0f;
-		private double _currentVideoPosition;
 		private bool _mouseDown = false;
 
-		/// <summary>
-		/// Called when the video position was changed by this control and needs to be propogated.
-		/// </summary>
-		public event Action<double>? OnPositionChangedEvent;
 		
 		// TODO: merge selection systems together? unified for multiple types?
 
@@ -71,6 +66,14 @@ namespace KaraokeStudio.Timeline
 
 			horizScroll.Enabled = false;
 			verticalScroll.Enabled = false;
+		}
+
+		~TimelineControl()
+		{
+			if (_currentProject != null)
+			{
+				_currentProject.PlaybackState.OnPositionChanged -= OnPositionChanged;
+			}
 		}
 
 		public void DeselectEvent()
@@ -107,6 +110,17 @@ namespace KaraokeStudio.Timeline
 
 		internal void OnProjectChanged(KaraokeProject? project)
 		{
+			if(_currentProject != null)
+			{
+				// cleanup old event listeners
+				_currentProject.PlaybackState.OnPositionChanged -= OnPositionChanged;
+			}
+
+			if(project != null)
+			{
+				project.PlaybackState.OnPositionChanged += OnPositionChanged;
+			}
+
 			_tracks = project?.Tracks.OrderBy(t => t.Id).ToArray() ?? new KaraokeTrack[0];
 			_currentProject = project;
 			_timelineCanvas.OnProjectChanged(project);
@@ -123,9 +137,8 @@ namespace KaraokeStudio.Timeline
 			skiaControl.Invalidate();
 		}
 
-		internal void OnPositionChanged(double pos)
+		private void OnPositionChanged(double pos)
 		{
-			_currentVideoPosition = pos;
 			skiaControl.Invalidate();
 		}
 
@@ -213,7 +226,8 @@ namespace KaraokeStudio.Timeline
 
 			canvas.RestoreToCount(savePoint);
 
-			var playheadXPos = CreateMatrix().MapPoint(new SKPoint((float)(_timelineCanvas.GetXPosOfTime(_currentVideoPosition)), 0)).X;
+			var playbackPos = _currentProject?.PlaybackState.Position ?? 0;
+			var playheadXPos = CreateMatrix().MapPoint(new SKPoint((float)(_timelineCanvas.GetXPosOfTime(playbackPos)), 0)).X;
 
 			savePoint = canvas.Save();
 			canvas.DrawLine(new SKPoint(playheadXPos, 0), new SKPoint(playheadXPos, clientRect.Height), _lightPaint);
@@ -238,7 +252,6 @@ namespace KaraokeStudio.Timeline
 			_horizZoomFactor = horiz;
 			_verticalZoomFactor = vertical;
 			RecalculateScrollBars();
-			_currentVideoPosition = centerTime;
 			skiaControl.Invalidate();
 
 			var scrollOffset = CreateMatrix().MapPoint(new SKPoint((float)_timelineCanvas.GetXPosOfTime(centerTime), 0)).X;
@@ -313,10 +326,10 @@ namespace KaraokeStudio.Timeline
 
 		private void skiaControl_MouseMove(object sender, MouseEventArgs e)
 		{
-			if (_mouseDown)
+			if (_mouseDown && _currentProject != null)
 			{
 				var pos = _timelineCanvas.GetTimeOfPoint(TranslatePointToCanvas(e.Location));
-				OnPositionChangedEvent?.Invoke(pos);
+				_currentProject.PlaybackState.SeekAbsolute(pos);
 			}
 		}
 

@@ -13,6 +13,11 @@ namespace KaraokeStudio.Util
 
 		private static string Filename => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "KaraokeStudio", "settings.json");
 
+		/// <summary>
+		/// Called when AppSettings.Volume is changed.
+		/// </summary>
+		public event Action<float>? OnVolumeChanged;
+
 		[JsonProperty]
 		public HashSet<string> RecentFiles { get; private set; } = new HashSet<string>();
 
@@ -34,6 +39,7 @@ namespace KaraokeStudio.Util
 		{
 			Volume = vol;
 			Save();
+			OnVolumeChanged?.Invoke(vol);
 		}
 
 		public void Save()

@@ -1,10 +1,11 @@
 ﻿using KaraokeLib.Events;
+using KaraokeLib.Tracks;
 using Melanchall.DryWetMidi.Core;
 using Melanchall.DryWetMidi.Interaction;
 
 namespace KaraokeLib.Files
 {
-	public class MidiKaraokeFile : KaraokeFile<MidiKaraokeProvider>
+    public class MidiKaraokeFile : KaraokeFile<MidiKaraokeProvider>
 	{
 		public MidiKaraokeFile(string filename)
 			: base(new MidiKaraokeProvider(filename)) { }

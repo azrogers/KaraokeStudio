@@ -1,13 +1,13 @@
-﻿using KaraokeLib;
-using KaraokeLib.Audio;
+﻿using KaraokeLib.Audio;
 using KaraokeLib.Config;
 using KaraokeLib.Events;
 using KaraokeLib.Files;
+using KaraokeLib.Tracks;
 using KaraokeStudio.Util;
 
 namespace KaraokeStudio
 {
-	internal class KaraokeProject
+    internal class KaraokeProject
 	{
 		public TimeSpan Length
 		{
@@ -23,7 +23,7 @@ namespace KaraokeStudio
 
 		public IEnumerable<KaraokeTrack> Tracks => _file.GetTracks();
 
-		public AudioMixer Mixer { get; private set; }
+		public ProjectPlaybackState PlaybackState { get; private set; }
 
 		private KsfKaraokeFile _file;
 
@@ -31,7 +31,7 @@ namespace KaraokeStudio
 		{
 			_file = lyricsFile;
 			Config = new KaraokeConfig();
-			Mixer = new AudioMixer(lyricsFile.GetTracks());
+			PlaybackState = new ProjectPlaybackState(this, lyricsFile.GetTracks());
 		}
 
 		public KaraokeTrack AddTrack(KaraokeTrackType type)
@@ -40,12 +40,7 @@ namespace KaraokeStudio
 			return track;
 		}
 
-		public void UpdateMixer()
-		{
-			var pos = Mixer.Position;
-			Mixer = new AudioMixer(_file.GetTracks());
-			Mixer.Position = pos;
-		}
+		public void UpdateMixer() => PlaybackState.UpdateMixer(_file.GetTracks());
 
 		public void Save(string outFile)
 		{

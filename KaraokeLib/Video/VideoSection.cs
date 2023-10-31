@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using KaraokeLib.Events;
+using KaraokeLib.Tracks;
 
 namespace KaraokeLib.Video
 {

@@ -1,13 +1,15 @@
 ﻿using KaraokeLib.Events;
+using KaraokeLib.Tracks;
 using NAudio.Vorbis;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 
 namespace KaraokeLib.Audio
 {
-	/// <summary>
-	/// Mixes together multiple Audio KaraokeTracks into a single audio stream playable by NAudio.
-	/// </summary>
-	public class AudioMixer : WaveStream
+    /// <summary>
+    /// Mixes together multiple Audio KaraokeTracks into a single audio stream playable by NAudio.
+    /// </summary>
+    public class AudioMixer : WaveStream
 	{
 		private const int TARGET_SAMPLE_RATE = 44100;
 		private const int TARGET_CHANNELS = 2;
@@ -52,13 +54,23 @@ namespace KaraokeLib.Audio
 		{
 			var durationSeconds = count / (double)WaveFormat.AverageBytesPerSecond;
 			var relevantClips = new List<AudioClipKaraokeEvent>();
+			var relevantClipVolumes = new List<float>();
 			foreach (var track in _audioTracks)
 			{
-				relevantClips.AddRange(
-					track
+				var settings = track.GetTrackConfig<AudioTrackSettings>();
+				// ignore this track, we're muted
+				if(settings.Muted)
+				{
+					continue;
+				}
+
+				var foundClips = track
 					.GetRelevantEvents((_position, _position + durationSeconds))
 					.Where(e => e.Type == KaraokeEventType.AudioClip)
-					.Cast<AudioClipKaraokeEvent>());
+					.Cast<AudioClipKaraokeEvent>()
+					.ToArray();
+				relevantClips.AddRange(foundClips);
+				relevantClipVolumes.AddRange(foundClips.Select(f => settings.Volume));
 			}
 
 			for (var i = 0; i < count; i++)
@@ -72,8 +84,8 @@ namespace KaraokeLib.Audio
 				return count;
 			}
 
-
 			var clips = relevantClips.ToArray();
+			var clipVolumes = relevantClipVolumes.ToArray();
 			var buffers = new byte[clips.Length][];
 			for (var i = 0; i < clips.Length; i++)
 			{
@@ -98,17 +110,21 @@ namespace KaraokeLib.Audio
 					outBuffer[j] = 0;
 				}
 
+				var volumeSampler = new VolumeSampleProvider(new RawSourceWaveStream(new MemoryStream(streamBuffer), stream.WaveFormat).ToSampleProvider());
+				volumeSampler.Volume = clipVolumes[i];
+
 				// resample if needed
 				if (stream.WaveFormat != WaveFormat)
 				{
-					using (var resampler = new MediaFoundationResampler(new RawSourceWaveStream(new MemoryStream(streamBuffer), stream.WaveFormat), WaveFormat))
+					using (var resampler = new MediaFoundationResampler(volumeSampler.ToWaveProvider(), WaveFormat))
 					{
 						resampler.Read(outBuffer, 0, count);
 					}
 				}
 				else
 				{
-					Array.Copy(streamBuffer, outBuffer, count);
+					volumeSampler.ToWaveProvider().Read(outBuffer, 0, count);
+					//Array.Copy(streamBuffer, outBuffer, count);
 				}
 
 				buffers[i] = outBuffer;

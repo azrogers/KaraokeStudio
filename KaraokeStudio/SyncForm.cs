@@ -1,6 +1,6 @@
-﻿using KaraokeLib;
-using KaraokeLib.Config;
+﻿using KaraokeLib.Config;
 using KaraokeLib.Events;
+using KaraokeLib.Tracks;
 using KaraokeLib.Util;
 using KaraokeLib.Video;
 using KaraokeLib.Video.Elements;
@@ -139,11 +139,6 @@ namespace KaraokeStudio
 		private void SyncForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			e.Cancel = !OnProjectWillChange();
-		}
-
-		private void SyncForm_FormClosed(object sender, FormClosedEventArgs e)
-		{
-			video.Pause();
 		}
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)

@@ -1,6 +1,6 @@
 ﻿using FontAwesome.Sharp;
-using KaraokeLib;
 using KaraokeLib.Events;
+using KaraokeLib.Tracks;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace KaraokeStudio
 {
-	internal static class VisualStyle
+    internal static class VisualStyle
 	{
 		public static readonly Color NeutralLightColor = Color.FromArgb(251, 255, 254);
 		public static readonly Color NeutralDarkColor = Color.FromArgb(39, 41, 50);

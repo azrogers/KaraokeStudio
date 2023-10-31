@@ -1,8 +1,9 @@
-﻿using KaraokeLib.Events;
+﻿using KaraokeLib.Config;
+using KaraokeLib.Events;
 using KaraokeLib.Files;
 using KaraokeLib.Files.Ksf;
 
-namespace KaraokeLib
+namespace KaraokeLib.Tracks
 {
 	/// <summary>
 	/// A single track within a KaraokeFile. 
@@ -17,6 +18,9 @@ namespace KaraokeLib
 			{ KaraokeTrackType.Audio, new HashSet<KaraokeEventType>() { KaraokeEventType.AudioClip } },
 			{ KaraokeTrackType.Graphics, new HashSet<KaraokeEventType>() { } }
 		};
+
+		[KsfSerialize]
+		private IEditableConfig? _trackConfig;
 
 		[KsfSerialize]
 		private List<KaraokeEvent> _events;
@@ -124,7 +128,7 @@ namespace KaraokeLib
 		/// </summary>
 		public void ReplaceEvents(IEnumerable<KaraokeEvent> events)
 		{
-			if(_karaokeFile == null)
+			if (_karaokeFile == null)
 			{
 				throw new InvalidOperationException("KaraokeTrack missing KaraokeFile");
 			}
@@ -142,14 +146,44 @@ namespace KaraokeLib
 			foreach (var ev in _events)
 			{
 				if (
-					(ev.StartTimeSeconds >= bounds.Start && ev.StartTimeSeconds < bounds.End) ||
-					(ev.EndTimeSeconds >= bounds.Start && ev.EndTimeSeconds < bounds.End) ||
-					(bounds.Start >= ev.StartTimeSeconds && bounds.Start < ev.EndTimeSeconds) ||
-					(bounds.End >= ev.StartTimeSeconds && bounds.End < ev.EndTimeSeconds))
+					ev.StartTimeSeconds >= bounds.Start && ev.StartTimeSeconds < bounds.End ||
+					ev.EndTimeSeconds >= bounds.Start && ev.EndTimeSeconds < bounds.End ||
+					bounds.Start >= ev.StartTimeSeconds && bounds.Start < ev.EndTimeSeconds ||
+					bounds.End >= ev.StartTimeSeconds && bounds.End < ev.EndTimeSeconds)
 				{
 					yield return ev;
 				}
 			}
+		}
+
+		public T GetTrackConfig<T>() where T : IEditableConfig
+		{
+			if (_trackConfig == null)
+			{
+				_trackConfig = Activator.CreateInstance(typeof(T)) as IEditableConfig;
+			}
+
+			if(_trackConfig == null)
+			{
+				throw new InvalidOperationException("KaraokeTrack _trackConfig is null?");
+			}
+
+			if(_trackConfig.GetType() != typeof(T))
+			{
+				throw new ArgumentException($"Track config is of type {_trackConfig.GetType().Name} but type {typeof(T).Name} was requested");
+			}
+
+			return (T)_trackConfig;
+		}
+
+		public void SetTrackConfig<T>(T config) where T : IEditableConfig
+		{
+			if (_trackConfig != null && _trackConfig.GetType() != typeof(T))
+			{
+				throw new ArgumentException($"Track config is of type {_trackConfig.GetType().Name} but type {typeof(T).Name} was assigned");
+			}
+
+			_trackConfig = config;
 		}
 
 		internal void SetFile(IKaraokeFile file)

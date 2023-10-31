@@ -1,4 +1,5 @@
 ﻿using KaraokeLib.Config;
+using KaraokeLib.Tracks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace KaraokeLib.Files.Ksf
 {
-	[KsfSerializable(KsfObjectType.File)]
+    [KsfSerializable(KsfObjectType.File)]
 	internal class KsfFileObject
 	{
 		[KsfSerialize]

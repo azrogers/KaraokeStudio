@@ -1,5 +1,5 @@
-﻿using KaraokeLib;
-using KaraokeLib.Events;
+﻿using KaraokeLib.Events;
+using KaraokeLib.Tracks;
 using ScintillaNET;
 using System.Data;
 
@@ -50,8 +50,26 @@ namespace KaraokeStudio.LyricsEditor
 			Controls.Add(_scintilla);
 		}
 
+		~LyricsEditorControl()
+		{
+			if(_project != null)
+			{
+				_project.PlaybackState.OnPositionChanged -= OnPositionChanged;
+			}
+		}
+
 		internal void OnProjectChanged(KaraokeProject? project)
 		{
+			if(_project != null)
+			{
+				_project.PlaybackState.OnPositionChanged -= OnPositionChanged;
+			}
+
+			if(project != null)
+			{
+				project.PlaybackState.OnPositionChanged += OnPositionChanged;
+			}
+
 			_project = project;
 			UpdateTextBox();
 		}
@@ -61,7 +79,7 @@ namespace KaraokeStudio.LyricsEditor
 			UpdateTextBox();
 		}
 
-		internal void OnPositionChanged(double newPosition)
+		private void OnPositionChanged(double newPosition)
 		{
 			var charIndex = _textResult?.PositionToCharIndex(_textElements, newPosition) ?? 0;
 			RestyleArea(charIndex, _previousHighlightIndex, charIndex);

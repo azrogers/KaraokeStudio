@@ -1,6 +1,8 @@
-﻿namespace KaraokeLib.Files
+﻿using KaraokeLib.Tracks;
+
+namespace KaraokeLib.Files
 {
-	public interface IKaraokeFile
+    public interface IKaraokeFile
 	{
 		/// <summary>
 		/// Keeps track of IDs for events and tracks.

@@ -1,4 +1,5 @@
 ﻿using KaraokeLib.Events;
+using KaraokeLib.Tracks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace KaraokeLib.Files.Ksf
 {
-	internal enum KsfObjectType : byte
+    internal enum KsfObjectType : byte
 	{
 		None = 0,
 		File = 1,

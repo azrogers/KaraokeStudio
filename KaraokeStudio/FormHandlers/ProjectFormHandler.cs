@@ -1,15 +1,15 @@
-﻿using KaraokeLib;
-using KaraokeLib.Audio;
+﻿using KaraokeLib.Audio;
 using KaraokeLib.Config;
 using KaraokeLib.Events;
 using KaraokeLib.Files;
+using KaraokeLib.Tracks;
 using KaraokeStudio.Util;
 using Ookii.Dialogs.WinForms;
 
 namespace KaraokeStudio.FormHandlers
 {
-	// handles behaviors for the MainForm related to the current project
-	internal class ProjectFormHandler
+    // handles behaviors for the MainForm related to the current project
+    internal class ProjectFormHandler
 	{
 		private KaraokeProject? _loadedProject;
 		private string? _loadedProjectPath = null;
@@ -66,6 +66,11 @@ namespace KaraokeStudio.FormHandlers
 		{
 			track.ReplaceEvents(events);
 			_loadedProject?.UpdateMixer();
+			IsPendingChanges = true;
+		}
+
+		public void UpdateTrackSettings(KaraokeTrack track)
+		{
 			IsPendingChanges = true;
 		}
 
@@ -277,8 +282,8 @@ namespace KaraokeStudio.FormHandlers
 			track.AddAudioClipEvent(settings, new TimeSpanTimecode(0), new TimeSpanTimecode(info.LengthSeconds));
 
 			IsPendingChanges = true;
-			OnTrackChanged?.Invoke(track);
 			_loadedProject?.UpdateMixer();
+			OnTrackChanged?.Invoke(track);
 
 			return true;
 		}
