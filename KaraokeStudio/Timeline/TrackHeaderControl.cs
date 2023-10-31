@@ -1,4 +1,5 @@
-﻿using KaraokeLib;
+﻿using FontAwesome.Sharp;
+using KaraokeLib;
 using KaraokeStudio.Util;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,7 @@ namespace KaraokeStudio.Timeline
 		private Pen _selectedTrackPen;
 		private Brush _highlightBrush;
 		private KaraokeTrack? _track;
+		private Dictionary<IconButton, EventHandler> _buttonOnClickHandlers = new Dictionary<IconButton, EventHandler>();
 		private bool _selected = false;
 
 		public TrackHeaderControl()
@@ -47,8 +49,40 @@ namespace KaraokeStudio.Timeline
 			trackTitleLabel.Text = $"Track {Track?.Id ?? -1}";
 			trackTypeLabel.Text = Utility.HumanizeCamelCase(Track?.Type.ToString() ?? "Unknown");
 			BackColor = Track != null && VisualStyle.TrackColors.ContainsKey(Track.Type) ? VisualStyle.TrackColors[Track.Type] : Color.Black;
+
+			UpdateButtons();
 		}
 
+		private void UpdateButtons()
+		{
+			// remove old event handlers
+			foreach(var (button, handler) in _buttonOnClickHandlers)
+			{
+				button.Click -= handler;
+			}
+
+			_buttonOnClickHandlers.Clear();
+			trackButtonsContainer.Controls.Clear();
+
+			if(Track != null && Track.Type == KaraokeTrackType.Audio)
+			{
+				CreateButton(IconChar.VolumeMute, (o, e) => { });
+			}
+
+			trackButtonsContainer.PerformLayout();
+		}
+
+		private void CreateButton(IconChar icon, EventHandler onClick)
+		{
+			var button = new IconButton();
+			button.IconChar = icon;
+			button.IconSize = 24;
+			button.Size = new Size(trackButtonsContainer.Height, trackButtonsContainer.Height);
+			button.Click += _buttonOnClickHandlers[button] = onClick;
+			trackButtonsContainer.Controls.Add(button);
+		}
+
+		#region UI Events
 		private void TrackHeaderControl_Paint(object sender, PaintEventArgs e)
 		{
 			e.Graphics.SetClip(e.ClipRectangle);
@@ -56,7 +90,7 @@ namespace KaraokeStudio.Timeline
 			if(_selected)
 			{
 				e.Graphics.DrawRectangle(_selectedTrackPen, ClientRectangle);
-				e.Graphics.FillRectangle(_highlightBrush, ClientRectangle);
+				e.Graphics.FillRectangle(_highlightBrush, new Rectangle(Point.Empty, Size));
 			}
 		}
 
@@ -69,5 +103,11 @@ namespace KaraokeStudio.Timeline
 		{
 			OnClick(e);
 		}
+
+		private void trackButtonsContainer_Click(object sender, EventArgs e)
+		{
+			OnClick(e);
+		}
+		#endregion
 	}
 }
