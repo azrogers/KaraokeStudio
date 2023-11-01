@@ -37,8 +37,8 @@
 			this.configContainer.AutoSize = true;
 			this.configContainer.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			this.configContainer.ColumnCount = 2;
-			this.configContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
-			this.configContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this.configContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
+			this.configContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 75F));
 			this.configContainer.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.configContainer.Location = new System.Drawing.Point(0, 0);
 			this.configContainer.Name = "configContainer";
@@ -47,12 +47,12 @@
 			this.configContainer.Size = new System.Drawing.Size(150, 150);
 			this.configContainer.TabIndex = 1;
 			// 
-			// EditableConfig
+			// ConfigEditor
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this.configContainer);
-			this.Name = "EditableConfig";
+			this.Name = "ConfigEditor";
 			this.ResumeLayout(false);
 			this.PerformLayout();
 

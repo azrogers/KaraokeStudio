@@ -83,7 +83,7 @@ namespace KaraokeStudio
 		{
 			var scaleFactor = (double)outputSize.Width / (double)config.VideoSize.Width;
 
-			var kConfig = config.Copy();
+			var kConfig = config.CopyTyped();
 			kConfig.VideoSize.Width = outputSize.Width;
 			kConfig.VideoSize.Height = outputSize.Height;
 			kConfig.Font.Size = (float)(config.Font.Size * scaleFactor);

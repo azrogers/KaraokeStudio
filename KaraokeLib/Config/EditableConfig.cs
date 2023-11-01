@@ -9,6 +9,11 @@ namespace KaraokeLib.Config
 		/// Information about all of the editable fields on this config object.
 		/// </summary>
 		public IEnumerable<EditableConfigField> Fields { get; }
+
+		/// <summary>
+		/// Returns a copy of this config.
+		/// </summary>
+		public IEditableConfig Copy();
 	}
 
 	/// <summary>
@@ -53,7 +58,7 @@ namespace KaraokeLib.Config
 		/// <summary>
 		/// Returns a deep copy of this config.
 		/// </summary>
-		public T Copy()
+		public T CopyTyped()
 		{
 			var result = JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(this));
 			if (result == null)
@@ -63,6 +68,9 @@ namespace KaraokeLib.Config
 
 			return result;
 		}
+
+		/// <inheritdoc />
+		public IEditableConfig Copy() => CopyTyped();
 	}
 
 	public class ConfigRangeAttribute : Attribute

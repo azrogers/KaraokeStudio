@@ -124,7 +124,7 @@ namespace KaraokeLib.Audio
 				else
 				{
 					volumeSampler.ToWaveProvider().Read(outBuffer, 0, count);
-					//Array.Copy(streamBuffer, outBuffer, count);
+					//Array.CopyTyped(streamBuffer, outBuffer, count);
 				}
 
 				buffers[i] = outBuffer;

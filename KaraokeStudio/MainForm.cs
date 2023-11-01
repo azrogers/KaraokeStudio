@@ -235,5 +235,13 @@ namespace KaraokeStudio
 			syncLyricsToolStripMenuItem.Enabled = _selectedTrack?.Type == KaraokeTrackType.Lyrics;
 			removeTrackToolStripMenuItem.Enabled = _selectedTrack != null;
 		}
+
+		private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+		{
+			if(_projectHandler.Project != null)
+			{
+				_projectHandler.Project.PlaybackState.Cleanup();
+			}
+		}
 	}
 }

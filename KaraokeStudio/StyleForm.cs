@@ -41,7 +41,7 @@ namespace KaraokeStudio
 			}
 			else
 			{
-				configEditor.Config = project.Config.Copy();
+				configEditor.Config = project.Config.CopyTyped();
 			}
 
 			UpdateDirtyFlag(false);
@@ -94,7 +94,7 @@ namespace KaraokeStudio
 			}
 			else
 			{
-				configEditor.Config = _currentProject.Config.Copy();
+				configEditor.Config = _currentProject.Config.CopyTyped();
 			}
 
 			UpdatePreview();

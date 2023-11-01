@@ -303,8 +303,11 @@ namespace KaraokeStudio
 			// 
 			// timelineContainer
 			// 
+			this.timelineContainer.AutoSize = true;
+			this.timelineContainer.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(39)))), ((int)(((byte)(41)))), ((int)(((byte)(50)))));
 			this.timelineContainer.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.timelineContainer.Location = new System.Drawing.Point(0, 0);
+			this.timelineContainer.MinimumSize = new System.Drawing.Size(50, 50);
 			this.timelineContainer.Name = "timelineContainer";
 			this.timelineContainer.Size = new System.Drawing.Size(882, 121);
 			this.timelineContainer.TabIndex = 0;
@@ -320,10 +323,12 @@ namespace KaraokeStudio
 			this.Name = "MainForm";
 			this.Text = "Karaoke Studio";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
 			this.menuStrip.ResumeLayout(false);
 			this.menuStrip.PerformLayout();
 			this.verticalSplit.Panel1.ResumeLayout(false);
 			this.verticalSplit.Panel2.ResumeLayout(false);
+			this.verticalSplit.Panel2.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.verticalSplit)).EndInit();
 			this.verticalSplit.ResumeLayout(false);
 			this.videoSplit.Panel2.ResumeLayout(false);

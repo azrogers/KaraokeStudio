@@ -82,6 +82,16 @@ namespace KaraokeStudio
 		}
 
 		/// <summary>
+		/// Cleanup objects for a clean exit.
+		/// </summary>
+		public void Cleanup()
+		{
+			_timer.Stop();
+			_timer.Dispose();
+			_output.Dispose();
+		}
+
+		/// <summary>
 		/// Acquires a claim to be the object (a control, generally) currently playing video.
 		/// </summary>
 		/// <remarks>

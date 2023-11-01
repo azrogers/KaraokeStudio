@@ -12,13 +12,6 @@ namespace KaraokeLib.Tracks
 	[KsfSerializable(KsfObjectType.Track)]
 	public class KaraokeTrack
 	{
-		private static readonly Dictionary<KaraokeTrackType, HashSet<KaraokeEventType>> ValidEvents = new Dictionary<KaraokeTrackType, HashSet<KaraokeEventType>>()
-		{
-			{ KaraokeTrackType.Lyrics, new HashSet<KaraokeEventType>() { KaraokeEventType.Lyric, KaraokeEventType.ParagraphBreak, KaraokeEventType.LineBreak } },
-			{ KaraokeTrackType.Audio, new HashSet<KaraokeEventType>() { KaraokeEventType.AudioClip } },
-			{ KaraokeTrackType.Graphics, new HashSet<KaraokeEventType>() { } }
-		};
-
 		[KsfSerialize]
 		private IEditableConfig? _trackConfig;
 
@@ -156,31 +149,37 @@ namespace KaraokeLib.Tracks
 			}
 		}
 
-		public T GetTrackConfig<T>() where T : IEditableConfig
+		public IEditableConfig GetTrackConfig()
 		{
 			if (_trackConfig == null)
 			{
-				_trackConfig = Activator.CreateInstance(typeof(T)) as IEditableConfig;
+				_trackConfig = Activator.CreateInstance(KaraokeTrackTypeMapping.GetTrackSettingsType(Type)) as IEditableConfig;
 			}
 
-			if(_trackConfig == null)
+			if (_trackConfig == null)
 			{
 				throw new InvalidOperationException("KaraokeTrack _trackConfig is null?");
 			}
 
-			if(_trackConfig.GetType() != typeof(T))
-			{
-				throw new ArgumentException($"Track config is of type {_trackConfig.GetType().Name} but type {typeof(T).Name} was requested");
-			}
-
-			return (T)_trackConfig;
+			return _trackConfig;
 		}
 
-		public void SetTrackConfig<T>(T config) where T : IEditableConfig
+		public T GetTrackConfig<T>() where T : IEditableConfig
 		{
-			if (_trackConfig != null && _trackConfig.GetType() != typeof(T))
+			var config = GetTrackConfig();
+			if(!typeof(T).IsAssignableFrom(config.GetType()))
 			{
-				throw new ArgumentException($"Track config is of type {_trackConfig.GetType().Name} but type {typeof(T).Name} was assigned");
+				throw new ArgumentException($"Track config is of type {config.GetType().Name} but type {typeof(T).Name} was requested");
+			}
+
+			return (T)config;
+		}
+
+		public void SetTrackConfig(IEditableConfig config)
+		{
+			if (!KaraokeTrackTypeMapping.GetTrackSettingsType(Type).IsAssignableFrom(config.GetType()))
+			{
+				throw new ArgumentException($"Can't assign track config of type {config.GetType().Name} to track of type {Type}");
 			}
 
 			_trackConfig = config;
@@ -222,26 +221,13 @@ namespace KaraokeLib.Tracks
 
 		private void ValidateEvents()
 		{
-			var validEvents = ValidEvents[Type];
-			if (validEvents == null)
-			{
-				throw new NotSupportedException($"Missing valid events for {Type}");
-			}
-
 			foreach (var ev in _events)
 			{
-				if (!validEvents.Contains(ev.Type))
+				if (!KaraokeTrackTypeMapping.IsEventValid(Type, ev.Type))
 				{
 					throw new InvalidDataException($"Can't have event of type {ev.Type} on track of type {Type}!");
 				}
 			}
 		}
-	}
-
-	public enum KaraokeTrackType : byte
-	{
-		Lyrics = 0x00,
-		Graphics = 0x01,
-		Audio = 0x02
 	}
 }

@@ -96,7 +96,7 @@ namespace KaraokeStudio.Timeline
 			{
 				// remove event listeners before destroying
 				header.Click -= OnHeaderClick;
-				header.OnTrackSettingsChanged -= OnHeaderTrackSettingsChanged;
+				header.OnTrackConfigChanged -= OnHeaderTrackSettingsChanged;
 			}
 
 			headersContainer.Controls.Clear();
@@ -112,7 +112,7 @@ namespace KaraokeStudio.Timeline
 				var control = new TrackHeaderControl();
 				control.Track = track;
 				control.Click += OnHeaderClick;
-				control.OnTrackSettingsChanged += OnHeaderTrackSettingsChanged;
+				control.OnTrackConfigChanged += OnHeaderTrackSettingsChanged;
 				headersContainer.Controls.Add(control);
 				_trackHeaders.Add(control);
 			}

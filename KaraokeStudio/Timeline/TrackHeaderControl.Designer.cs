@@ -35,7 +35,6 @@
 			// 
 			// trackButtonsContainer
 			// 
-			this.trackButtonsContainer.AutoSize = true;
 			this.trackButtonsContainer.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			this.trackButtonsContainer.BackColor = System.Drawing.Color.Transparent;
 			this.trackButtonsContainer.Dock = System.Windows.Forms.DockStyle.Top;

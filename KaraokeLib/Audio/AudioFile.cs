@@ -47,7 +47,7 @@ namespace KaraokeLib.Audio
 				for(var i = 0; i < stream.Info.NumChannels; i++)
 				{
 					var channelData = data.GetChannelData((uint)i).ToArray();
-					Array.Copy(channelData, 0, _samples[i], samplesIdx[i], channelData.Length);
+					Array.CopyTyped(channelData, 0, _samples[i], samplesIdx[i], channelData.Length);
 					samplesIdx[i] += channelData.Length;
 				}
 			}

@@ -98,7 +98,7 @@ namespace KaraokeStudio.Timeline
 		}
 
 		/// <summary>
-		/// Copy the contents of the timeline canvas onto the given destination canvas.
+		/// CopyTyped the contents of the timeline canvas onto the given destination canvas.
 		/// </summary>
 		/// <param name="destination">The canvas to copy onto.</param>
 		/// <param name="matrix">The matrix to use to zoom and pan the canvas.</param>

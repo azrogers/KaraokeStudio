@@ -1,24 +1,17 @@
 ﻿using FontAwesome.Sharp;
 using KaraokeLib.Tracks;
+using KaraokeStudio.Config;
 using KaraokeStudio.Util;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace KaraokeStudio.Timeline
 {
-    public partial class TrackHeaderControl : UserControl
+	public partial class TrackHeaderControl : UserControl
 	{
 		public KaraokeTrack? Track
 		{
 			get => _track;
-			set {
+			set
+			{
 				_track = value;
 				UpdateComponent();
 			}
@@ -27,13 +20,14 @@ namespace KaraokeStudio.Timeline
 		/// <summary>
 		/// Called when the settings of the track this header is for have been changed.
 		/// </summary>
-		public event Action<KaraokeTrack>? OnTrackSettingsChanged;
+		public event Action<KaraokeTrack>? OnTrackConfigChanged;
 
 		private Pen _selectedTrackPen;
 		private Brush _highlightBrush;
 		private KaraokeTrack? _track;
 		private Dictionary<IconButton, EventHandler> _buttonOnClickHandlers = new Dictionary<IconButton, EventHandler>();
 		private bool _selected = false;
+		private GenericConfigEditorForm? _configEditorForm;
 
 		public TrackHeaderControl()
 		{
@@ -61,7 +55,7 @@ namespace KaraokeStudio.Timeline
 		private void UpdateButtons()
 		{
 			// remove old event handlers
-			foreach(var (button, handler) in _buttonOnClickHandlers)
+			foreach (var (button, handler) in _buttonOnClickHandlers)
 			{
 				button.Click -= handler;
 			}
@@ -69,12 +63,33 @@ namespace KaraokeStudio.Timeline
 			_buttonOnClickHandlers.Clear();
 			trackButtonsContainer.Controls.Clear();
 
-			if(Track != null && Track.Type == KaraokeTrackType.Audio)
+			if (Track == null)
+			{
+				return;
+			}
+
+			CreateButton(IconChar.Gear, (o, e) =>
+			{
+				if (_configEditorForm == null)
+				{
+					_configEditorForm = new GenericConfigEditorForm();
+				}
+
+				_configEditorForm.Open(Track.GetTrackConfig(), (newConfig) =>
+				{
+					Track.SetTrackConfig(newConfig);
+					OnTrackConfigChanged?.Invoke(Track);
+				});
+			});
+
+
+			if (Track.Type == KaraokeTrackType.Audio)
 			{
 				var config = Track.GetTrackConfig<AudioTrackSettings>();
-				var b = CreateButton(IconChar.VolumeMute, (o, e) => {
+				var muteButton = CreateButton(IconChar.VolumeMute, (o, e) =>
+				{
 					var button = o as IconButton;
-					if(button == null)
+					if (button == null)
 					{
 						return;
 					}
@@ -84,10 +99,10 @@ namespace KaraokeStudio.Timeline
 					button.BackColor = oldConfig.Muted ? Color.Red : Color.Transparent;
 					Track.SetTrackConfig(oldConfig);
 
-					OnTrackSettingsChanged?.Invoke(Track);
+					OnTrackConfigChanged?.Invoke(Track);
 				});
 
-				b.BackColor = config.Muted ? Color.Red : Color.Transparent;
+				muteButton.BackColor = config.Muted ? Color.Red : Color.Transparent;
 			}
 
 			trackButtonsContainer.PerformLayout();
@@ -97,8 +112,8 @@ namespace KaraokeStudio.Timeline
 		{
 			var button = new IconButton();
 			button.IconChar = icon;
-			button.IconSize = 24;
-			button.Size = new Size(trackButtonsContainer.Height, trackButtonsContainer.Height);
+			button.IconSize = trackButtonsContainer.Height - 6;
+			button.Size = new Size(trackButtonsContainer.Height - 3, trackButtonsContainer.Height - 3);
 			button.Click += _buttonOnClickHandlers[button] = onClick;
 			trackButtonsContainer.Controls.Add(button);
 			return button;
@@ -109,7 +124,7 @@ namespace KaraokeStudio.Timeline
 		{
 			e.Graphics.SetClip(e.ClipRectangle);
 
-			if(_selected)
+			if (_selected)
 			{
 				e.Graphics.DrawRectangle(_selectedTrackPen, ClientRectangle);
 				e.Graphics.FillRectangle(_highlightBrush, new Rectangle(Point.Empty, Size));
