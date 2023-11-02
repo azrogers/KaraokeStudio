@@ -12,10 +12,10 @@ namespace KaraokeLib.Video
 	{
 		private HashSet<int> _hyphenatedIds = new HashSet<int>();
 
-		internal void Clear() => _hyphenatedIds.Clear();
+		public void Clear() => _hyphenatedIds.Clear();
 
-		internal void SetHyphenated(KaraokeEvent ev) => _hyphenatedIds.Add(ev.Id);
+		public void SetHyphenated(KaraokeEvent ev) => _hyphenatedIds.Add(ev.Id);
 
-		internal bool IsHyphenated(KaraokeEvent ev) => _hyphenatedIds.Contains(ev.Id);
+		public bool IsHyphenated(KaraokeEvent ev) => _hyphenatedIds.Contains(ev.Id);
 	}
 }

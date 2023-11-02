@@ -2,6 +2,7 @@
 using KaraokeLib.Events;
 using KaraokeLib.Files;
 using KaraokeLib.Files.Ksf;
+using Newtonsoft.Json;
 
 namespace KaraokeLib.Tracks
 {
@@ -10,9 +11,8 @@ namespace KaraokeLib.Tracks
 	/// A track can be more than just text - see <see cref="KaraokeTrackType"/>.
 	/// </summary>
 	[KsfSerializable(KsfObjectType.Track)]
-	public class KaraokeTrack
+	public class KaraokeTrack : IKsfBinaryObject
 	{
-		[KsfSerialize]
 		private IEditableConfig? _trackConfig;
 
 		[KsfSerialize]
@@ -26,13 +26,11 @@ namespace KaraokeLib.Tracks
 		/// <summary>
 		/// The type of this track.
 		/// </summary>
-		[KsfSerialize]
 		public KaraokeTrackType Type { get; private set; }
 
 		/// <summary>
 		/// The id used to uniquely identify this track.
 		/// </summary>
-		[KsfSerialize]
 		public int Id { get; internal set; }
 
 		private IKaraokeFile? _karaokeFile;
@@ -183,6 +181,22 @@ namespace KaraokeLib.Tracks
 			}
 
 			_trackConfig = config;
+		}
+
+		public void Write(BinaryWriter writer)
+		{
+			writer.Write(Id);
+			writer.Write((byte)Type);
+			writer.WriteNullTerminatedString(JsonConvert.SerializeObject(GetTrackConfig()));
+		}
+
+		public object Read(BinaryReader reader)
+		{
+			Id = reader.ReadInt32();
+			Type = (KaraokeTrackType)reader.ReadByte();
+			var trackConfigType = KaraokeTrackTypeMapping.GetTrackSettingsType(Type);
+			_trackConfig = (IEditableConfig?)JsonConvert.DeserializeObject(reader.ReadNullTerminatedString(), trackConfigType);
+			return this;
 		}
 
 		internal void SetFile(IKaraokeFile file)

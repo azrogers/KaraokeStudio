@@ -35,6 +35,8 @@ namespace KaraokeStudio.Video
 			}
 		}
 
+		public void ForceRerender() => videoSkiaControl.Invalidate();
+
 		public void OnProjectChanged(KaraokeProject? project)
 		{
 			if (_project != null)
@@ -86,8 +88,6 @@ namespace KaraokeStudio.Video
 				_lastUpdateSize = newSize;
 				isDirty = true;
 			}
-
-			// TODO: handle updating video elements
 
 			if (isDirty)
 			{

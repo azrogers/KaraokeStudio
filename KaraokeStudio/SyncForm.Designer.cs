@@ -118,6 +118,7 @@
 			this.breakButton.TabIndex = 0;
 			this.breakButton.Text = "Break";
 			this.breakButton.UseVisualStyleBackColor = true;
+			this.breakButton.Click += new System.EventHandler(this.breakButton_Click);
 			// 
 			// syncButton
 			// 
@@ -130,6 +131,7 @@
 			this.syncButton.TabIndex = 1;
 			this.syncButton.Text = "Sync";
 			this.syncButton.UseVisualStyleBackColor = true;
+			this.syncButton.Click += new System.EventHandler(this.syncButton_Click);
 			// 
 			// undoWordButton
 			// 
@@ -142,6 +144,7 @@
 			this.undoWordButton.TabIndex = 2;
 			this.undoWordButton.Text = "Undo Word";
 			this.undoWordButton.UseVisualStyleBackColor = true;
+			this.undoWordButton.Click += new System.EventHandler(this.undoWordButton_Click);
 			// 
 			// undoLineButton
 			// 
@@ -154,6 +157,7 @@
 			this.undoLineButton.TabIndex = 3;
 			this.undoLineButton.Text = "Undo Line";
 			this.undoLineButton.UseVisualStyleBackColor = true;
+			this.undoLineButton.Click += new System.EventHandler(this.undoLineButton_Click);
 			// 
 			// rightSplit
 			// 
@@ -196,6 +200,7 @@
 			this.applyButton.TabIndex = 6;
 			this.applyButton.Text = "Apply";
 			this.applyButton.UseVisualStyleBackColor = true;
+			this.applyButton.Click += new System.EventHandler(this.applyButton_Click);
 			// 
 			// revertButton
 			// 
@@ -206,6 +211,7 @@
 			this.revertButton.TabIndex = 5;
 			this.revertButton.Text = "Revert";
 			this.revertButton.UseVisualStyleBackColor = true;
+			this.revertButton.Click += new System.EventHandler(this.revertButton_Click);
 			// 
 			// cancelButton
 			// 
@@ -216,6 +222,7 @@
 			this.cancelButton.TabIndex = 4;
 			this.cancelButton.Text = "Cancel";
 			this.cancelButton.UseVisualStyleBackColor = true;
+			this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
 			// 
 			// SyncForm
 			// 

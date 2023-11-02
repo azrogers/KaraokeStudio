@@ -35,6 +35,11 @@ namespace KaraokeStudio.LyricsEditor
 					yield return new LyricsLexerElement(KaraokeEventType.ParagraphBreak);
 				}
 			}
+
+			if (currentTokens.Any())
+			{
+				yield return new LyricsLexerElement(KaraokeEventType.Lyric, currentTokens.Select(t => t.Value).ToArray());
+			}
 		}
 	}
 

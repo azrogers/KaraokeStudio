@@ -34,21 +34,6 @@ namespace KaraokeLib.Files.Ksf
 			var hasBinary = typeof(IKsfBinaryObject).IsAssignableFrom(type);
 			var ksfType = new KsfType(type.Name, serializableAttribute.ObjectType, hasBinary);
 
-			// validate that Read method is present
-			if(hasBinary)
-			{
-				var readMethod = type.GetMethod("Read", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-				if(
-					readMethod == null || 
-					readMethod.GetParameters().Length != 1 || 
-					readMethod.GetParameters()[0].ParameterType != typeof(BinaryReader))
-				{
-					throw new NotImplementedException($"{type} must implement a static Read(BinaryReader) method to use IKsfBinaryObject!");
-				}
-
-				ksfType.ReadMethod = readMethod;
-			}
-
 			foreach(var f in fields)
 			{
 				var serializeAttribute = f.GetCustomAttribute<KsfSerializeAttribute>();
@@ -98,7 +83,6 @@ namespace KaraokeLib.Files.Ksf
 			public string Name { get; }
 			public bool HasBinary { get; }
 			public KsfObjectType ObjectType { get; }
-			public MethodInfo? ReadMethod;
 
 			public List<IKsfValue> Values = new List<IKsfValue>();
 

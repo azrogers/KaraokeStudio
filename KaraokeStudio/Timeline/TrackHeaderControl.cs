@@ -82,7 +82,6 @@ namespace KaraokeStudio.Timeline
 				});
 			});
 
-
 			if (Track.Type == KaraokeTrackType.Audio)
 			{
 				var config = Track.GetTrackConfig<AudioTrackSettings>();

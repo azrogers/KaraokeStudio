@@ -81,12 +81,13 @@ namespace KaraokeStudio
 
 		private void OnProjectConfigApplied(KaraokeConfig obj)
 		{
-			if(_projectHandler.Project != null)
+			_projectHandler.SetConfig(obj);
+
+			if (_projectHandler.Project != null)
 			{
 				_projectHandler.Project.PlaybackState.OnProjectConfigChanged(_projectHandler.Project);
 			}
 
-			_projectHandler.SetConfig(obj);
 			video.UpdateGenerationContext();
 		}
 

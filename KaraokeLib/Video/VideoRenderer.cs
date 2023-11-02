@@ -70,6 +70,8 @@ namespace KaraokeLib.Video
 					canvas.DrawSurface(surface, SKPoint.Empty);
 				}
 			}
+
+			surface.Dispose();
 		}
 
 		private void HandleTransition(TransitionConfig transition, IVideoElement elem, SKSurface surface, SKCanvas dest, float t, bool isStartTransition)

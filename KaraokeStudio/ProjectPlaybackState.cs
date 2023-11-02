@@ -160,10 +160,7 @@ namespace KaraokeStudio
 		{
 			_mixer = new AudioMixer(tracks);
 			_mixer.CurrentTime = TimeSpan.FromSeconds(_position);
-			if (IsPlaying)
-			{
-				_output.Stop();
-			}
+			_output.Stop();
 			_output.Init(_mixer);
 			if (IsPlaying)
 			{
@@ -192,7 +189,7 @@ namespace KaraokeStudio
 
 		private void SetPosition(double position)
 		{
-			position = Math.Min(position, _project.Length.TotalSeconds);
+			position = Math.Clamp(position, 0, _project.Length.TotalSeconds);
 			_position = position;
 			_mixer.CurrentTime = TimeSpan.FromSeconds(position);
 			OnPositionChanged?.Invoke(position);

@@ -30,7 +30,6 @@ namespace KaraokeStudio
 		public KaraokeProject(KsfKaraokeFile lyricsFile)
 		{
 			_file = lyricsFile;
-			Config = new KaraokeConfig();
 			PlaybackState = new ProjectPlaybackState(this, lyricsFile.GetTracks());
 		}
 

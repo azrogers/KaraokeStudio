@@ -160,18 +160,7 @@ namespace KaraokeLib.Files.Ksf
 
 			if (hasBinary)
 			{
-				if (type.ReadMethod == null)
-				{
-					throw new InvalidOperationException($"Missing Read method for IKsfBinaryObject {type.Name}");
-				}
-
-				var readResult = type.ReadMethod.Invoke(null, new object[] { reader });
-				if (readResult == null)
-				{
-					throw new InvalidOperationException($"{type.Name}.Read returned null?");
-				}
-
-				newObj = readResult;
+				newObj = ((IKsfBinaryObject)newObj).Read(reader);
 			}
 
 			if (hasValues)

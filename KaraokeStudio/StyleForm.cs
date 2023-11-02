@@ -109,14 +109,13 @@ namespace KaraokeStudio
 
 		private void applyButton_Click(object sender, EventArgs e)
 		{
-			if (_currentProject == null)
+			UpdateDirtyFlag(false);
+			if (_currentProject == null || configEditor.Config == null)
 			{
-				UpdateDirtyFlag(false);
 				return;
 			}
 
-			OnProjectConfigApplied?.Invoke(_currentProject.Config);
-			UpdateDirtyFlag(false);
+			OnProjectConfigApplied?.Invoke((KaraokeConfig)configEditor.Config);
 		}
 
 		private void videoPanel_Paint(object sender, PaintEventArgs e)

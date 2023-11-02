@@ -13,5 +13,6 @@ namespace KaraokeLib.Files.Ksf
 	internal interface IKsfBinaryObject
 	{
 		void Write(BinaryWriter writer);
+		object Read(BinaryReader reader);
 	}
 }

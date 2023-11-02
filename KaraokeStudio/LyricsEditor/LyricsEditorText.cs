@@ -19,7 +19,7 @@ namespace KaraokeStudio.LyricsEditor
 			var lastLyricEventId = int.MinValue;
 			var nextId = 0;
 
-			foreach (var e in events)
+			foreach (var e in events.OrderBy(ev => ev.StartTimeSeconds))
 			{
 				if (e.Type == KaraokeEventType.Lyric && e.LinkedId == lastLyricEventId)
 				{
@@ -110,7 +110,7 @@ namespace KaraokeStudio.LyricsEditor
 					var item = result.Value;
 
 					var timeStart = oldElements[item.StartA].StartTime;
-					var timeEnd = oldElements[item.StartA + item.deletedA].EndTime;
+					var timeEnd = oldElements[Math.Min(item.StartA + item.deletedA, oldElements.Length - 1)].EndTime;
 
 					var totalLen = newElements.Skip(item.StartB).Take(item.insertedB).Select(r => r.Tokens.Sum(t => t.Length)).Sum() + item.insertedB;
 					var startPos = 0;
