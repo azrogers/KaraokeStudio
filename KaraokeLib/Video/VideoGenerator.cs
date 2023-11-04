@@ -37,7 +37,7 @@ namespace KaraokeLib.Video
 			_tracks = lyricsFile.GetTracks().ToArray();
 			_endTimecode = new VideoTimecode(videoLength < 0 ? audioFile.GetLengthSeconds() : videoLength, KaraokeConfig.Default.FrameRate);
 			_context = new VideoContext(new VideoStyle(KaraokeConfig.Default), KaraokeConfig.Default, _endTimecode);
-			_layoutState = new VideoLayoutState();
+			_layoutState = new VideoLayoutState(_context);
 			_sections = _tracks.Any() ? VideoSection.SectionsFromTrack(_context, _tracks[0], _layoutState) : new VideoSection[0];
 			_audioFile = audioFile;
 		}

@@ -5,10 +5,10 @@ using KaraokeLib.Util;
 using KaraokeLib.Video;
 using KaraokeLib.Video.Elements;
 using KaraokeStudio.LyricsEditor;
+using KaraokeStudio.Util;
 using KaraokeStudio.Video;
 using SkiaSharp;
 using System.Data;
-using System.Windows.Controls;
 
 namespace KaraokeStudio
 {
@@ -17,11 +17,15 @@ namespace KaraokeStudio
 		private KaraokeProject? _currentProject;
 		private KaraokeTrack? _lyricsTrack;
 		private KaraokeEvent[] _events = new KaraokeEvent[0];
+		private KaraokeEvent[] _originalEvents = new KaraokeEvent[0];
 		private int _eventIndex = -1;
 		private int _lastEventIndex = -1;
-		private int _firstLyricIndex = -1;
 		private bool _finishedLastSyllable = true;
 		private SyncFormVideoGenerator? _generator;
+		private List<KaraokeEvent> _eventsNeedRepositioning = new List<KaraokeEvent>();
+
+		private Stack<(int EventIndex, double VideoPosition)> _undoContext = new Stack<(int EventIndex, double VideoPosition)>();
+		private Stack<(int EventIndex, double VideoPosition)> _undoLineContext = new Stack<(int EventIndex, double VideoPosition)>();
 
 		public double CurrentTime
 		{
@@ -34,10 +38,10 @@ namespace KaraokeStudio
 
 				if (_eventIndex >= _events.Length)
 				{
-					return _events[_events.Length - 1].EndTimeSeconds;
+					return _originalEvents[_events.Length - 1].EndTimeSeconds;
 				}
 
-				return _events[_eventIndex].StartTimeSeconds;
+				return _originalEvents[_eventIndex].StartTimeSeconds;
 			}
 		}
 
@@ -52,10 +56,13 @@ namespace KaraokeStudio
 
 		internal void Open(KaraokeProject project, KaraokeTrack track)
 		{
+			_undoContext.Clear();
+			_undoLineContext.Clear();
 			_currentProject = project;
 			_lyricsTrack = track;
 			LoadEvents(track);
-			_generator = new SyncFormVideoGenerator(this, _events);
+			_originalEvents = track.Events.ToArray();
+			_generator = new SyncFormVideoGenerator(this, _originalEvents);
 
 			video.SetVideoGenerator(_generator);
 			video.OnProjectChanged(project);
@@ -123,7 +130,8 @@ namespace KaraokeStudio
 			{
 				while (_events[_eventIndex].Type != KaraokeEventType.Lyric) { _eventIndex++; }
 			}
-			_generator?.SetEvents(events);
+			_originalEvents = _lyricsTrack.Events.OrderBy(ev => ev.StartTimeSeconds).ToArray();
+			_generator?.SetEvents(_originalEvents);
 
 			UpdateText();
 			UpdateButtons();
@@ -154,14 +162,6 @@ namespace KaraokeStudio
 		private void LoadEvents(KaraokeTrack track)
 		{
 			_events = track.Events.Select(ev => new KaraokeEvent(ev)).ToArray();
-			for (var i = 0; i < _events.Length; i++)
-			{
-				if (_events[i].Type == KaraokeEventType.Lyric)
-				{
-					_firstLyricIndex = i;
-					break;
-				}
-			}
 			_eventIndex = _events.Any() ? 0 : -1;
 			if (_eventIndex > -1)
 			{
@@ -187,21 +187,30 @@ namespace KaraokeStudio
 
 			foreach (var ev in _lyricsTrack.Events)
 			{
-				if(eventDict.ContainsKey(ev.Id))
+				if (eventDict.ContainsKey(ev.Id))
 				{
 					ev.SetTiming(eventDict[ev.Id].StartTime, eventDict[ev.Id].EndTime);
 				}
 			}
 
 			OnSyncDataApplied?.Invoke(_lyricsTrack);
+			_undoContext.Clear();
+			_undoLineContext.Clear();
+			UpdateButtons();
+			_originalEvents = _lyricsTrack.Events.ToArray();
+			LoadEvents(_lyricsTrack);
+			_generator?.SetEvents(_originalEvents);
+			video.ForceRerender();
 		}
 
 		private void UpdateButtons()
 		{
-			undoLineButton.Enabled = _eventIndex > _firstLyricIndex;
-			undoWordButton.Enabled = _eventIndex > _firstLyricIndex;
+			undoLineButton.Enabled = _undoLineContext.Any();
+			undoWordButton.Enabled = _undoContext.Any();
 			syncButton.Enabled = _lyricsTrack != null && _lyricsTrack.Events.Any() && _eventIndex < _events.Length;
 			breakButton.Enabled = !_finishedLastSyllable;
+			revertButton.Enabled = !IsDirty;
+			applyButton.Enabled = IsDirty;
 		}
 
 		private void UpdateText()
@@ -224,20 +233,60 @@ namespace KaraokeStudio
 
 			var time = _currentProject.PlaybackState.Position;
 
+
+
 			if (!_finishedLastSyllable && _lastEventIndex > -1)
 			{
 				_events[_lastEventIndex].SetTiming(_events[_lastEventIndex].StartTime, new TimeSpanTimecode(time));
 			}
 
 			var length = _events[_eventIndex].LengthSeconds;
+			var endTime = time + length;
+
+			// reposition events we skipped (like line breaks)
+			if (_eventsNeedRepositioning.Any())
+			{
+				var reposStartTime = _events[_lastEventIndex].EndTimeSeconds;
+				var origStartTime = _eventsNeedRepositioning.Min(e => e.StartTimeSeconds);
+				var origEndTime = _eventsNeedRepositioning.Max(e => e.EndTimeSeconds);
+
+				for(var i = 0; i < _eventsNeedRepositioning.Count; i++)
+				{
+					var evLength = 0.05;
+					var start = reposStartTime;
+					_eventsNeedRepositioning[i].SetTiming(new TimeSpanTimecode(start), new TimeSpanTimecode(start + evLength));
+					reposStartTime += evLength;
+				}
+
+				_eventsNeedRepositioning.Clear();
+			}
+
 			// move event to new start time instead of just moving its start point
-			_events[_eventIndex].SetTiming(new TimeSpanTimecode(time), new TimeSpanTimecode(time + length));
+			_events[_eventIndex].SetTiming(new TimeSpanTimecode(time), new TimeSpanTimecode(endTime));
 
 			_lastEventIndex = _eventIndex;
 			_finishedLastSyllable = false;
 
+			_undoContext.Push((_eventIndex, time));
+
 			// skip non-lyric events
-			while (_events[++_eventIndex].Type != KaraokeEventType.Lyric) { }
+			var passedLineBreaks = false;
+			var passedEvents = new List<KaraokeEvent>();
+			while (++_eventIndex < _events.Length && _events[_eventIndex].Type != KaraokeEventType.Lyric)
+			{
+				if (_events[_eventIndex].Type == KaraokeEventType.LineBreak || _events[_eventIndex].Type == KaraokeEventType.ParagraphBreak)
+				{
+					passedLineBreaks = true;
+				}
+
+				// make sure we also reposition the events we skipped
+				_eventsNeedRepositioning.Add(_events[_eventIndex]);
+			}
+
+			if (passedLineBreaks)
+			{
+				_undoLineContext.Push((_lastEventIndex, time));
+			}
 
 			IsDirty = true;
 			UpdateButtons();
@@ -261,11 +310,17 @@ namespace KaraokeStudio
 
 		private void HandleRewindWord()
 		{
-			if (_eventIndex > 0)
+			if (_undoContext.Any())
 			{
-				while (_eventIndex > _firstLyricIndex && _events[--_eventIndex].Type != KaraokeEventType.Lyric) { }
-
-				_currentProject?.PlaybackState.SeekAbsolute(_events[_eventIndex].StartTimeSeconds);
+				var frame = _undoContext.Pop();
+				_eventsNeedRepositioning.Clear();
+				_eventIndex = frame.EventIndex;
+				_currentProject?.PlaybackState.SeekAbsolute(frame.VideoPosition);
+				// undo line context no longer valid
+				if (_undoLineContext.Any() && frame.EventIndex <= _undoLineContext.Peek().EventIndex)
+				{
+					_undoLineContext.Pop();
+				}
 				_finishedLastSyllable = true;
 				UpdateButtons();
 				video.ForceRerender();
@@ -274,43 +329,45 @@ namespace KaraokeStudio
 
 		private void HandleRewindLine()
 		{
-			// skip until we hit line break or 0
-			while (
-				_eventIndex > _firstLyricIndex &&
-				_events[_eventIndex].Type != KaraokeEventType.LineBreak &&
-				_events[_eventIndex].Type != KaraokeEventType.ParagraphBreak)
+			if (_undoLineContext.Any())
 			{
-				_eventIndex--;
+				var frame = _undoLineContext.Pop();
+				_eventsNeedRepositioning.Clear();
+				_eventIndex = frame.EventIndex;
+				// undo context no longer valid
+				while (_undoContext.Any() && _undoContext.Peek().EventIndex >= _eventIndex) { _undoContext.Pop(); }
+				_currentProject?.PlaybackState.SeekAbsolute(frame.VideoPosition);
+				_finishedLastSyllable = true;
+				UpdateButtons();
+				video.ForceRerender();
 			}
-
-			if (_eventIndex > -1 && _events[_eventIndex].Type != KaraokeEventType.Lyric)
-			{
-				while (_eventIndex > _firstLyricIndex && _events[--_eventIndex].Type != KaraokeEventType.Lyric) { }
-			}
-
-			_currentProject?.PlaybackState.SeekAbsolute(_events[_eventIndex].StartTimeSeconds);
-
-			_finishedLastSyllable = true;
-			UpdateButtons();
-			video.ForceRerender();
 		}
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
 		{
-			var isActive = ActiveForm == this;
-			if (isActive && keyData == Keys.Z)
+			var isActive = ContainsFocus;
+			var lParam = msg.LParam;
+			var previousKeyState = ((lParam >> 30) & 1) == 1;
+			var repeatCount = (lParam & 0xffff);
+			var isHotkey = isActive && !previousKeyState && repeatCount < 2;
+			if (isHotkey && (keyData == Keys.Z || keyData == Keys.X))
 			{
 				HandleSync();
 				return true;
 			}
-			else if (isActive && keyData == Keys.X)
+			else if (isHotkey && keyData == Keys.Space)
 			{
 				HandleBreak();
 				return true;
 			}
-			else if (isActive && keyData == Keys.Control)
+			else if (isHotkey && keyData == Keys.C)
 			{
 				HandleRewindWord();
+				return true;
+			}
+			else if (isHotkey && keyData == Keys.A)
+			{
+				HandleRewindLine();
 				return true;
 			}
 
@@ -337,7 +394,7 @@ namespace KaraokeStudio
 
 		private void revertButton_Click(object sender, EventArgs e)
 		{
-			if(_lyricsTrack == null)
+			if (_lyricsTrack == null)
 			{
 				return;
 			}
@@ -350,7 +407,10 @@ namespace KaraokeStudio
 
 		private void cancelButton_Click(object sender, EventArgs e)
 		{
-			Hide();
+			if (OnProjectWillChange())
+			{
+				Hide();
+			}
 		}
 	}
 
@@ -361,7 +421,7 @@ namespace KaraokeStudio
 		private VideoContext? _context;
 		private VideoStyle? _style;
 		private KaraokeConfig? _config;
-		private SKMatrix? _matrix;
+		private float _scaleFactor = 1.0f;
 		private IVideoElement[] _elements;
 		private SyncForm _form;
 
@@ -387,15 +447,15 @@ namespace KaraokeStudio
 		{
 			surface.Canvas.Clear();
 
-			if (_context == null || _config == null || _style == null)
+			if (_context == null || _config == null || _style == null || _events.Length == 0)
 			{
 				return;
 			}
 
-			if (_isElementsStale || _matrix == null)
+			if (_isElementsStale)
 			{
 				_isElementsStale = false;
-				var layoutState = new VideoLayoutState();
+				var layoutState = new VideoLayoutState(_context);
 				var textElements = LyricsEditorText.CreateElements(_events);
 				var lineElements = new List<LyricsEditorTextElement>();
 				var line = 0;
@@ -435,9 +495,8 @@ namespace KaraokeStudio
 				}
 
 				var widestLine = videoElements.Select(v => v.Size.Width).Max();
-				var scaleFactor = _style.GetSafeArea(_config.VideoSize).Width / widestLine;
+				_scaleFactor = 1.0f;//_style.GetSafeArea(_config.VideoSize).Width / widestLine;
 
-				_matrix = SKMatrix.CreateScale(scaleFactor, scaleFactor, 0, 0);
 				_elements = videoElements.OrderBy(e => e.StartTimecode.GetTimeSeconds()).ToArray();
 			}
 
@@ -450,8 +509,8 @@ namespace KaraokeStudio
 
 			canvas.DrawRect(0, 0, _config.VideoSize.Width, _config.VideoSize.Height, _style.BackgroundPaint);
 
-			canvas.SetMatrix(_matrix ?? SKMatrix.Identity);
 			canvas.Translate(0, centerYPos - startYPos);
+			canvas.Scale(_scaleFactor);
 
 			foreach (var elem in _elements)
 			{
@@ -464,7 +523,7 @@ namespace KaraokeStudio
 		private void HyphenateEvents(VideoLayoutState layoutState, KaraokeEvent[] events)
 		{
 			var lastId = -1;
-			for(var i = 0; i < events.Length; i++)
+			for (var i = 0; i < events.Length; i++)
 			{
 				if (events[i].LinkedId != -1 && events[i].LinkedId == lastId)
 				{

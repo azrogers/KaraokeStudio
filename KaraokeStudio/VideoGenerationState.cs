@@ -35,7 +35,7 @@ namespace KaraokeStudio
 
 			if(_isPlanStale || _renderer == null || _plan == null)
 			{
-				_layoutState = new VideoLayoutState();
+				_layoutState = new VideoLayoutState(_context);
 
 				VideoSection[] sections;
 				if (tracks.Where(t => t.Type == KaraokeTrackType.Lyrics).Any())

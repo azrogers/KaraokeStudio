@@ -14,13 +14,15 @@ namespace KaraokeLib.Video
 			var elements = new List<IVideoElement>();
 			var lineElements = new Dictionary<int, List<IVideoElement>>();
 
+			var actualNumLines = sections.Any() ? sections.Max(s => s.Paragraphs.Any() ? s.Paragraphs.Max(p => p.Lines.Count()) : 0) : 0;
+
 			var elementId = 0;
 			var paragraphId = 0;
 			foreach (var section in sections)
 			{
 				foreach (var para in section.Paragraphs)
 				{
-					elementId = GenerateParagraph(context, layoutState, para, elementId, paragraphId++, ref elements, ref lineElements);
+					elementId = GenerateParagraph(context, layoutState, para, elementId, paragraphId++, actualNumLines, ref elements, ref lineElements);
 				}
 			}
 
@@ -72,10 +74,11 @@ namespace KaraokeLib.Video
 			VideoParagraph paragraph,
 			int nextElementId,
 			int paragraphId,
+			int actualNumLines,
 			ref List<IVideoElement> outElements,
 			ref Dictionary<int, List<IVideoElement>> outLineElements)
 		{
-			var startYPos = CalculateYPos(context);
+			var startYPos = CalculateYPos(context, actualNumLines);
 			var lineHeight = context.Style.LineHeight;
 
 			// first line will get a ++ but we want that index to be 0
@@ -105,7 +108,7 @@ namespace KaraokeLib.Video
 			return elementId;
 		}
 
-		private static float CalculateYPos(VideoContext context)
+		private static float CalculateYPos(VideoContext context, int actualNumLines)
 		{
 			var safeArea = context.Style.GetSafeArea(context.Size);
 			var lineHeight = context.Style.LineHeight;
@@ -114,9 +117,9 @@ namespace KaraokeLib.Video
 				case VerticalAlignment.Top:
 					return safeArea.Top;
 				case VerticalAlignment.Bottom:
-					return safeArea.Bottom - lineHeight * context.NumLines;
+					return safeArea.Bottom - lineHeight * actualNumLines;
 				case VerticalAlignment.Center:
-					return (safeArea.Height - lineHeight * context.NumLines) / 2 + safeArea.Top;
+					return (safeArea.Height - lineHeight * actualNumLines) / 2 + safeArea.Top;
 				default:
 					throw new NotImplementedException($"Unknown enum value {context.Config.VerticalAlign}");
 			}

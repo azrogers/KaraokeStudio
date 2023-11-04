@@ -184,8 +184,7 @@ namespace KaraokeStudio.LyricsEditor
 				return;
 			}
 
-			var newElements = LyricsEditorText.UpdateFromString(_scintilla.Text, _textElements).ToArray();
-			var newEvents = newElements.SelectMany(e => e.Events).OrderBy(e => e.StartTimeSeconds).ToArray();
+			var newEvents = LyricsEditorText.GetEventsFromString(_scintilla.Text, _textElements).ToArray();
 
 			OnLyricsEventsChanged?.Invoke((track, newEvents));
 		}

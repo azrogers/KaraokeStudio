@@ -129,6 +129,11 @@ namespace KaraokeLib.Tracks
 			AddEvents(events);
 		}
 
+		public void UpdateEvents()
+		{
+			ConformEvents();
+		}
+
 		/// <summary>
 		/// Returns events within the given bounds.
 		/// </summary>
@@ -226,9 +231,25 @@ namespace KaraokeLib.Tracks
 			// fix overlapping events
 			for (var i = 1; i < _events.Count; i++)
 			{
-				if (_events[i].StartTimeSeconds < _events[i - 1].EndTimeSeconds)
+				var lastEvent = _events[i - 1];
+				var ev = _events[i];
+				if (lastEvent != null && lastEvent.EndTimeSeconds > ev.StartTimeSeconds)
 				{
-					_events[i - 1].SetTiming(_events[i - 1].StartTime, new TimeSpanTimecode(_events[i].StartTimeSeconds));
+					// if they overlap but we can move the start time of ev without losing it entirely, let's do that
+					if (lastEvent.EndTimeSeconds < ev.EndTimeSeconds)
+					{
+						ev.SetTiming(lastEvent.EndTime, ev.EndTime);
+					}
+					// if they overlap but we can move the end time of the last event without losing it entirely, let's do that
+					else if (lastEvent.StartTimeSeconds < ev.StartTimeSeconds)
+					{
+						lastEvent.SetTiming(lastEvent.StartTime, ev.StartTime);
+					}
+					// otherwise, just move this event to the end of the last one
+					else
+					{
+						ev.SetTiming(lastEvent.EndTime, new TimeSpanTimecode(lastEvent.EndTimeSeconds + ev.LengthSeconds));
+					}
 				}
 			}
 		}

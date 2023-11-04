@@ -15,8 +15,6 @@ namespace KaraokeLib.Video
 
 		public SKSize Size { get; private set; }
 
-		public int NumLines { get; private set; }
-
 		public KaraokeConfig Config { get; private set; }
 
 		public VideoTimecode LastFrameTimecode { get; private set; }
@@ -27,16 +25,6 @@ namespace KaraokeLib.Video
 			Config = config;
 			Size = Config.VideoSize;
 			LastFrameTimecode = lastFrameTimecode;
-			NumLines = CalculateNumLines();
-		}
-
-		private int CalculateNumLines()
-		{
-			var lineHeight = Style.LineHeight;
-			var safeRect = Style.GetSafeArea(Size);
-
-			var numLines = safeRect.Height / lineHeight;
-			return Math.Max((int)Math.Floor(numLines), 1);
 		}
 	}
 }

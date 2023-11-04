@@ -21,9 +21,15 @@ namespace KaraokeStudio
 		private KaraokeEvent? _selectedEvent = null;
 		private KaraokeTrack? _selectedTrack = null;
 
+		public static MainForm? Instance { get; private set; } = null;
+
 		public MainForm()
 		{
 			ExceptionLogger.ParentForm = this;
+			if(Instance == null)
+			{
+				Instance = this;
+			}
 
 			InitializeComponent();
 
@@ -59,6 +65,28 @@ namespace KaraokeStudio
 			OnProjectChanged(null);
 		}
 
+		public void OpenSyncForm(KaraokeTrack track)
+		{
+			if(_projectHandler.Project == null)
+			{
+				return;
+			}
+
+			if(_syncForm.IsDisposed)
+			{
+				_syncForm = new SyncForm();
+				_syncForm.OnSyncDataApplied += OnSyncDataApplied;
+			}
+
+			if(_syncForm.Visible)
+			{
+				_syncForm.Focus();
+				return;
+			}
+
+			_syncForm.Open(_projectHandler.Project, track);
+		}
+
 		private void OnTrackSettingsChanged(KaraokeTrack obj)
 		{
 			_projectHandler.UpdateTrackSettings(obj);
@@ -71,7 +99,10 @@ namespace KaraokeStudio
 
 		private void OnSyncDataApplied(KaraokeTrack obj)
 		{
-			_projectHandler.SetEvents(obj, obj.Events);
+			_projectHandler.UpdateEvents(obj);
+			video.OnProjectEventsChanged(_projectHandler.Project);
+			timelineContainer.OnProjectEventsChanged(_projectHandler.Project);
+			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
 		}
 
 		private bool OnProjectWillChange()
@@ -155,7 +186,14 @@ namespace KaraokeStudio
 
 		private void editStyleToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			_styleForm.Show();
+			if(_styleForm.Visible)
+			{
+				_styleForm.Focus();
+			}
+			else
+			{
+				_styleForm.Show();
+			}
 		}
 
 		private void syncLyricsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -165,12 +203,7 @@ namespace KaraokeStudio
 				return;
 			}
 
-			if (_syncForm.IsDisposed)
-			{
-				_syncForm = new SyncForm();
-			}
-
-			_syncForm.Open(_projectHandler.Project, _selectedTrack);
+			OpenSyncForm(_selectedTrack);
 		}
 
 		private void audioToolStripMenuItem_Click(object sender, EventArgs e)

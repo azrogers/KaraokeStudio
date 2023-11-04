@@ -69,6 +69,13 @@ namespace KaraokeStudio.FormHandlers
 			IsPendingChanges = true;
 		}
 
+		public void UpdateEvents(KaraokeTrack track)
+		{
+			track.UpdateEvents();
+			_loadedProject?.UpdateMixer();
+			IsPendingChanges = true;
+		}
+
 		public void UpdateTrackSettings(KaraokeTrack track)
 		{
 			IsPendingChanges = true;

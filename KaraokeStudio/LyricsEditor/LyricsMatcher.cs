@@ -42,8 +42,8 @@ namespace KaraokeStudio.LyricsEditor
 			 *			
 			 */
 
-			var oldArr = oldElements.Select(o => o.ToHash()).ToArray() ?? new int[0];
-			var newArr = newElements.Select(o => o.ToHash()).ToArray() ?? new int[0];
+			var oldArr = oldElements.Select(o => o.ToDiffHash()).ToArray() ?? new int[0];
+			var newArr = newElements.Select(o => o.ToDiffHash()).ToArray() ?? new int[0];
 
 			var results = Diff.DiffInt(oldArr, newArr);
 		}

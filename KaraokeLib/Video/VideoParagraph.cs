@@ -35,14 +35,14 @@ namespace KaraokeLib.Video
 			return _lines[lineIndex];
 		}
 
-		public static VideoParagraph[] CreateParagraphs(VideoContext context, KaraokeEvent[] lyrics, VideoLayoutState layoutState, int numLines)
+		public static VideoParagraph[] CreateParagraphs(VideoContext context, KaraokeEvent[] lyrics, VideoLayoutState layoutState)
 		{
 			var newParagraphs = new List<VideoParagraph>();
 			var i = 0;
 
 			while (i < lyrics.Length)
 			{
-				var para = FillParagraph(context, lyrics, i, layoutState, numLines, out var numConsumed);
+				var para = FillParagraph(context, lyrics, i, layoutState, layoutState.NumLines, out var numConsumed);
 
 				if (numConsumed <= 0)
 				{

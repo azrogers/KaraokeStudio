@@ -191,6 +191,7 @@ namespace KaraokeStudio
 		{
 			position = Math.Clamp(position, 0, _project.Length.TotalSeconds);
 			_position = position;
+			_stopwatch.Restart();
 			_mixer.CurrentTime = TimeSpan.FromSeconds(position);
 			OnPositionChanged?.Invoke(position);
 		}

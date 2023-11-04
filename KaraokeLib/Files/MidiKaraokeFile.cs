@@ -222,7 +222,7 @@ namespace KaraokeLib.Files
 		}
 	}
 
-	internal class MidiTimecode : IEventTimecode
+	internal struct MidiTimecode : IEventTimecode
 	{
 		private MetricTimeSpan _timeSpan;
 

@@ -185,6 +185,11 @@ namespace KaraokeLib.Events
 
 			return this;
 		}
+
+		public override string ToString()
+		{
+			return $"{_type} <{StartTimeSeconds} - {EndTimeSeconds}> {_value}";
+		}
 	}
 
 	/// <summary>

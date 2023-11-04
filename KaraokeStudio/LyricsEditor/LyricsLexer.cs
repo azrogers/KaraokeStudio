@@ -58,7 +58,7 @@ namespace KaraokeStudio.LyricsEditor
 			Type = type;
 		}
 
-		public int ToHash()
+		public int ToDiffHash()
 		{
 			var bytes = new List<byte>
 			{

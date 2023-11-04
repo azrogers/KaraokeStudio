@@ -48,7 +48,7 @@ namespace KaraokeLib.Video
 
 		public void SetEvents(IEnumerable<KaraokeEvent> events, VideoLayoutState layoutState)
 		{
-			_paragraphs = VideoParagraph.CreateParagraphs(_context, events.ToArray(), layoutState, _context.NumLines);
+			_paragraphs = VideoParagraph.CreateParagraphs(_context, events.ToArray(), layoutState);
 		}
 
 		public static VideoSection[] SectionsFromTrack(VideoContext context, KaraokeTrack track, VideoLayoutState layoutState)

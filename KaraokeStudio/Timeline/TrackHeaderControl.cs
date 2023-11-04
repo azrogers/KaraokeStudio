@@ -17,6 +17,8 @@ namespace KaraokeStudio.Timeline
 			}
 		}
 
+		internal KaraokeProject? Project;
+
 		/// <summary>
 		/// Called when the settings of the track this header is for have been changed.
 		/// </summary>
@@ -25,6 +27,7 @@ namespace KaraokeStudio.Timeline
 		private Pen _selectedTrackPen;
 		private Brush _highlightBrush;
 		private KaraokeTrack? _track;
+		private List<ToolTip> _tooltips = new List<ToolTip>();
 		private Dictionary<IconButton, EventHandler> _buttonOnClickHandlers = new Dictionary<IconButton, EventHandler>();
 		private bool _selected = false;
 		private GenericConfigEditorForm? _configEditorForm;
@@ -62,13 +65,20 @@ namespace KaraokeStudio.Timeline
 
 			_buttonOnClickHandlers.Clear();
 			trackButtonsContainer.Controls.Clear();
+			foreach(var tooltip in _tooltips)
+			{
+				tooltip.RemoveAll();
+				tooltip.Dispose();
+			}
+
+			_tooltips.Clear();
 
 			if (Track == null)
 			{
 				return;
 			}
 
-			CreateButton(IconChar.Gear, (o, e) =>
+			CreateButton("Track Settings", IconChar.Gear, (o, e) =>
 			{
 				if (_configEditorForm == null)
 				{
@@ -82,10 +92,21 @@ namespace KaraokeStudio.Timeline
 				});
 			});
 
+			if(Track.Type == KaraokeTrackType.Lyrics)
+			{
+				CreateButton("Sync Lyrics", IconChar.Music, (o, e) =>
+				{
+					if(MainForm.Instance != null)
+					{
+						MainForm.Instance.OpenSyncForm(Track);
+					}
+				});
+			}
+
 			if (Track.Type == KaraokeTrackType.Audio)
 			{
 				var config = Track.GetTrackConfig<AudioTrackSettings>();
-				var muteButton = CreateButton(IconChar.VolumeMute, (o, e) =>
+				var muteButton = CreateButton("Mute", IconChar.VolumeMute, (o, e) =>
 				{
 					var button = o as IconButton;
 					if (button == null)
@@ -107,7 +128,7 @@ namespace KaraokeStudio.Timeline
 			trackButtonsContainer.PerformLayout();
 		}
 
-		private IconButton CreateButton(IconChar icon, EventHandler onClick)
+		private IconButton CreateButton(string info, IconChar icon, EventHandler onClick)
 		{
 			var button = new IconButton();
 			button.IconChar = icon;
@@ -115,6 +136,10 @@ namespace KaraokeStudio.Timeline
 			button.Size = new Size(trackButtonsContainer.Height - 3, trackButtonsContainer.Height - 3);
 			button.Click += _buttonOnClickHandlers[button] = onClick;
 			trackButtonsContainer.Controls.Add(button);
+
+			var tooltip = new ToolTip();
+			tooltip.SetToolTip(button, info);
+			_tooltips.Add(tooltip);
 			return button;
 		}
 

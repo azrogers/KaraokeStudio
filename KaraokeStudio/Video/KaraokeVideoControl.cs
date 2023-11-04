@@ -33,6 +33,11 @@ namespace KaraokeStudio.Video
 				_project.PlaybackState.OnPositionChanged -= PlaybackState_OnPositionChanged;
 				_project.PlaybackState.ReleaseVideoPlaybackClaim(this);
 			}
+
+			if(_lastFrame != null)
+			{
+				_lastFrame.Dispose();
+			}
 		}
 
 		public void ForceRerender() => videoSkiaControl.Invalidate();
@@ -120,6 +125,10 @@ namespace KaraokeStudio.Video
 				new VideoTimecode(_project.PlaybackState.Position, _project.Config.FrameRate),
 				surface);
 
+			if(_lastFrame != null)
+			{
+				_lastFrame.Dispose();
+			}
 			_lastFrame = surface.Snapshot();
 		}
 

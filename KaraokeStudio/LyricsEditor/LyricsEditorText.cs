@@ -87,17 +87,21 @@ namespace KaraokeStudio.LyricsEditor
 		/// <summary>
 		/// Uses old LyricsEditorTextElement instances to fill in missing time information for a new body of text.
 		/// </summary>
-		public static IEnumerable<LyricsEditorTextElement> UpdateFromString(string text, LyricsEditorTextElement[] oldElements)
+		public static IEnumerable<KaraokeEvent> GetEventsFromString(string text, LyricsEditorTextElement[] oldElementsArr)
 		{
 			var nextEventId = 0;
 			var nextElementId = 0;
 			var tokens = LyricsTokenizer.Tokenize(text);
+			var oldElements = oldElementsArr.OrderBy(e => e.StartTime).ToArray();
 			var newElements = LyricsLexer.Process(tokens).ToArray();
 
-			var oldArr = oldElements.Select(o => o.ToHash()).ToArray() ?? new int[0];
-			var newArr = newElements.Select(o => o.ToHash()).ToArray() ?? new int[0];
-
+			// we don't have a custom diff algorithm for LyricsEditorTextElement vs LyricsLexerElement -
+			// we just diff two arrays of ints computed from a purpose-specific hash
+			var oldArr = oldElements.Select(o => o.ToDiffHash()).ToArray() ?? new int[0];
+			var newArr = newElements.Select(o => o.ToDiffHash()).ToArray() ?? new int[0];
 			var results = Diff.DiffInt(oldArr, newArr).OrderBy(d => d.StartA).ToArray();
+
+			var createdElements = new List<LyricsEditorTextElement>();
 			var resultIndex = 0;
 			var oldIndex = 0;
 			var newIndex = 0;
@@ -110,14 +114,15 @@ namespace KaraokeStudio.LyricsEditor
 					var item = result.Value;
 
 					var timeStart = oldElements[item.StartA].StartTime;
-					var timeEnd = oldElements[Math.Min(item.StartA + item.deletedA, oldElements.Length - 1)].EndTime;
+					var endIndex = item.StartA + item.deletedA + 1;
+					var timeEnd = endIndex < oldElements.Length ? oldElements[endIndex].StartTime : oldElements[oldElements.Length - 1].EndTime;
 
 					var totalLen = newElements.Skip(item.StartB).Take(item.insertedB).Select(r => r.Tokens.Sum(t => t.Length)).Sum() + item.insertedB;
 					var startPos = 0;
 					// handle all the skipped elements
 					foreach (var elem in newElements.Skip(item.StartB).Take(item.insertedB))
 					{
-						yield return ToTextElement(elem, timeStart, timeEnd, startPos, totalLen, ref nextEventId, ref nextElementId, out var len);
+						createdElements.Add(ToTextElement(elem, timeStart, timeEnd, startPos, totalLen, ref nextEventId, ref nextElementId, out var len));
 						startPos += len;
 					}
 
@@ -137,10 +142,46 @@ namespace KaraokeStudio.LyricsEditor
 					lastId = nextEventId++;
 				}
 
-				yield return new LyricsEditorTextElement(nextElementId, oldElem.Type, events);
+				createdElements.Add(new LyricsEditorTextElement(nextElementId, oldElem.Type, events));
 				oldIndex++;
 				newIndex++;
 			}
+
+			// turn the array of elements into a stream of events
+			var lastEndTime = 0.0;
+			KaraokeEvent? lastEvent = null;
+			var createdEvents = new List<KaraokeEvent>();
+			foreach(var element in createdElements)
+			{
+				foreach(var ev in element.Events)
+				{
+					if(lastEvent != null && lastEndTime > ev.StartTimeSeconds)
+					{
+						// if they overlap but we can move the start time of ev without losing it entirely, let's do that
+						if(lastEndTime < ev.EndTimeSeconds)
+						{
+							ev.SetTiming(lastEvent.EndTime, ev.EndTime);
+						}
+						// if they overlap but we can move the end time of the last event without losing it entirely, let's do that
+						else if(lastEvent.StartTimeSeconds < ev.StartTimeSeconds)
+						{
+							lastEvent.SetTiming(lastEvent.StartTime, ev.StartTime);
+						}
+						// otherwise, just move this event to the end of the last one
+						else
+						{
+							ev.SetTiming(lastEvent.EndTime, new TimeSpanTimecode(lastEvent.EndTimeSeconds + ev.LengthSeconds));
+						}
+					}
+
+					createdEvents.Add(ev);
+
+					lastEvent = ev;
+					lastEndTime = ev.EndTimeSeconds;
+				}
+			}
+
+			return createdEvents;
 		}
 
 		private static LyricsEditorTextElement ToTextElement(

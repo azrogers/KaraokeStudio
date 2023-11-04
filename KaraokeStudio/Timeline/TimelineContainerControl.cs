@@ -111,6 +111,7 @@ namespace KaraokeStudio.Timeline
 			{
 				var control = new TrackHeaderControl();
 				control.Track = track;
+				control.Project = _currentProject;
 				control.Click += OnHeaderClick;
 				control.OnTrackConfigChanged += OnHeaderTrackSettingsChanged;
 				headersContainer.Controls.Add(control);

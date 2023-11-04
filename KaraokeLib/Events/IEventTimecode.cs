@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace KaraokeLib.Events
+﻿namespace KaraokeLib.Events
 {
 	public interface IEventTimecode : IComparable<IEventTimecode>
 	{
@@ -15,7 +9,7 @@ namespace KaraokeLib.Events
 	/// <summary>
 	/// Basic implementation of IEventTimecode.
 	/// </summary>
-	public class TimeSpanTimecode : IEventTimecode
+	public struct TimeSpanTimecode : IEventTimecode
 	{
 		private TimeSpan _span;
 
