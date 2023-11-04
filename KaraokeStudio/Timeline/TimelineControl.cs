@@ -1,6 +1,4 @@
-﻿using KaraokeLib.Events;
-using KaraokeLib.Tracks;
-using KaraokeLib.Util;
+﻿using KaraokeLib.Tracks;
 using KaraokeStudio.Util;
 using NLog;
 using SkiaSharp;
@@ -8,16 +6,16 @@ using System.Data;
 
 namespace KaraokeStudio.Timeline
 {
-    /// <summary>
-    /// Represents the timeline that displays events and allows the user to modify them.
-    /// </summary>
-    /// <remarks>
-    /// The control contains a canvas. The canvas is larger than the client rect of the control - it's as long as is needed to display every event.
-    /// We use the concept of "canvas space" and "control space" to distinguish between these. 
-    /// A coordinate in control space is in screen coordinates, relative to the location of the control on the screen.
-    /// A coordinate in canvas space is in the coordinates of the full canvas, which may be scaled or scrolled depending on the user's inputs.
-    /// </remarks>
-    public partial class TimelineControl : UserControl
+	/// <summary>
+	/// Represents the timeline that displays events and allows the user to modify them.
+	/// </summary>
+	/// <remarks>
+	/// The control contains a canvas. The canvas is larger than the client rect of the control - it's as long as is needed to display every event.
+	/// We use the concept of "canvas space" and "control space" to distinguish between these. 
+	/// A coordinate in control space is in screen coordinates, relative to the location of the control on the screen.
+	/// A coordinate in canvas space is in the coordinates of the full canvas, which may be scaled or scrolled depending on the user's inputs.
+	/// </remarks>
+	public partial class TimelineControl : UserControl
 	{
 		private const float PADDING_TOP = 5.0f;
 
@@ -33,14 +31,7 @@ namespace KaraokeStudio.Timeline
 		private float _horizZoomFactor = 1.0f;
 		private float _verticalZoomFactor = 1.0f;
 		private bool _mouseDown = false;
-
-		
-		// TODO: merge selection systems together? unified for multiple types?
-
-		/// <summary>
-		/// Called when the currently selected event has changed.
-		/// </summary>
-		public event Action<KaraokeEvent?>? OnEventSelectionChanged;
+		private System.Windows.Forms.Timer _mouseTimer;
 
 		/// <summary>
 		/// Called when the positioning of tracks has changed.
@@ -51,18 +42,24 @@ namespace KaraokeStudio.Timeline
 		{
 			InitializeComponent();
 
+			_mouseTimer = new System.Windows.Forms.Timer();
+			_mouseTimer.Interval = 100;
+			_mouseTimer.Tick += _mouseTimer_Tick;
+
 			_tracks = new KaraokeTrack[0];
 
 			_timelineCanvas = new TimelineCanvas();
-			_timelineCanvas.OnEventSelectionChanged += _timelineCanvas_OnEventSelectionChanged;
 
 			_backgroundColor = VisualStyle.NeutralDarkColor.ToSKColor();
 
 			_lightPaint = new SKPaint() { Color = VisualStyle.NeutralLightColor.ToSKColor() };
-			_highlightPaint = new SKPaint() { 
+			_highlightPaint = new SKPaint()
+			{
 				Color = VisualStyle.HighlightColor.ToSKColor(),
 				IsAntialias = true
 			};
+
+			SelectionManager.OnSelectedEventsChanged += OnSelectedEventsChanged;
 
 			horizScroll.Enabled = false;
 			verticalScroll.Enabled = false;
@@ -70,22 +67,20 @@ namespace KaraokeStudio.Timeline
 
 		~TimelineControl()
 		{
+			_mouseTimer.Dispose();
+
 			if (_currentProject != null)
 			{
 				_currentProject.PlaybackState.OnPositionChanged -= OnPositionChanged;
 			}
-		}
 
-		public void DeselectEvent()
-		{
-			_timelineCanvas.Deselect();
-			skiaControl.Invalidate();
+			SelectionManager.OnSelectedEventsChanged -= OnSelectedEventsChanged;
 		}
 
 		public RectangleF GetTrackRect(int trackId)
 		{
 			var trackIndex = -1;
-			for(var i = 0; i < _tracks.Length; i++)
+			for (var i = 0; i < _tracks.Length; i++)
 			{
 				if (_tracks[i].Id == trackId)
 				{
@@ -94,29 +89,29 @@ namespace KaraokeStudio.Timeline
 				}
 			}
 
-			if(trackIndex == -1)
+			if (trackIndex == -1)
 			{
 				Logger.Warn($"Track rect requested for ID {trackId} but no such track found?");
 				return RectangleF.Empty;
 			}
 
 			var skRect = CreateMatrix().MapRect(new SKRect(
-				0, 
-				trackIndex * TimelineCanvas.TRACK_HEIGHT, 
-				_timelineCanvas.Size.Width, 
+				0,
+				trackIndex * TimelineCanvas.TRACK_HEIGHT,
+				_timelineCanvas.Size.Width,
 				(trackIndex + 1) * TimelineCanvas.TRACK_HEIGHT - 2));
 			return new RectangleF(skRect.Left, skRect.Top, skRect.Width, skRect.Height);
 		}
 
 		internal void OnProjectChanged(KaraokeProject? project)
 		{
-			if(_currentProject != null)
+			if (_currentProject != null)
 			{
 				// cleanup old event listeners
 				_currentProject.PlaybackState.OnPositionChanged -= OnPositionChanged;
 			}
 
-			if(project != null)
+			if (project != null)
 			{
 				project.PlaybackState.OnPositionChanged += OnPositionChanged;
 			}
@@ -137,6 +132,11 @@ namespace KaraokeStudio.Timeline
 			skiaControl.Invalidate();
 		}
 
+		private void OnSelectedEventsChanged()
+		{
+			skiaControl.Invalidate();
+		}
+
 		private void OnPositionChanged(double pos)
 		{
 			skiaControl.Invalidate();
@@ -150,8 +150,6 @@ namespace KaraokeStudio.Timeline
 
 		private bool HandleSelection(Point pos)
 		{
-			_timelineCanvas.Deselect();
-
 			if (!SelectEventAtPosition(pos))
 			{
 				return false;
@@ -185,6 +183,12 @@ namespace KaraokeStudio.Timeline
 		/// Creates a matrix to transform from control space to canvas space.
 		/// </summary>
 		private SKMatrix CreateInverseMatrix() => CreateMatrix().Invert();
+
+		private float GetPlaybackHeadXPos()
+		{
+			var playbackPos = _currentProject?.PlaybackState.Position ?? 0;
+			return CreateMatrix().MapPoint(new SKPoint((float)(_timelineCanvas.GetXPosOfTime(playbackPos)), 0)).X;
+		}
 
 		private SKPoint TranslatePointToCanvas(Point pos)
 		{
@@ -226,8 +230,7 @@ namespace KaraokeStudio.Timeline
 
 			canvas.RestoreToCount(savePoint);
 
-			var playbackPos = _currentProject?.PlaybackState.Position ?? 0;
-			var playheadXPos = CreateMatrix().MapPoint(new SKPoint((float)(_timelineCanvas.GetXPosOfTime(playbackPos)), 0)).X;
+			var playheadXPos = GetPlaybackHeadXPos();
 
 			savePoint = canvas.Save();
 			canvas.DrawLine(new SKPoint(playheadXPos, 0), new SKPoint(playheadXPos, clientRect.Height), _lightPaint);
@@ -246,29 +249,57 @@ namespace KaraokeStudio.Timeline
 
 		private void UpdateZoom(float horiz, float vertical)
 		{
-			var centerPos = CreateInverseMatrix().MapPoint(new SKPoint(ClientSize.Width / 2.0f, 0));
-			var centerTime = _timelineCanvas.GetTimeOfPoint(centerPos);
+			if (_currentProject == null)
+			{
+				return;
+			}
+
+			var posToRestore = 0.0;
+			var playbackXPos = GetPlaybackHeadXPos();
+			// if the playback head is on screen, use that as the center of our zoom
+			if (playbackXPos >= 0 && playbackXPos < ClientSize.Width)
+			{
+				posToRestore = _currentProject.PlaybackState.Position;
+			}
+			// otherwise, use the time at the center of the widget
+			else
+			{
+				var centerPos = CreateInverseMatrix().MapPoint(new SKPoint(ClientSize.Width / 2.0f, 0));
+				var centerTime = _timelineCanvas.GetTimeOfPoint(centerPos);
+				posToRestore = centerTime;
+			}
 
 			_horizZoomFactor = horiz;
 			_verticalZoomFactor = vertical;
 			RecalculateScrollBars();
 			skiaControl.Invalidate();
 
-			var scrollOffset = CreateMatrix().MapPoint(new SKPoint((float)_timelineCanvas.GetXPosOfTime(centerTime), 0)).X;
-			// we need to position half a screen before the new center pos, so it remains the center
-			var offsetWidth = CreateInverseMatrix().MapPoint(new SKPoint(ClientSize.Width / 2.0f, 0)).X;
-			horizScroll.Value = Math.Clamp((int)(scrollOffset - ClientSize.Width / 2.0f), horizScroll.Minimum, horizScroll.Maximum);
+			var scrollOffset =
+				SKMatrix
+				.CreateScale(_horizZoomFactor, _verticalZoomFactor)
+				.MapPoint(new SKPoint((float)_timelineCanvas.GetXPosOfTime(posToRestore), 0)).X;
+
+			horizScroll.Value = Math.Clamp((int)(scrollOffset - ClientSize.Width / 2), horizScroll.Minimum, horizScroll.Maximum);
 			OnTrackPositioningChanged?.Invoke();
 		}
 
 		private RectangleF GetViewportClientRect()
 		{
 			return new RectangleF(
-				0, 
+				0,
 				PADDING_TOP,
 				ClientSize.Width - 20,
 				ClientSize.Height - PADDING_TOP - 20
 			);
+		}
+
+		private void SeekToLocation(Point point)
+		{
+			if (_currentProject != null)
+			{
+				var pos = _timelineCanvas.GetTimeOfPoint(TranslatePointToCanvas(point));
+				_currentProject.PlaybackState.SeekAbsolute(pos);
+			}
 		}
 
 		#region UI Events
@@ -316,7 +347,19 @@ namespace KaraokeStudio.Timeline
 
 		private void skiaControl_MouseDown(object sender, MouseEventArgs e)
 		{
+			_mouseTimer.Stop();
 			_mouseDown = !HandleSelection(e.Location);
+
+			// failed to get selection, deselect
+			if (_mouseDown)
+			{
+				_mouseTimer.Start();
+			}
+
+			if (_mouseDown)
+			{
+				SeekToLocation(e.Location);
+			}
 		}
 
 		private void skiaControl_MouseUp(object sender, MouseEventArgs e)
@@ -326,16 +369,20 @@ namespace KaraokeStudio.Timeline
 
 		private void skiaControl_MouseMove(object sender, MouseEventArgs e)
 		{
-			if (_mouseDown && _currentProject != null)
+			if (_mouseDown)
 			{
-				var pos = _timelineCanvas.GetTimeOfPoint(TranslatePointToCanvas(e.Location));
-				_currentProject.PlaybackState.SeekAbsolute(pos);
+				SeekToLocation(e.Location);
 			}
 		}
 
-		private void _timelineCanvas_OnEventSelectionChanged(KaraokeEvent? obj)
+		private void _mouseTimer_Tick(object? sender, EventArgs e)
 		{
-			OnEventSelectionChanged?.Invoke(obj);
+			_mouseTimer.Stop();
+
+			if (!_mouseDown)
+			{
+				SelectionManager.Deselect();
+			}
 		}
 		#endregion
 	}

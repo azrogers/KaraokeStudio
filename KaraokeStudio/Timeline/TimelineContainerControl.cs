@@ -8,18 +8,6 @@ namespace KaraokeStudio.Timeline
 	{
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-		// TODO: merge selection systems together? unified for multiple types?
-
-		/// <summary>
-		/// Called when the currently selected event has changed.
-		/// </summary>
-		public event Action<KaraokeEvent?>? OnEventSelectionChanged;
-
-		/// <summary>
-		/// Called when the currently selected header has changed.
-		/// </summary>
-		public event Action<KaraokeTrack?>? OnTrackSelectionChanged;
-
 		/// <summary>
 		/// Called when a track has its track settings changed.
 		/// </summary>
@@ -37,16 +25,20 @@ namespace KaraokeStudio.Timeline
 			BackColor = VisualStyle.NeutralDarkColor;
 
 			timeline.OnTrackPositioningChanged += timeline_OnTrackPositioningChanged;
-			timeline.OnEventSelectionChanged += timeline_OnEventSelectionChanged;
 		}
 
-		private void timeline_OnEventSelectionChanged(KaraokeEvent? obj)
+		~TimelineContainerControl()
 		{
-			if(obj != null)
+			SelectionManager.OnSelectedTracksChanged += OnSelectedTracksChanged;
+		}
+
+		private void OnSelectedTracksChanged()
+		{
+			var selectedTrackIds = SelectionManager.SelectedTracks.Select(t => t.Id).ToHashSet();
+			foreach (var header in _trackHeaders)
 			{
-				SetSelectedTrack(null);
+				header.SetSelected(selectedTrackIds.Contains(header.Track?.Id ?? -1));
 			}
-			OnEventSelectionChanged?.Invoke(obj);
 		}
 
 		private void timeline_OnTrackPositioningChanged()
@@ -68,26 +60,6 @@ namespace KaraokeStudio.Timeline
 			timeline.OnProjectEventsChanged(project);
 
 			RecreateTracks();
-		}
-
-		private void SetSelectedTrack(KaraokeTrack? track)
-		{
-			var oldTrackId = _selectedTrackId;
-			_selectedTrackId = track?.Id ?? -1;
-			if (_selectedTrackId != oldTrackId)
-			{
-				OnTrackSelectionChanged?.Invoke(track);
-			}
-
-			if(track != null)
-			{
-				timeline.DeselectEvent();
-			}
-
-			foreach (var header in _trackHeaders)
-			{
-				header.SetSelected(header.Track?.Id == _selectedTrackId);
-			}
 		}
 
 		private void RecreateTracks()
@@ -128,14 +100,14 @@ namespace KaraokeStudio.Timeline
 
 		private void OnHeaderClick(object? sender, EventArgs e)
 		{
-			SetSelectedTrack(null);
 			var headerControl = sender as TrackHeaderControl;
-			if (headerControl == null)
+			if (headerControl == null || headerControl.Track == null)
 			{
+				SelectionManager.Deselect();
 				return;
 			}
 
-			SetSelectedTrack(headerControl.Track);
+			SelectionManager.Select(headerControl.Track, !ModifierKeys.HasFlag(Keys.Shift));
 		}
 
 		private void RepositionTracks()

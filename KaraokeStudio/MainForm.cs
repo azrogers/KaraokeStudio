@@ -8,7 +8,7 @@ using KaraokeLib.Tracks;
 
 namespace KaraokeStudio
 {
-    public partial class MainForm : Form
+	public partial class MainForm : Form
 	{
 		private ProjectFormHandler _projectHandler;
 		private StyleForm _styleForm;
@@ -18,15 +18,12 @@ namespace KaraokeStudio
 		// designer doesn't like handling this one itself so we set it up manually
 		private LyricsEditorControl lyricsEditor;
 
-		private KaraokeEvent? _selectedEvent = null;
-		private KaraokeTrack? _selectedTrack = null;
-
 		public static MainForm? Instance { get; private set; } = null;
 
 		public MainForm()
 		{
 			ExceptionLogger.ParentForm = this;
-			if(Instance == null)
+			if (Instance == null)
 			{
 				Instance = this;
 			}
@@ -43,8 +40,9 @@ namespace KaraokeStudio
 
 			lyricsEditor.OnLyricsEventsChanged += OnLyricsEventsChanged;
 
-			timelineContainer.OnEventSelectionChanged += OnEventSelectionChanged;
-			timelineContainer.OnTrackSelectionChanged += OnTrackSelectionChanged;
+			SelectionManager.OnSelectedEventsChanged += OnEventSelectionChanged;
+			SelectionManager.OnSelectedTracksChanged += OnTrackSelectionChanged;
+
 			timelineContainer.OnTrackSettingsChanged += OnTrackSettingsChanged;
 
 			// handles the project itself
@@ -67,18 +65,18 @@ namespace KaraokeStudio
 
 		public void OpenSyncForm(KaraokeTrack track)
 		{
-			if(_projectHandler.Project == null)
+			if (_projectHandler.Project == null)
 			{
 				return;
 			}
 
-			if(_syncForm.IsDisposed)
+			if (_syncForm.IsDisposed)
 			{
 				_syncForm = new SyncForm();
 				_syncForm.OnSyncDataApplied += OnSyncDataApplied;
 			}
 
-			if(_syncForm.Visible)
+			if (_syncForm.Visible)
 			{
 				_syncForm.Focus();
 				return;
@@ -124,6 +122,7 @@ namespace KaraokeStudio
 
 		private void OnLyricsEventsChanged((KaraokeTrack Track, IEnumerable<KaraokeEvent> NewEvents) obj)
 		{
+			SelectionManager.Deselect();
 			_projectHandler.SetEvents(obj.Track, obj.NewEvents);
 			video.OnProjectEventsChanged(_projectHandler.Project);
 			timelineContainer.OnProjectEventsChanged(_projectHandler.Project);
@@ -133,6 +132,7 @@ namespace KaraokeStudio
 
 		private void OnTrackChanged(KaraokeTrack obj)
 		{
+			SelectionManager.Deselect();
 			video.OnProjectEventsChanged(_projectHandler.Project);
 			timelineContainer.OnProjectEventsChanged(_projectHandler.Project);
 			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
@@ -152,17 +152,16 @@ namespace KaraokeStudio
 			timelineContainer.OnProjectChanged(project);
 			lyricsEditor.OnProjectChanged(project);
 			_syncForm.Hide();
+			SelectionManager.Deselect();
 		}
 
-		private void OnTrackSelectionChanged(KaraokeTrack? obj)
+		private void OnTrackSelectionChanged()
 		{
-			_selectedTrack = obj;
 			UpdateTitleAndMenu();
 		}
 
-		private void OnEventSelectionChanged(KaraokeEvent? obj)
+		private void OnEventSelectionChanged()
 		{
-			_selectedEvent = obj;
 			UpdateTitleAndMenu();
 		}
 
@@ -186,7 +185,7 @@ namespace KaraokeStudio
 
 		private void editStyleToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if(_styleForm.Visible)
+			if (_styleForm.Visible)
 			{
 				_styleForm.Focus();
 			}
@@ -198,12 +197,12 @@ namespace KaraokeStudio
 
 		private void syncLyricsToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (_projectHandler.Project == null || _selectedTrack == null)
+			if (_projectHandler.Project == null || SelectionManager.SelectedTracks.Count() == 1)
 			{
 				return;
 			}
 
-			OpenSyncForm(_selectedTrack);
+			OpenSyncForm(SelectionManager.SelectedTracks.First());
 		}
 
 		private void audioToolStripMenuItem_Click(object sender, EventArgs e)
@@ -213,7 +212,7 @@ namespace KaraokeStudio
 
 		private void removeTrackToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if(_selectedTrack == null)
+			if (!SelectionManager.SelectedTracks.Any())
 			{
 				return;
 			}
@@ -266,13 +265,13 @@ namespace KaraokeStudio
 
 			openRecentToolStripMenuItem.Enabled = openRecentToolStripMenuItem.HasDropDownItems;
 
-			syncLyricsToolStripMenuItem.Enabled = _selectedTrack?.Type == KaraokeTrackType.Lyrics;
-			removeTrackToolStripMenuItem.Enabled = _selectedTrack != null;
+			syncLyricsToolStripMenuItem.Enabled = SelectionManager.SelectedTracks.Count() == 1 && SelectionManager.SelectedTracks.First().Type == KaraokeTrackType.Lyrics;
+			removeTrackToolStripMenuItem.Enabled = SelectionManager.SelectedTracks.Any();
 		}
 
 		private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
 		{
-			if(_projectHandler.Project != null)
+			if (_projectHandler.Project != null)
 			{
 				_projectHandler.Project.PlaybackState.Cleanup();
 			}

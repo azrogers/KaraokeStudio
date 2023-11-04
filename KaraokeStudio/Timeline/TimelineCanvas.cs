@@ -34,24 +34,14 @@ namespace KaraokeStudio.Timeline
 		private float _lineHeight;
 		private Dictionary<string, SKRect> _textBounds = new Dictionary<string, SKRect>();
 
-		private ClickableItem? _selectedEvent;
-
+		// the clickable items for each track
 		private ClickableItem[][] _clickableItems = new ClickableItem[0][];
+		private Dictionary<int, ClickableItem> _eventClickableItems = new Dictionary<int, ClickableItem>();
 
 		private Dictionary<KaraokeEventType, SKPaint> _eventTypePaints = new Dictionary<KaraokeEventType, SKPaint>();
 		private Dictionary<int, KaraokeEvent> _events = new Dictionary<int, KaraokeEvent>();
 
 		public SKSize Size => _size;
-
-		/// <summary>
-		/// The KaraokeEvent currently selected, if any.
-		/// </summary>
-		public KaraokeEvent? SelectedEvent => _selectedEvent == null ? null : _events[_selectedEvent.Value.EventId];
-
-		/// <summary>
-		/// Called when the currently selected event has changed.
-		/// </summary>
-		public event Action<KaraokeEvent?>? OnEventSelectionChanged;
 
 		public TimelineCanvas()
 		{
@@ -110,12 +100,19 @@ namespace KaraokeStudio.Timeline
 				destination.DrawPicture(_picture, ref matrix);
 			}
 
-			if (_selectedEvent != null)
+			// draw borders for selected events
+			foreach(var ev in SelectionManager.SelectedEvents)
 			{
-				// draw selection rect
+				var item = _eventClickableItems[ev.Id];
+				var rect = matrix.MapRect(item.Rect);
+
+				// if the rect gets too big it'll get glitchy drawing -
+				// so only draw the visible part of the rect (plus a bit of padding so the border won't show)
+				rect.Left = Math.Max(rect.Left, destination.DeviceClipBounds.Left - 20);
+				rect.Right = Math.Min(rect.Right, destination.DeviceClipBounds.Right + 20);
+
 				destination.Save();
-				destination.SetMatrix(matrix);
-				destination.DrawRect(_selectedEvent.Value.Rect, _selectedStrokePaint);
+				destination.DrawRect(rect, _selectedStrokePaint);
 				destination.Restore();
 			}
 
@@ -146,15 +143,12 @@ namespace KaraokeStudio.Timeline
 		public bool SelectEventAtPoint(SKPoint point)
 		{
 			var ev = FindEventAtPoint(point);
-			_selectedEvent = ev;
-			OnEventSelectionChanged?.Invoke(_selectedEvent == null ? null : _events[_selectedEvent.Value.EventId]);
+			var isShiftDown = Control.ModifierKeys.HasFlag(Keys.Shift);
+			if(ev != null)
+			{
+				SelectionManager.Select(_events[ev.Value.EventId], !isShiftDown);
+			}
 			return ev != null;
-		}
-
-		public void Deselect()
-		{
-			_selectedEvent = null;
-			OnEventSelectionChanged?.Invoke(null);
 		}
 
 		/// <summary>
@@ -178,36 +172,9 @@ namespace KaraokeStudio.Timeline
 			_project = project;
 			_events.Clear();
 			_textBounds.Clear();
-			_selectedEvent = null;
+			_eventClickableItems.Clear();
 
 			RecreateCanvas(CalculateSize());
-		}
-
-		internal void OnProjectEventsChanged(KaraokeProject? project)
-		{
-			var oldSelectedEvent = _selectedEvent;
-			OnProjectChanged(project);
-			if(oldSelectedEvent != null && _events.ContainsKey(oldSelectedEvent.Value.EventId))
-			{
-				_selectedEvent = FindItemForEventId(oldSelectedEvent.Value.EventId);
-				OnEventSelectionChanged?.Invoke(_selectedEvent == null ? null : _events[_selectedEvent.Value.EventId]);
-			}
-		}
-
-		private ClickableItem? FindItemForEventId(int eventId)
-		{
-			for(var i = 0; i < _clickableItems.Length; i++)
-			{
-				for(var j = 0; j < _clickableItems[i].Length; j++)
-				{
-					if (_clickableItems[i][j].EventId == eventId)
-					{
-						return _clickableItems[i][j];
-					}
-				}
-			}
-
-			return null;
 		}
 
 		/// <summary>
@@ -318,6 +285,8 @@ namespace KaraokeStudio.Timeline
 						Rect = eventRect,
 						EventId = ev.Id
 					};
+
+					_eventClickableItems[ev.Id] = items[j];
 				}
 
 				// draw border
