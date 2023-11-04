@@ -3,6 +3,7 @@ using KaraokeLib.Util;
 using KaraokeLib.Video;
 using KaraokeStudio.Util;
 using SkiaSharp;
+using System.Windows.Controls;
 
 namespace KaraokeStudio.Timeline
 {
@@ -12,6 +13,9 @@ namespace KaraokeStudio.Timeline
     /// </summary>
     internal class TimelineCanvas
 	{
+		// the width of the handles on each side of the event for grabbing, in control space
+		private const float EVENT_HANDLE_WIDTH = 5.0f;
+		private const float SNAP_WIDTH = 10.0f;
 		private const float PIXELS_PER_SECOND = 50.0f;
 		internal const float TRACK_HEIGHT = 50.0f;
 
@@ -19,6 +23,7 @@ namespace KaraokeStudio.Timeline
 		private SKPicture? _picture = null;
 		private KaraokeProject? _project = null;
 		private SKSize _size = new SKSize(1, 1);
+		private bool _hasSetCursor = false;
 
 		private SKColor _backgroundColor;
 		private SKPaint _shadowPaint;
@@ -33,6 +38,11 @@ namespace KaraokeStudio.Timeline
 		private SKFont _font;
 		private float _ellipsisWidth;
 		private float _lineHeight;
+
+		private DragState? _dragState;
+		private bool _isDragging = false;
+		private SKPoint? _dragStartPoint;
+
 		private Dictionary<string, SKRect> _textBounds = new Dictionary<string, SKRect>();
 
 		// the clickable items for each track
@@ -42,7 +52,11 @@ namespace KaraokeStudio.Timeline
 		private Dictionary<KaraokeEventType, SKPaint> _eventTypePaints = new Dictionary<KaraokeEventType, SKPaint>();
 		private Dictionary<int, KaraokeEvent> _events = new Dictionary<int, KaraokeEvent>();
 
+		public event Action<KaraokeEvent>? OnEventChanged;
+
 		public SKSize Size => _size;
+
+		public KaraokeEvent? DragEvent => _dragState?.Event;
 
 		public TimelineCanvas()
 		{
@@ -109,6 +123,16 @@ namespace KaraokeStudio.Timeline
 				destination.DrawPicture(_picture, ref matrix);
 			}
 
+			// draw the currently dragged event separately
+			var dragRect = SKRect.Empty;
+			if(_isDragging && _dragState != null)
+			{
+				destination.Save();
+				destination.SetMatrix(matrix);
+				dragRect = DrawEvent(destination, _dragState.Value.TrackIndex, _dragState.Value.Event);
+				destination.Restore();
+			}
+
 			var selectedEvents = SelectionManager.SelectedEvents;
 			if(selectionRect != null)
 			{
@@ -124,7 +148,8 @@ namespace KaraokeStudio.Timeline
 			foreach(var ev in selectedEvents)
 			{
 				var item = _eventClickableItems[ev.Id];
-				var rect = matrix.MapRect(item.Rect);
+				var rawRect = (_isDragging && ev.Id == _dragState?.Event?.Id) ? dragRect : item.Rect;
+				var rect = matrix.MapRect(rawRect);
 
 				// offset by stroke width so the stroke is inset
 				var offset = _selectedStrokePaint.StrokeWidth;
@@ -152,10 +177,11 @@ namespace KaraokeStudio.Timeline
 				for (var j = 0; j < arr.Length; j++)
 				{
 					var item = arr[j];
+					var rect = _isDragging && item.EventId == _dragState?.Event?.Id ? dragRect : item.Rect;
 					// this rect is visible!
-					if (visibleRect.IntersectsWith(item.Rect) && _events.TryGetValue(item.EventId, out var ev))
+					if (visibleRect.IntersectsWith(rect) && _events.TryGetValue(item.EventId, out var ev))
 					{
-						TryDrawEventText(destination, ev, matrix.MapRect(item.Rect));
+						TryDrawEventText(destination, ev, matrix.MapRect(rect));
 					}
 				}
 			}
@@ -175,7 +201,7 @@ namespace KaraokeStudio.Timeline
 		public bool SelectEventAtPoint(SKPoint point)
 		{
 			var ev = FindEventAtPoint(point);
-			var isShiftDown = Control.ModifierKeys.HasFlag(Keys.Shift);
+			var isShiftDown = System.Windows.Forms.Control.ModifierKeys.HasFlag(Keys.Shift);
 			if(ev != null)
 			{
 				SelectionManager.Select(_events[ev.Value.EventId], !isShiftDown);
@@ -185,7 +211,7 @@ namespace KaraokeStudio.Timeline
 
 		public bool SelectEventsInRect(SKRect rect)
 		{
-			if(!Control.ModifierKeys.HasFlag(Keys.Shift))
+			if(!System.Windows.Forms.Control.ModifierKeys.HasFlag(Keys.Shift))
 			{
 				SelectionManager.Deselect();
 			}
@@ -220,14 +246,190 @@ namespace KaraokeStudio.Timeline
 			return time * PIXELS_PER_SECOND;
 		}
 
+		/// <summary>
+		/// Starts dragging an event, if possible.
+		/// </summary>
+		public bool MaybeStartDragging(SKPoint point)
+		{
+			if (_dragState == null)
+			{
+				return false;
+			}
+
+			_dragStartPoint = point;
+			_isDragging = true;
+			// event will be drawn overlaid on the already drawn canvas while dragging
+			RecreateCanvas(_size);
+			return true;
+		}
+
+		public void EndDrag()
+		{
+			if(_isDragging && _dragState != null)
+			{
+				var eventId = _dragState.Value.Event.Id;
+				var (start, end) = _dragState.Value.OriginalEventTimes;
+				UndoHandler.Push("Drag Event", () =>
+				{
+					_events[eventId].SetTiming(new TimeSpanTimecode(start), new TimeSpanTimecode(end));
+					OnEventChanged?.Invoke(_events[eventId]);
+				});
+			}
+			_isDragging = false;
+			_dragState = null;
+			// redraw canvas with dragged element
+			RecreateCanvas(_size);
+		}
+
+		/// <summary>
+		/// Updates the timeline canvas based on the position of the mouse.
+		/// </summary>
+		/// <param name="matrix">The matrix to convert from canvas space to control space.</param>
+		/// <param name="mousePos">The position of the mouse in control space.</param>
+		/// <param name="isIdle">If true, the timeline's UI state is idle.</param>
+		public void UpdateMousePos(SKMatrix matrix, SKPoint mousePos, bool isIdle)
+		{
+			var mousePosCanvas = matrix.Invert().MapPoint(mousePos);
+
+			if(_isDragging)
+			{
+				UpdateDrag(matrix, mousePosCanvas.X / PIXELS_PER_SECOND);
+				return;
+			}
+
+			_dragState = null;
+
+			if(_hasSetCursor)
+			{
+				Cursor.Current = Cursors.Default;
+				_hasSetCursor = false;
+			}
+
+			if(!isIdle)
+			{
+				return;
+			}
+
+			var item = FindEventAtPoint(mousePosCanvas);
+			if(item == null)
+			{
+				return;
+			}
+
+			var ev = _events[item.Value.EventId];
+			var evRect = matrix.MapRect(item.Value.Rect);
+
+			var isTouchingStart = Math.Abs(evRect.Left - mousePos.X) < EVENT_HANDLE_WIDTH;
+			var isTouchingEnd = Math.Abs(evRect.Right - mousePos.X) < EVENT_HANDLE_WIDTH;
+
+			DragType dragType;
+
+			if(isTouchingStart)
+			{
+				Cursor.Current = Cursors.VSplit;
+				dragType = DragType.MoveStart;
+			}
+			else if(isTouchingEnd)
+			{
+				Cursor.Current = Cursors.VSplit;
+				dragType = DragType.MoveEnd;
+			}
+			else
+			{
+				Cursor.Current = Cursors.SizeAll;
+				dragType = DragType.MoveEvent;
+			}
+
+			_hasSetCursor = true;
+			_dragState = new DragState()
+			{
+				Event = ev,
+				Type = dragType,
+				OriginalEventTimes = (ev.StartTimeSeconds, ev.EndTimeSeconds),
+				TrackIndex = item.Value.TrackIndex
+			};
+		}
+
 		internal void OnProjectChanged(KaraokeProject? project)
 		{
 			_project = project;
 			_events.Clear();
 			_textBounds.Clear();
 			_eventClickableItems.Clear();
+			_dragState = null;
+			_isDragging = false;
 
 			RecreateCanvas(CalculateSize());
+		}
+
+		private void UpdateDrag(SKMatrix matrix, double time)
+		{
+			if (_dragState == null || _project == null)
+			{
+				return;
+			}
+
+			var activeTrack = _project.Tracks.Where(t => t.Events.Any(ev => ev.Id == _dragState.Value.Event.Id)).FirstOrDefault();
+			if(activeTrack == null)
+			{
+				return;
+			}
+
+			var (origStart, origEnd) = _dragState.Value.OriginalEventTimes;
+			var precedingEvents = activeTrack.Events.Where(ev => ev.EndTimeSeconds < origStart);
+			var precedingEventEnd = precedingEvents.Any() ? precedingEvents.Max(ev => ev.EndTimeSeconds) : 0;
+			var succeedingEvents = activeTrack.Events.Where(ev => ev.StartTimeSeconds > origEnd);
+			var succeedingEventStart = succeedingEvents.Any() ? succeedingEvents.Min(ev => ev.StartTimeSeconds) : double.MaxValue;
+			var minEventSize = 0.05;
+			var ev = _dragState.Value.Event;
+
+			switch(_dragState.Value.Type)
+			{
+				case DragType.MoveStart:
+					{
+						var dragPos = GetDragPos(matrix, time, precedingEventEnd, origEnd - minEventSize, origStart);
+						ev.SetTiming(new TimeSpanTimecode(dragPos), ev.EndTime);
+					}
+					break;
+				case DragType.MoveEnd:
+					{
+						var dragPos = GetDragPos(matrix, time, origStart + minEventSize, succeedingEventStart, origEnd);
+						ev.SetTiming(ev.StartTime, new TimeSpanTimecode(dragPos));
+					}
+					break;
+				case DragType.MoveEvent:
+					{
+						// time is relative to where we started to drag from
+						var timeOffset = time - (_dragStartPoint?.X ?? 0) / PIXELS_PER_SECOND;
+						var curTime = origStart + timeOffset;
+						var dragPos = GetDragPos(matrix, curTime, precedingEventEnd, succeedingEventStart - ev.LengthSeconds, origStart);
+						ev.SetTiming(new TimeSpanTimecode(dragPos), new TimeSpanTimecode(dragPos + ev.LengthSeconds));
+					}
+					break;
+			}
+		}
+
+		private double GetDragPos(SKMatrix matrix, double curTime, double minTime, double maxTime, double secondSnap)
+		{
+			var curX = matrix.MapPoint(new SKPoint((float)curTime * PIXELS_PER_SECOND, 0)).X;
+			var minX = matrix.MapPoint(new SKPoint((float)minTime * PIXELS_PER_SECOND, 0)).X;
+			var maxX = matrix.MapPoint(new SKPoint((float)maxTime * PIXELS_PER_SECOND, 0)).X;
+			var secondSnapX = matrix.MapPoint(new SKPoint((float)secondSnap * PIXELS_PER_SECOND, 0)).X;
+
+			if(curX < minX + SNAP_WIDTH)
+			{
+				return minTime;
+			}
+			else if(Math.Abs(curX - secondSnapX) < SNAP_WIDTH / 2)
+			{
+				return secondSnap;
+			}
+			else if(curX > maxX)
+			{
+				return maxTime;
+			}
+
+			return curTime;
 		}
 
 		/// <summary>
@@ -280,6 +482,28 @@ namespace KaraokeStudio.Timeline
 			RedrawCanvas();
 		}
 
+		private SKRect DrawEvent(SKCanvas canvas, int trackIndex, KaraokeEvent ev)
+		{
+			var trackYPos = trackIndex * TRACK_HEIGHT;
+
+			var eventRect = new SKRect(
+				PIXELS_PER_SECOND * (float)ev.StartTimeSeconds,
+				trackYPos,
+				PIXELS_PER_SECOND * (float)ev.EndTimeSeconds,
+				trackYPos + TRACK_HEIGHT - 2.0f
+			);
+
+			if (!_eventTypePaints.TryGetValue(ev.Type, out var paint))
+			{
+				paint = _highlightPaint;
+			}
+
+			canvas.DrawRect(eventRect, paint);
+			canvas.DrawRect(new SKRect(eventRect.Left, eventRect.Top + eventRect.Height - 1, eventRect.Right, eventRect.Bottom), _shadowPaint);
+			canvas.DrawRect(eventRect, _strokePaint);
+			return eventRect;
+		}
+
 		private void RedrawCanvas()
 		{
 			var canvas = _pictureRecorder.BeginRecording(new SKRect(0, 0, _size.Width, _size.Height));
@@ -299,7 +523,6 @@ namespace KaraokeStudio.Timeline
 				_clickableItems = new ClickableItem[projectTracks.Length][];
 			}
 
-			var trackYPos = 0.0f;
 			for (var i = 0; i < projectTracks.Length; i++)
 			{
 				var events = projectTracks[i].Events;
@@ -315,37 +538,28 @@ namespace KaraokeStudio.Timeline
 				for (var j = 0; j < events.Count; j++)
 				{
 					var ev = events[j];
+					if(_isDragging && _dragState != null && _dragState.Value.Event.Id == ev.Id)
+					{
+						// skip event being dragged - it's rendered over the canvas
+						continue;
+					}
 					_events[ev.Id] = ev;
 
-					var eventRect = new SKRect(
-						PIXELS_PER_SECOND * (float)ev.StartTimeSeconds,
-						trackYPos,
-						PIXELS_PER_SECOND * (float)ev.EndTimeSeconds,
-						trackYPos + TRACK_HEIGHT - 2.0f
-					);
-
-					if (!_eventTypePaints.TryGetValue(ev.Type, out var paint))
-					{
-						paint = _highlightPaint;
-					}
-
-					canvas.DrawRect(eventRect, paint);
-					canvas.DrawRect(new SKRect(eventRect.Left, eventRect.Top + eventRect.Height - 1, eventRect.Right, eventRect.Bottom), _shadowPaint);
-					canvas.DrawRect(eventRect, _strokePaint);
+					var eventRect = DrawEvent(canvas, i, ev);
 
 					items[j] = new ClickableItem()
 					{
 						Rect = eventRect,
-						EventId = ev.Id
+						EventId = ev.Id,
+						TrackIndex = i
 					};
 
 					_eventClickableItems[ev.Id] = items[j];
 				}
 
 				// draw border
-				var borderY = trackYPos + TRACK_HEIGHT;
+				var borderY = (i + 1) * TRACK_HEIGHT;
 				canvas.DrawLine(new SKPoint(0, borderY), new SKPoint(_size.Width, borderY), _borderPaint);
-				trackYPos += TRACK_HEIGHT;
 			}
 
 			_picture = _pictureRecorder.EndRecording();
@@ -415,10 +629,31 @@ namespace KaraokeStudio.Timeline
 			}
 		}
 
+		private struct DragState
+		{
+			/// <summary>
+			/// The event we're currently dragging.
+			/// </summary>
+			public KaraokeEvent Event;
+
+			public DragType Type;
+
+			public (double Start, double End) OriginalEventTimes;
+			public int TrackIndex;
+		}
+
+		private enum DragType
+		{
+			MoveStart,
+			MoveEnd,
+			MoveEvent
+		}
+
 		private struct ClickableItem
 		{
 			public int EventId;
 			public SKRect Rect;
+			public int TrackIndex;
 		}
 	}
 }

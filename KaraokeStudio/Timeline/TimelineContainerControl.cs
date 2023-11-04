@@ -13,6 +13,11 @@ namespace KaraokeStudio.Timeline
 		/// </summary>
 		public event Action<KaraokeTrack>? OnTrackSettingsChanged;
 
+		/// <summary>
+		/// Called when a track has an event change.
+		/// </summary>
+		public event Action<KaraokeTrack>? OnTrackEventsChanged;
+
 		private int _selectedTrackId = -1;
 		private KaraokeProject? _currentProject;
 		private List<TrackHeaderControl> _trackHeaders = new List<TrackHeaderControl>();
@@ -26,6 +31,7 @@ namespace KaraokeStudio.Timeline
 
 			SelectionManager.OnSelectedTracksChanged += OnSelectedTracksChanged;
 			timeline.OnTrackPositioningChanged += timeline_OnTrackPositioningChanged;
+			timeline.OnTrackEventsChanged += Timeline_OnTrackEventsChanged;
 		}
 
 		~TimelineContainerControl()
@@ -109,6 +115,11 @@ namespace KaraokeStudio.Timeline
 			}
 
 			SelectionManager.Select(headerControl.Track, !ModifierKeys.HasFlag(Keys.Shift));
+		}
+
+		private void Timeline_OnTrackEventsChanged(KaraokeTrack obj)
+		{
+			OnTrackEventsChanged?.Invoke(obj);
 		}
 
 		private void RepositionTracks()

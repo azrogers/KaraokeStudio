@@ -43,7 +43,10 @@ namespace KaraokeStudio
 			SelectionManager.OnSelectedEventsChanged += OnEventSelectionChanged;
 			SelectionManager.OnSelectedTracksChanged += OnTrackSelectionChanged;
 
+			UndoHandler.OnUndoItemsChanged += OnUndoItemsChanged;
+
 			timelineContainer.OnTrackSettingsChanged += OnTrackSettingsChanged;
+			timelineContainer.OnTrackEventsChanged += OnTrackEventsChanged;
 
 			// handles the project itself
 			_projectHandler = new ProjectFormHandler();
@@ -97,10 +100,20 @@ namespace KaraokeStudio
 
 		private void OnSyncDataApplied(KaraokeTrack obj)
 		{
+			UndoHandler.Clear();
 			_projectHandler.UpdateEvents(obj);
 			video.OnProjectEventsChanged(_projectHandler.Project);
 			timelineContainer.OnProjectEventsChanged(_projectHandler.Project);
 			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
+		}
+
+		private void OnTrackEventsChanged(KaraokeTrack obj)
+		{
+			_projectHandler.UpdateEvents(obj);
+			video.OnProjectEventsChanged(_projectHandler.Project);
+			timelineContainer.OnProjectEventsChanged(_projectHandler.Project);
+			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
+			_syncForm.OnProjectEventsChanged(_projectHandler.Project);
 		}
 
 		private bool OnProjectWillChange()
@@ -122,6 +135,7 @@ namespace KaraokeStudio
 
 		private void OnLyricsEventsChanged((KaraokeTrack Track, IEnumerable<KaraokeEvent> NewEvents) obj)
 		{
+			UndoHandler.Clear();
 			SelectionManager.Deselect();
 			_projectHandler.SetEvents(obj.Track, obj.NewEvents);
 			video.OnProjectEventsChanged(_projectHandler.Project);
@@ -132,10 +146,16 @@ namespace KaraokeStudio
 
 		private void OnTrackChanged(KaraokeTrack obj)
 		{
+			UndoHandler.Clear();
 			SelectionManager.Deselect();
 			video.OnProjectEventsChanged(_projectHandler.Project);
 			timelineContainer.OnProjectEventsChanged(_projectHandler.Project);
 			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
+		}
+
+		private void OnUndoItemsChanged()
+		{
+			UpdateTitleAndMenu();
 		}
 
 		private void OnPendingStateChanged(bool obj)
@@ -147,6 +167,7 @@ namespace KaraokeStudio
 		{
 			UpdateTitleAndMenu();
 
+			UndoHandler.Clear();
 			video.OnProjectChanged(project);
 			_styleForm.OnProjectChanged(project);
 			timelineContainer.OnProjectChanged(project);
@@ -225,11 +246,24 @@ namespace KaraokeStudio
 			_consoleForm.Show();
 		}
 
+		private void undoToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			UndoHandler.Undo();
+		}
+
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			if (!_projectHandler.AlertPendingChanges())
 			{
 				e.Cancel = true;
+			}
+		}
+
+		private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+		{
+			if (_projectHandler.Project != null)
+			{
+				_projectHandler.Project.PlaybackState.Cleanup();
 			}
 		}
 		#endregion
@@ -267,14 +301,9 @@ namespace KaraokeStudio
 
 			syncLyricsToolStripMenuItem.Enabled = SelectionManager.SelectedTracks.Count() == 1 && SelectionManager.SelectedTracks.First().Type == KaraokeTrackType.Lyrics;
 			removeTrackToolStripMenuItem.Enabled = SelectionManager.SelectedTracks.Any();
-		}
 
-		private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
-		{
-			if (_projectHandler.Project != null)
-			{
-				_projectHandler.Project.PlaybackState.Cleanup();
-			}
+			undoToolStripMenuItem.Enabled = UndoHandler.CurrentItem != null;
+			undoToolStripMenuItem.Text = UndoHandler.CurrentItem == null ? "Undo" : "Undo " + UndoHandler.CurrentItem.Value.Action;
 		}
 	}
 }

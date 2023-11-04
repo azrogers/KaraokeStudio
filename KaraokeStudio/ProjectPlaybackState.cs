@@ -81,6 +81,12 @@ namespace KaraokeStudio
 			AppSettings.Instance.OnVolumeChanged -= OnVolumeChanged;
 		}
 
+		public void UpdateProjectLength()
+		{
+			_position = Math.Min(_position, _project.Length.TotalSeconds);
+			OnPositionChanged?.Invoke(_position);
+		}
+
 		/// <summary>
 		/// Cleanup objects for a clean exit.
 		/// </summary>

@@ -65,6 +65,7 @@ namespace KaraokeStudio.FormHandlers
 		public void SetEvents(KaraokeTrack track, IEnumerable<KaraokeEvent> events)
 		{
 			track.ReplaceEvents(events);
+			RecalculateProjectLength();
 			_loadedProject?.UpdateMixer();
 			IsPendingChanges = true;
 		}
@@ -72,8 +73,21 @@ namespace KaraokeStudio.FormHandlers
 		public void UpdateEvents(KaraokeTrack track)
 		{
 			track.UpdateEvents();
+			RecalculateProjectLength();
 			_loadedProject?.UpdateMixer();
 			IsPendingChanges = true;
+		}
+
+		public void RecalculateProjectLength()
+		{
+			if(_loadedProject == null)
+			{
+				return;
+			}
+
+			var lengthSeconds = _loadedProject.Tracks.Any() ? _loadedProject.Tracks.Max(t => t.Events.Any() ? t.Events.Max(e => e.EndTimeSeconds) : 0) : 0;
+			_loadedProject.Length = TimeSpan.FromSeconds(lengthSeconds);
+			_loadedProject.PlaybackState.UpdateProjectLength();
 		}
 
 		public void UpdateTrackSettings(KaraokeTrack track)

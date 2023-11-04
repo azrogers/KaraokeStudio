@@ -44,8 +44,10 @@ namespace KaraokeStudio
 			this.lRCFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.projectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.editStyleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+			this.undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.trackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.addTrackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.addAudioTrackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -72,7 +74,7 @@ namespace KaraokeStudio
 			// 
 			this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.projectToolStripMenuItem,
+            this.editToolStripMenuItem,
             this.trackToolStripMenuItem,
             this.eventToolStripMenuItem,
             this.debugToolStripMenuItem});
@@ -185,20 +187,35 @@ namespace KaraokeStudio
 			this.exitToolStripMenuItem.Text = "Exit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
 			// 
-			// projectToolStripMenuItem
+			// editToolStripMenuItem
 			// 
-			this.projectToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.editStyleToolStripMenuItem});
-			this.projectToolStripMenuItem.Name = "projectToolStripMenuItem";
-			this.projectToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
-			this.projectToolStripMenuItem.Text = "Project";
+			this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.editStyleToolStripMenuItem,
+            this.toolStripSeparator3,
+            this.undoToolStripMenuItem});
+			this.editToolStripMenuItem.Name = "editToolStripMenuItem";
+			this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
+			this.editToolStripMenuItem.Text = "Edit";
 			// 
 			// editStyleToolStripMenuItem
 			// 
 			this.editStyleToolStripMenuItem.Name = "editStyleToolStripMenuItem";
-			this.editStyleToolStripMenuItem.Size = new System.Drawing.Size(108, 22);
+			this.editStyleToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.editStyleToolStripMenuItem.Text = "Style...";
 			this.editStyleToolStripMenuItem.Click += new System.EventHandler(this.editStyleToolStripMenuItem_Click);
+			// 
+			// toolStripSeparator3
+			// 
+			this.toolStripSeparator3.Name = "toolStripSeparator3";
+			this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
+			// 
+			// undoToolStripMenuItem
+			// 
+			this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
+			this.undoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
+			this.undoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.undoToolStripMenuItem.Text = "Undo";
+			this.undoToolStripMenuItem.Click += new System.EventHandler(this.undoToolStripMenuItem_Click);
 			// 
 			// trackToolStripMenuItem
 			// 
@@ -354,7 +371,7 @@ namespace KaraokeStudio
 		private ToolStripSeparator toolStripSeparator2;
 		private ToolStripMenuItem exitToolStripMenuItem;
 		private ToolStripMenuItem saveAsToolStripMenuItem;
-		private ToolStripMenuItem projectToolStripMenuItem;
+		private ToolStripMenuItem editToolStripMenuItem;
 		private ToolStripMenuItem editStyleToolStripMenuItem;
 		private ToolStripMenuItem openRecentToolStripMenuItem;
 		private Video.KaraokeVideoControl video;
@@ -369,5 +386,7 @@ namespace KaraokeStudio
 		private ToolStripMenuItem removeTrackToolStripMenuItem;
 		private ToolStripMenuItem addAudioTrackToolStripMenuItem;
 		private TimelineContainerControl timelineContainer;
+		private ToolStripSeparator toolStripSeparator3;
+		private ToolStripMenuItem undoToolStripMenuItem;
 	}
 }

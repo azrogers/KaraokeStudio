@@ -73,6 +73,9 @@ namespace KaraokeLib.Audio
 				relevantClipVolumes.AddRange(foundClips.Select(f => settings.Volume));
 			}
 
+			var currentPos = _position;
+			Position += count;
+
 			for (var i = 0; i < count; i++)
 			{
 				buffer[offset + i] = 0;
@@ -97,7 +100,7 @@ namespace KaraokeLib.Audio
 					streamBuffer[j] = 0;
 				}
 
-				var streamPosition = _position - clip.StartTimeSeconds + (clip.Settings?.Offset ?? 0);
+				var streamPosition = currentPos - clip.StartTimeSeconds + (clip.Settings?.Offset ?? 0);
 				// offset from the start of the audio file
 				stream.Position = Math.Max(0, (long)(streamPosition * stream.WaveFormat.AverageBytesPerSecond));
 				// offset from the start of the buffer
@@ -129,8 +132,6 @@ namespace KaraokeLib.Audio
 
 				buffers[i] = outBuffer;
 			}
-
-			Position += count;
 
 			var readers = new BinaryReader[clips.Length];
 			for (var j = 0; j < clips.Length; j++)

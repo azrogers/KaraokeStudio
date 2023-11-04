@@ -18,6 +18,8 @@ namespace KaraokeStudio.Timeline
 	public partial class TimelineControl : UserControl
 	{
 		private const float PADDING_TOP = 5.0f;
+		// width of the playhead for clicking and dragging to scrub
+		private const float SCRUB_AREA = 15.0f;
 
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
@@ -42,6 +44,11 @@ namespace KaraokeStudio.Timeline
 		/// </summary>
 		public event Action? OnTrackPositioningChanged;
 
+		/// <summary>
+		/// Called when an event on the timeline has changed (moved, for example)
+		/// </summary>
+		public event Action<KaraokeTrack>? OnTrackEventsChanged;
+
 		public TimelineControl()
 		{
 			InitializeComponent();
@@ -53,6 +60,7 @@ namespace KaraokeStudio.Timeline
 			_tracks = new KaraokeTrack[0];
 
 			_timelineCanvas = new TimelineCanvas();
+			_timelineCanvas.OnEventChanged += _timelineCanvas_OnEventChanged;
 
 			_backgroundColor = VisualStyle.NeutralDarkColor.ToSKColor();
 
@@ -67,6 +75,12 @@ namespace KaraokeStudio.Timeline
 
 			horizScroll.Enabled = false;
 			verticalScroll.Enabled = false;
+		}
+
+		private void _timelineCanvas_OnEventChanged(KaraokeLib.Events.KaraokeEvent obj)
+		{
+			var track = _tracks.First(t => t.Events.Any(ev => ev.Id == obj.Id));
+			OnTrackEventsChanged?.Invoke(track);
 		}
 
 		~TimelineControl()
@@ -152,17 +166,6 @@ namespace KaraokeStudio.Timeline
 			return result;
 		}
 
-		private bool HandleSelection(Point pos)
-		{
-			if (!SelectEventAtPosition(pos))
-			{
-				return false;
-			}
-
-			skiaControl.Invalidate();
-			return true;
-		}
-
 		/// <summary>
 		/// Returns the XY position in canvas space of the (0, 0) coordinate in control space.
 		/// </summary>
@@ -237,12 +240,6 @@ namespace KaraokeStudio.Timeline
 			_timelineCanvas.CopyContents(canvas, matrix, visibleRect, selectionRect);
 
 			canvas.RestoreToCount(savePoint);
-
-			// draw selection rect, if any
-			if(_uiState == TimelineUIState.Multiselect)
-			{
-				
-			}
 
 			var playheadXPos = GetPlaybackHeadXPos();
 
@@ -327,8 +324,11 @@ namespace KaraokeStudio.Timeline
 
 		private void HandleClick(Point location)
 		{
-			SelectionManager.Deselect();
-			SeekToLocation(location);
+			if (!SelectEventAtPosition(location))
+			{
+				SelectionManager.Deselect();
+				SeekToLocation(location);
+			}
 		}
 
 		#region UI Events
@@ -376,48 +376,84 @@ namespace KaraokeStudio.Timeline
 
 		private void skiaControl_MouseDown(object sender, MouseEventArgs e)
 		{
-			_uiState = TimelineUIState.Idle;
+			_uiState = TimelineUIState.Pending;
 			_lastMouseDownEventArgs = e;
 			_mouseTimer.Stop();
-			_awaitingMouseTimer = false;
-			if (!HandleSelection(e.Location))
+
+			var playheadXPos = GetPlaybackHeadXPos();
+			var playheadRect = new SKRect(playheadXPos - SCRUB_AREA / 2.0f, 0, playheadXPos + SCRUB_AREA / 2.0f, ClientSize.Height);
+			if (playheadRect.Contains(new SKPoint(e.X, e.Y)))
+			{
+				_uiState = TimelineUIState.Scrubbing;
+			}
+			else
 			{
 				_selectionStartPoint = e.Location;
-				_uiState = TimelineUIState.Multiselect;
-				_mouseTimer.Start();
 				_awaitingMouseTimer = true;
-				skiaControl.Invalidate();
+				_mouseTimer.Start();
 			}
+
+			skiaControl.Invalidate();
 		}
 
 		private void skiaControl_MouseUp(object sender, MouseEventArgs e)
 		{
-			if (_uiState == TimelineUIState.Multiselect)
+			if (_uiState == TimelineUIState.Pending)
 			{
 				var dist = new SKPoint(e.X - _selectionStartPoint.X, e.Y - _selectionStartPoint.Y).Length;
-				if(dist < 1.5)
+				if (dist < 1.5)
 				{
 					HandleClick(e.Location);
 				}
-				else
+			}
+			else if(_uiState == TimelineUIState.Multiselect)
+			{
+				_timelineCanvas.SelectEventsInRect(CreateInverseMatrix().MapRect(GetCurrentSelectionRect(e.Location)));
+			}
+			else if(_uiState == TimelineUIState.Dragging)
+			{
+				var dragEv = _timelineCanvas.DragEvent;
+
+				_timelineCanvas.EndDrag();
+				if (dragEv != null)
 				{
-					_timelineCanvas.SelectEventsInRect(CreateInverseMatrix().MapRect(GetCurrentSelectionRect(e.Location)));
+					var track = _tracks.Where(t => t.Events.Any(ev => ev.Id == dragEv.Id)).First();
+					OnTrackEventsChanged?.Invoke(track);
 				}
 			}
 
 			_uiState = TimelineUIState.Idle;
+			_awaitingMouseTimer = false;
 			skiaControl.Invalidate();
 		}
 
 		private void skiaControl_MouseMove(object sender, MouseEventArgs e)
 		{
 			_lastMouseMoveEventArgs = e;
+			if (_uiState == TimelineUIState.Pending)
+			{
+				var dist = new SKPoint(e.X - _selectionStartPoint.X, e.Y - _selectionStartPoint.Y).Length;
+				if (dist > 1.5)
+				{
+					_uiState =
+						_timelineCanvas.MaybeStartDragging(TranslatePointToCanvas(e.Location)) ?
+						TimelineUIState.Dragging :
+						TimelineUIState.Multiselect;
+				}
+			}
+
 			_awaitingMouseTimer = false;
+
+			_timelineCanvas.UpdateMousePos(
+				CreateMatrix(),
+				new SKPoint(e.X, e.Y),
+				_uiState == TimelineUIState.Idle || _uiState == TimelineUIState.Pending);
+
 			if (_uiState == TimelineUIState.Scrubbing)
 			{
 				SeekToLocation(e.Location);
 			}
-			else if(_uiState == TimelineUIState.Multiselect)
+			else if (_uiState == TimelineUIState.Multiselect || _uiState == TimelineUIState.Dragging)
 			{
 				skiaControl.Invalidate();
 			}
@@ -432,7 +468,6 @@ namespace KaraokeStudio.Timeline
 			{
 				HandleClick(_lastMouseDownEventArgs?.Location ?? Point.Empty);
 			}
-			_awaitingMouseTimer = false;
 		}
 		#endregion
 
@@ -440,10 +475,14 @@ namespace KaraokeStudio.Timeline
 		{
 			// nothing special is happening
 			Idle,
+			// we don't know what we're doing yet
+			Pending,
 			// we're currently box selecting
 			Multiselect,
 			// we're currently scrubbing the timeline
-			Scrubbing
+			Scrubbing,
+			// we're currently dragging an event
+			Dragging
 		}
 	}
 }

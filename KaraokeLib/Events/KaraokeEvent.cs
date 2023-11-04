@@ -126,7 +126,7 @@ namespace KaraokeLib.Events
 		/// <summary>
 		/// Sets the start and end times of this event.
 		/// </summary>
-		public void SetTiming(IEventTimecode start, IEventTimecode end)
+		public virtual void SetTiming(IEventTimecode start, IEventTimecode end)
 		{
 			_startTimecode = start;
 			_endTimecode = end;
