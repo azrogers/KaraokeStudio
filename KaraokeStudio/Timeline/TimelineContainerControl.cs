@@ -24,12 +24,13 @@ namespace KaraokeStudio.Timeline
 			headersContainer.SuspendLayout();
 			BackColor = VisualStyle.NeutralDarkColor;
 
+			SelectionManager.OnSelectedTracksChanged += OnSelectedTracksChanged;
 			timeline.OnTrackPositioningChanged += timeline_OnTrackPositioningChanged;
 		}
 
 		~TimelineContainerControl()
 		{
-			SelectionManager.OnSelectedTracksChanged += OnSelectedTracksChanged;
+			SelectionManager.OnSelectedTracksChanged -= OnSelectedTracksChanged;
 		}
 
 		private void OnSelectedTracksChanged()

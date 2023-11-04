@@ -27,11 +27,15 @@ namespace KaraokeStudio.Timeline
 
 		private TimelineCanvas _timelineCanvas;
 		private KaraokeProject? _currentProject;
+		private MouseEventArgs? _lastMouseDownEventArgs;
+		private MouseEventArgs? _lastMouseMoveEventArgs;
 		private KaraokeTrack[] _tracks;
 		private float _horizZoomFactor = 1.0f;
 		private float _verticalZoomFactor = 1.0f;
-		private bool _mouseDown = false;
+		private Point _selectionStartPoint = Point.Empty;
+		private TimelineUIState _uiState = TimelineUIState.Idle;
 		private System.Windows.Forms.Timer _mouseTimer;
+		private bool _awaitingMouseTimer = false;
 
 		/// <summary>
 		/// Called when the positioning of tracks has changed.
@@ -225,10 +229,20 @@ namespace KaraokeStudio.Timeline
 			var matrix = CreateMatrix();
 
 			var clientRect = GetViewportClientRect();
+			SKRect? selectionRect =
+				_uiState == TimelineUIState.Multiselect ?
+				CreateInverseMatrix().MapRect(GetCurrentSelectionRect(_lastMouseMoveEventArgs?.Location ?? _lastMouseDownEventArgs?.Location ?? Point.Empty)) :
+				null;
 			var visibleRect = CreateInverseMatrix().MapRect(new SKRect(clientRect.Left, clientRect.Top, clientRect.Right, clientRect.Bottom));
-			_timelineCanvas.CopyContents(canvas, matrix, visibleRect);
+			_timelineCanvas.CopyContents(canvas, matrix, visibleRect, selectionRect);
 
 			canvas.RestoreToCount(savePoint);
+
+			// draw selection rect, if any
+			if(_uiState == TimelineUIState.Multiselect)
+			{
+				
+			}
 
 			var playheadXPos = GetPlaybackHeadXPos();
 
@@ -302,6 +316,21 @@ namespace KaraokeStudio.Timeline
 			}
 		}
 
+		private SKRect GetCurrentSelectionRect(Point mousePos)
+		{
+			return new SKRect(
+				Math.Min(_selectionStartPoint.X, mousePos.X),
+				Math.Min(_selectionStartPoint.Y, mousePos.Y),
+				Math.Max(_selectionStartPoint.X, mousePos.X),
+				Math.Max(_selectionStartPoint.Y, mousePos.Y));
+		}
+
+		private void HandleClick(Point location)
+		{
+			SelectionManager.Deselect();
+			SeekToLocation(location);
+		}
+
 		#region UI Events
 		private void skiaControl_PaintSurface(object sender, SkiaSharp.Views.Desktop.SKPaintGLSurfaceEventArgs e)
 		{
@@ -347,31 +376,50 @@ namespace KaraokeStudio.Timeline
 
 		private void skiaControl_MouseDown(object sender, MouseEventArgs e)
 		{
+			_uiState = TimelineUIState.Idle;
+			_lastMouseDownEventArgs = e;
 			_mouseTimer.Stop();
-			_mouseDown = !HandleSelection(e.Location);
-
-			// failed to get selection, deselect
-			if (_mouseDown)
+			_awaitingMouseTimer = false;
+			if (!HandleSelection(e.Location))
 			{
+				_selectionStartPoint = e.Location;
+				_uiState = TimelineUIState.Multiselect;
 				_mouseTimer.Start();
-			}
-
-			if (_mouseDown)
-			{
-				SeekToLocation(e.Location);
+				_awaitingMouseTimer = true;
+				skiaControl.Invalidate();
 			}
 		}
 
 		private void skiaControl_MouseUp(object sender, MouseEventArgs e)
 		{
-			_mouseDown = false;
+			if (_uiState == TimelineUIState.Multiselect)
+			{
+				var dist = new SKPoint(e.X - _selectionStartPoint.X, e.Y - _selectionStartPoint.Y).Length;
+				if(dist < 1.5)
+				{
+					HandleClick(e.Location);
+				}
+				else
+				{
+					_timelineCanvas.SelectEventsInRect(CreateInverseMatrix().MapRect(GetCurrentSelectionRect(e.Location)));
+				}
+			}
+
+			_uiState = TimelineUIState.Idle;
+			skiaControl.Invalidate();
 		}
 
 		private void skiaControl_MouseMove(object sender, MouseEventArgs e)
 		{
-			if (_mouseDown)
+			_lastMouseMoveEventArgs = e;
+			_awaitingMouseTimer = false;
+			if (_uiState == TimelineUIState.Scrubbing)
 			{
 				SeekToLocation(e.Location);
+			}
+			else if(_uiState == TimelineUIState.Multiselect)
+			{
+				skiaControl.Invalidate();
 			}
 		}
 
@@ -379,11 +427,23 @@ namespace KaraokeStudio.Timeline
 		{
 			_mouseTimer.Stop();
 
-			if (!_mouseDown)
+			// moused up too quickly, treat it as just a click on nothing
+			if (_awaitingMouseTimer && _uiState == TimelineUIState.Idle)
 			{
-				SelectionManager.Deselect();
+				HandleClick(_lastMouseDownEventArgs?.Location ?? Point.Empty);
 			}
+			_awaitingMouseTimer = false;
 		}
 		#endregion
+
+		private enum TimelineUIState
+		{
+			// nothing special is happening
+			Idle,
+			// we're currently box selecting
+			Multiselect,
+			// we're currently scrubbing the timeline
+			Scrubbing
+		}
 	}
 }

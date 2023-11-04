@@ -89,13 +89,18 @@ namespace KaraokeStudio.Util
         /// </summary>
         public static SKColor ToSKColor(this Color c) => new SKColor(c.R, c.G, c.B);
 
-        /// <summary>
-        /// Performs a linear interpretation between two values.
-        /// </summary>
-        /// <param name="a">The start value.</param>
-        /// <param name="b">The end value.</param>
-        /// <param name="t">The normalized position between start and end.</param>
-        public static double Lerp(double a, double b, double t)
+		/// <summary>
+		/// Converts a <see cref="Color"/> to a Skia color.
+		/// </summary>
+		public static SKColor ToSKColor(this Color c, float alpha) => new SKColor(c.R, c.G, c.B, (byte)(alpha * 0xff));
+
+		/// <summary>
+		/// Performs a linear interpretation between two values.
+		/// </summary>
+		/// <param name="a">The start value.</param>
+		/// <param name="b">The end value.</param>
+		/// <param name="t">The normalized position between start and end.</param>
+		public static double Lerp(double a, double b, double t)
         {
             return (b - a) * t + a;
         }

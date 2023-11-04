@@ -28,6 +28,7 @@ namespace KaraokeStudio.Timeline
 		private SKPaint _highlightPaint;
 		private SKPaint _strokePaint;
 		private SKPaint _selectedStrokePaint;
+		private SKPaint _selectionBoxStrokePaint;
 
 		private SKFont _font;
 		private float _ellipsisWidth;
@@ -69,6 +70,14 @@ namespace KaraokeStudio.Timeline
 				Color = VisualStyle.NeutralLightColor.ToSKColor(),
 				IsStroke = true,
 				StrokeWidth = 2,
+				StrokeJoin = SKStrokeJoin.Miter,
+				IsAntialias = true
+			};
+			_selectionBoxStrokePaint = new SKPaint()
+			{
+				Color = VisualStyle.NeutralLightColor.ToSKColor(),
+				IsStroke = true,
+				StrokeWidth = 1,
 				IsAntialias = true
 			};
 
@@ -93,23 +102,39 @@ namespace KaraokeStudio.Timeline
 		/// <param name="destination">The canvas to copy onto.</param>
 		/// <param name="matrix">The matrix to use to zoom and pan the canvas.</param>
 		/// <param name="visibleRect">The rect in canvas space that's visible in the control.</param>
-		public void CopyContents(SKCanvas destination, SKMatrix matrix, SKRect visibleRect)
+		public void CopyContents(SKCanvas destination, SKMatrix matrix, SKRect visibleRect, SKRect? selectionRect)
 		{
 			if (_picture != null)
 			{
 				destination.DrawPicture(_picture, ref matrix);
 			}
 
+			var selectedEvents = SelectionManager.SelectedEvents;
+			if(selectionRect != null)
+			{
+				// include items currently being box selected if any
+				var pendingSelectedItems = 
+					_eventClickableItems.Values
+					.Where(item => item.Rect.IntersectsWith(selectionRect.Value))
+					.Select(item => _events[item.EventId]);
+				selectedEvents = selectedEvents.Concat(pendingSelectedItems);
+			}
+
 			// draw borders for selected events
-			foreach(var ev in SelectionManager.SelectedEvents)
+			foreach(var ev in selectedEvents)
 			{
 				var item = _eventClickableItems[ev.Id];
 				var rect = matrix.MapRect(item.Rect);
 
+				// offset by stroke width so the stroke is inset
+				var offset = _selectedStrokePaint.StrokeWidth;
+
 				// if the rect gets too big it'll get glitchy drawing -
 				// so only draw the visible part of the rect (plus a bit of padding so the border won't show)
-				rect.Left = Math.Max(rect.Left, destination.DeviceClipBounds.Left - 20);
-				rect.Right = Math.Min(rect.Right, destination.DeviceClipBounds.Right + 20);
+				rect.Left = Math.Max(rect.Left + offset, destination.DeviceClipBounds.Left - 20);
+				rect.Right = Math.Min(rect.Right - offset, destination.DeviceClipBounds.Right + 20);
+				rect.Top += offset;
+				rect.Bottom -= offset;
 
 				destination.Save();
 				destination.DrawRect(rect, _selectedStrokePaint);
@@ -134,6 +159,13 @@ namespace KaraokeStudio.Timeline
 					}
 				}
 			}
+
+			if(selectionRect != null)
+			{
+				destination.Save();
+				destination.DrawRect(matrix.MapRect(selectionRect.Value), _selectionBoxStrokePaint);
+				destination.Restore();
+			}
 		}
 
 		/// <summary>
@@ -149,6 +181,27 @@ namespace KaraokeStudio.Timeline
 				SelectionManager.Select(_events[ev.Value.EventId], !isShiftDown);
 			}
 			return ev != null;
+		}
+
+		public bool SelectEventsInRect(SKRect rect)
+		{
+			if(!Control.ModifierKeys.HasFlag(Keys.Shift))
+			{
+				SelectionManager.Deselect();
+			}
+
+			var anySelected = false;
+
+			foreach(var (id, item) in _eventClickableItems)
+			{
+				if (item.Rect.IntersectsWith(rect))
+				{
+					anySelected = true;
+					SelectionManager.Select(_events[id], false);
+				}
+			}
+
+			return anySelected;
 		}
 
 		/// <summary>
@@ -308,7 +361,7 @@ namespace KaraokeStudio.Timeline
 				return;
 			}
 
-			var padding = 3.0f;
+			var padding = 5.0f;
 			var paddedRect = new SKRect(
 				rect.Left + padding,
 				rect.Top + padding,
