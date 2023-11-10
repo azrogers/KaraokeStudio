@@ -1,25 +1,11 @@
 ﻿using KaraokeLib.Config;
 using KaraokeLib.Util;
-using Melanchall.DryWetMidi.Tools;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeLib.Video
 {
-    public class VideoStyle
+	public class VideoStyle
 	{
-		private SKFont _font;
-		private KaraokeConfig _config;
-
-		private SKPaint _normalPaint;
-		private SKPaint _highlightedPaint;
-		private SKPaint _strokePaint;
-		private SKPaint _backgroundPaint;
-
 		public SKFont Font => _font;
 
 		public SKPaint NormalPaint => _normalPaint;
@@ -30,6 +16,17 @@ namespace KaraokeLib.Video
 		public SKPaint BackgroundPaint => _backgroundPaint;
 
 		public float LineHeight { get; private set; }
+
+		private SKFont _font;
+		private KaraokeConfig _config;
+
+		private SKPaint _normalPaint;
+		private SKPaint _highlightedPaint;
+		private SKPaint _strokePaint;
+		private SKPaint _backgroundPaint;
+
+		// buffer used to reduce allocations in GetTextWidth
+		private ushort[] _charBuffer = new ushort[256];
 
 
 		public VideoStyle(KaraokeConfig config)
@@ -76,16 +73,31 @@ namespace KaraokeLib.Video
 		public SKRect GetSafeArea(SKSize size)
 		{
 			return new SKRect(
-				_config.Padding.Left, 
-				_config.Padding.Top, 
-				size.Width - _config.Padding.Right, 
+				_config.Padding.Left,
+				_config.Padding.Top,
+				size.Width - _config.Padding.Right,
 				size.Height - _config.Padding.Bottom
 			);
 		}
 
+		/// <summary>
+		/// Obtains the width of a given span of text in pixels.
+		/// </summary>
+		/// <param name="paint">If specified, this will be the paint used to obtain the text width.</param>
 		public float GetTextWidth(string text, SKPaint? paint = null)
 		{
-			return _font.MeasureText(text.ToCharArray().Select(c => _font.GetGlyph(c)).ToArray(), paint ?? NormalPaint);
+			if (text.Length > _charBuffer.Length)
+			{
+				// extend char buffer
+				_charBuffer = new ushort[Math.Max(_charBuffer.Length * 2, text.Length)];
+			}
+
+			for (var i = 0; i < text.Length; i++)
+			{
+				_charBuffer[i] = _font.GetGlyph(text[i]);
+			}
+
+			return _font.MeasureText(new ReadOnlySpan<ushort>(_charBuffer, 0, text.Length), paint ?? NormalPaint);
 		}
 	}
 }

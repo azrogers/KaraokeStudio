@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
-namespace KaraokeStudio.Config
+﻿namespace KaraokeStudio.Config.Controls
 {
 	public partial class RangeConfigControl : BaseConfigControl
 	{
@@ -23,7 +13,7 @@ namespace KaraokeStudio.Config
 		internal override void UpdateValue(object config)
 		{
 			var val = Field?.GetValue<double>(config);
-			if(val != null)
+			if (val != null)
 			{
 				var valNotNull = val ?? 0;
 				var min = Field?.ConfigRange?.Minimum ?? 0.0;

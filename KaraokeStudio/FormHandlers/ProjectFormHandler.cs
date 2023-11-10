@@ -3,6 +3,7 @@ using KaraokeLib.Config;
 using KaraokeLib.Events;
 using KaraokeLib.Files;
 using KaraokeLib.Tracks;
+using KaraokeStudio.Project;
 using KaraokeStudio.Util;
 using Ookii.Dialogs.WinForms;
 

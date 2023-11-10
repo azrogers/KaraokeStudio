@@ -5,15 +5,17 @@ using KaraokeStudio.Util;
 using KaraokeStudio.Video;
 using KaraokeStudio.LyricsEditor;
 using KaraokeLib.Tracks;
+using KaraokeStudio.Project;
 
 namespace KaraokeStudio
 {
-	public partial class MainForm : Form
+    public partial class MainForm : Form
 	{
 		private ProjectFormHandler _projectHandler;
 		private StyleForm _styleForm;
 		private SyncForm _syncForm;
 		private ConsoleForm _consoleForm;
+		private ExportVideoForm? _exportVideoForm;
 
 		// designer doesn't like handling this one itself so we set it up manually
 		private LyricsEditorControl lyricsEditor;
@@ -174,6 +176,10 @@ namespace KaraokeStudio
 			lyricsEditor.OnProjectChanged(project);
 			_syncForm.Hide();
 			SelectionManager.Deselect();
+			if(_exportVideoForm != null && !_exportVideoForm.IsDisposed)
+			{
+				_exportVideoForm.OnProjectChanged(_projectHandler.Project);
+			}
 		}
 
 		private void OnTrackSelectionChanged()
@@ -304,6 +310,23 @@ namespace KaraokeStudio
 
 			undoToolStripMenuItem.Enabled = UndoHandler.CurrentItem != null;
 			undoToolStripMenuItem.Text = UndoHandler.CurrentItem == null ? "Undo" : "Undo " + UndoHandler.CurrentItem.Value.Action;
+		}
+
+		private void exportVideoToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if(_exportVideoForm != null && _exportVideoForm.Visible)
+			{
+				_exportVideoForm.Focus();
+				return;
+			}
+
+			if(_exportVideoForm == null || _exportVideoForm.IsDisposed)
+			{
+				_exportVideoForm = new ExportVideoForm();
+			}
+
+			_exportVideoForm.OnProjectChanged(_projectHandler.Project);
+			_exportVideoForm.Show();
 		}
 	}
 }

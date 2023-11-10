@@ -1,6 +1,6 @@
 ﻿using KaraokeStudio.Util;
 
-namespace KaraokeStudio.Config
+namespace KaraokeStudio.Config.Controls
 {
 	public partial class EnumConfigControl : BaseConfigControl
 	{

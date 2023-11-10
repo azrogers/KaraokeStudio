@@ -5,6 +5,7 @@ using KaraokeLib.Util;
 using KaraokeLib.Video;
 using KaraokeLib.Video.Elements;
 using KaraokeStudio.LyricsEditor;
+using KaraokeStudio.Project;
 using KaraokeStudio.Util;
 using KaraokeStudio.Video;
 using SkiaSharp;
@@ -12,7 +13,7 @@ using System.Data;
 
 namespace KaraokeStudio
 {
-	public partial class SyncForm : Form
+    public partial class SyncForm : Form
 	{
 		private KaraokeProject? _currentProject;
 		private KaraokeTrack? _lyricsTrack;

@@ -98,7 +98,7 @@ namespace KaraokeLib.Video
 
 				// include a space if this isn't another syllable and we're not at the start of a new line
 				var hasSpace = ev.LinkedId == -1 && currentLineEvents.Any();
-				var textToMeasure = (hasSpace ? " " : "") + ev.GetText(layoutState);
+				var textToMeasure = $"{(hasSpace ? " " : "")}{ev.GetText(layoutState)}";
 				var width = context.Style.GetTextWidth(textToMeasure);
 				if (ev.Type == KaraokeEventType.Lyric && (currentLineWidth + width) <= safeArea.Width)
 				{

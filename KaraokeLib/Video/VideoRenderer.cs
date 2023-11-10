@@ -1,14 +1,8 @@
-﻿using KaraokeLib;
-using KaraokeLib.Util;
+﻿using KaraokeLib.Util;
 using KaraokeLib.Video.Elements;
 using KaraokeLib.Video.Plan;
 using KaraokeLib.Video.Transitions;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeLib.Video
 {
@@ -27,7 +21,7 @@ namespace KaraokeLib.Video
 
 		public void RenderFrame(VideoPlan videoPlan, VideoTimecode videoTimecode, SKCanvas canvas)
 		{
-			canvas.Clear();
+			// we can ignore clearing because we draw over it anyways
 			canvas.DrawRect(
 				new SKRect(0, 0, _context.Size.Width, _context.Size.Height),
 				_context.Style.BackgroundPaint);
@@ -40,34 +34,35 @@ namespace KaraokeLib.Video
 			var elements = videoPlan.GetElementsForFrame(videoTimecode);
 			foreach (var ev in elements)
 			{
-				surface.Canvas.Clear();
-
-				ev.Element.Render(_context, surface.Canvas, posSeconds);
-
 				var startTime = ev.Element.StartTimecode.GetTimeSeconds();
 				var endTime = ev.Element.EndTimecode.GetTimeSeconds();
 
 				// handle transitions if necessary
-				if(
-					posSeconds >= startTime && 
+				if (
+					posSeconds >= startTime &&
 					(startTime + ev.Element.StartTransition.Duration) > posSeconds)
 				{
 					// 0 when starting, 1 when finishing
 					var t = (float)Math.Clamp((posSeconds - startTime) / ev.Element.StartTransition.Duration, 0, 1);
+					surface.Canvas.Clear();
+					ev.Element.Render(_context, surface.Canvas, posSeconds);
 					HandleTransition(ev.Element.StartTransition, ev.Element, surface, canvas, t, true);
 				}
-				else if(
+				else if (
 					posSeconds < endTime &&
 					(endTime - ev.Element.EndTransition.Duration) < posSeconds)
 				{
 					var beforeT = (ev.Element.EndTransition.Duration - (endTime - posSeconds)) / ev.Element.EndTransition.Duration;
 					// 1 when starting, 0 when finishing
 					var t = (float)Math.Clamp(1.0 - beforeT, 0, 1);
+					surface.Canvas.Clear();
+					ev.Element.Render(_context, surface.Canvas, posSeconds);
 					HandleTransition(ev.Element.EndTransition, ev.Element, surface, canvas, t, false);
 				}
 				else
 				{
-					canvas.DrawSurface(surface, SKPoint.Empty);
+					// skip the surface and draw directly to the canvas
+					ev.Element.Render(_context, canvas, posSeconds);
 				}
 			}
 

@@ -1,8 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using KaraokeLib.Config;
+using KaraokeLib.Config.Attributes;
+using Newtonsoft.Json;
 
 namespace KaraokeStudio.Util
 {
-	internal class AppSettings
+	internal class AppSettings : EditableConfig<AppSettings>
 	{
 		private const int MAX_RECENT_FILES = 5;
 
@@ -19,9 +21,11 @@ namespace KaraokeStudio.Util
 		public event Action<float>? OnVolumeChanged;
 
 		[JsonProperty]
+		[ConfigHide]
 		public HashSet<string> RecentFiles { get; private set; } = new HashSet<string>();
 
 		[JsonProperty]
+		[ConfigHide]
 		public float Volume { get; private set; }
 
 		public void AddRecentFile(string file)

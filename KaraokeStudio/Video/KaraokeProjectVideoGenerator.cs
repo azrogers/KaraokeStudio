@@ -1,4 +1,5 @@
 ﻿using KaraokeLib.Video;
+using KaraokeStudio.Project;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace KaraokeStudio.Video
 {
-	internal class KaraokeProjectVideoGenerator : IVideoGenerator
+    internal class KaraokeProjectVideoGenerator : IVideoGenerator
 	{
 		private VideoGenerationState _generationState = new VideoGenerationState();
 

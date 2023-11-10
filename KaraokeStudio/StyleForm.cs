@@ -1,5 +1,6 @@
 ﻿using KaraokeLib.Config;
 using KaraokeStudio.Config;
+using KaraokeStudio.Project;
 using KaraokeStudio.Util;
 using Ookii.Dialogs.WinForms;
 

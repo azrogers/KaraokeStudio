@@ -27,6 +27,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\KaraokeLib\KaraokeLib.csproj" />
+		<ProjectReference Include="..\NAudio.WaveFormRenderer\WaveFormRendererLib\WaveFormRendererLib.csproj" />
 		<ProjectReference Include="..\ScintillaNET\src\ScintillaNET\ScintillaNET.csproj" />
 	</ItemGroup>
 

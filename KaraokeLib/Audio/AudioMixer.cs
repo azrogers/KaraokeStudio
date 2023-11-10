@@ -28,7 +28,11 @@ namespace KaraokeLib.Audio
 				foreach (var ev in track.Events.Where(ev => ev.Type == KaraokeEventType.AudioClip))
 				{
 					var audioClipEvent = (AudioClipKaraokeEvent)ev;
-					_loadedStreams[ev.Id] = LoadAudioFile(audioClipEvent?.Settings?.AudioFile ?? "");
+					var audioFile = audioClipEvent?.Settings?.LoadAudioFile();
+					if(audioFile != null)
+					{
+						_loadedStreams[ev.Id] = audioFile;
+					}
 				}
 			}
 
@@ -52,6 +56,11 @@ namespace KaraokeLib.Audio
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
+			if(Position >= Length)
+			{
+				return 0;
+			}
+
 			var durationSeconds = count / (double)WaveFormat.AverageBytesPerSecond;
 			var relevantClips = new List<AudioClipKaraokeEvent>();
 			var relevantClipVolumes = new List<float>();
@@ -159,28 +168,6 @@ namespace KaraokeLib.Audio
 			}
 
 			return count;
-		}
-
-		private WaveStream LoadAudioFile(string audioFile)
-		{
-			var info = AudioUtil.GetFileInfo(audioFile);
-			if (info == null)
-			{
-				throw new InvalidDataException($"Can't load file {audioFile}");
-			}
-
-			switch (info.FormatType)
-			{
-				case AudioUtil.AudioFormatType.Mp3:
-					return new Mp3FileReader(audioFile);
-				case AudioUtil.AudioFormatType.Wav:
-					return new WaveFileReader(audioFile);
-				case AudioUtil.AudioFormatType.Ogg:
-					return new VorbisWaveReader(audioFile);
-				case AudioUtil.AudioFormatType.Invalid:
-				default:
-					throw new InvalidDataException("Unsupported audio format " + audioFile);
-			}
 		}
 	}
 }

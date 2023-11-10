@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using KaraokeStudio.Util;
 using static KaraokeLib.Config.EditableConfigField;
+using KaraokeStudio.Config.Controls;
 
 namespace KaraokeStudio.Config
 {

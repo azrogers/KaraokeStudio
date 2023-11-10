@@ -48,6 +48,7 @@ namespace KaraokeLib.Video.Elements
 		private IEventTimecode _earliestEventTimecode;
 		private IEventTimecode _latestEventTimecode;
 		private string _text;
+		private SKTextBlob _textBlob;
 		private VideoContext _context;
 		private float _width;
 		private KaraokeEvent[] _events;
@@ -76,20 +77,21 @@ namespace KaraokeLib.Video.Elements
 		public VideoTextElement(
 			VideoContext context,
 			VideoLayoutState layoutState,
-			IEnumerable<KaraokeEvent> events,
+			KaraokeEvent[] events,
 			float yPos,
 			int id,
 			int paragraphId)
 		{
 			_context = context;
-			_events = events.ToArray();
-			StartTimecode = _earliestEventTimecode = events.Select(e => e.StartTime).Min() ?? new TimeSpanTimecode(TimeSpan.MinValue);
-			EndTimecode = _latestEventTimecode = events.Select(e => e.EndTime).Max() ?? new TimeSpanTimecode(TimeSpan.MaxValue);
+			_events = events;
+			GetMinMaxTimes(events, out var start, out var end);
+			StartTimecode = _earliestEventTimecode = start;
+			EndTimecode = _latestEventTimecode = end;
+
+			StartTransition = new TransitionConfig();
+			EndTransition = new TransitionConfig();
 
 			CreateTransitions();
-
-			StartTransition ??= new TransitionConfig();
-			EndTransition ??= new TransitionConfig();
 			ParagraphId = paragraphId;
 			Id = id;
 
@@ -102,13 +104,14 @@ namespace KaraokeLib.Video.Elements
 			for (var i = 0; i < _events.Length; i++)
 			{
 				// if we're not the first and this isn't a middle syllable, add a space
-				var text = (i != 0 && _events[i].LinkedId == -1 ? " " : "") + _events[i].GetText(layoutState);
+				var text = $"{((i != 0 && _events[i].LinkedId == -1 ? " " : ""))}{_events[i].GetText(layoutState)}";
 				_elementWidths[i] = _context.Style.GetTextWidth(text);
 				totalWidth += _elementWidths[i];
 				builder.Append(text);
 			}
 
 			_text = builder.ToString();
+			_textBlob = SKTextBlob.Create(_text, _context.Style.Font);
 			_width = totalWidth;
 
 			switch(context.Config.HorizontalAlign)
@@ -242,7 +245,7 @@ namespace KaraokeLib.Video.Elements
 					Position.Y + context.Size.Height);
 
 				canvas.ClipRect(rect, SKClipOperation.Intersect, true);
-				canvas.DrawText(_text, new SKPoint(Position.Item1, Position.Item2 + lineHeight), context.Style.NormalPaint);
+				canvas.DrawText(_textBlob, Position.Item1, Position.Item2 + lineHeight, context.Style.NormalPaint);
 
 				canvas.Restore();
 			}
@@ -258,7 +261,7 @@ namespace KaraokeLib.Video.Elements
 					Position.Y + context.Size.Height);
 
 				canvas.ClipRect(rect, SKClipOperation.Intersect, true);
-				canvas.DrawText(_text, new SKPoint(Position.Item1, Position.Item2 + lineHeight), context.Style.HighlightedPaint);
+				canvas.DrawText(_textBlob, Position.Item1, Position.Item2 + lineHeight, context.Style.HighlightedPaint);
 
 				canvas.Restore();
 			}
@@ -274,7 +277,7 @@ namespace KaraokeLib.Video.Elements
 					Position.Y + context.Size.Height);
 
 				canvas.ClipRect(rect, SKClipOperation.Intersect, true);
-				canvas.DrawText(_text, new SKPoint(Position.Item1, Position.Item2 + lineHeight), context.Style.StrokePaint);
+				canvas.DrawText(_textBlob, Position.Item1, Position.Item2 + lineHeight, context.Style.StrokePaint);
 
 				canvas.Restore();
 			}
@@ -339,6 +342,20 @@ namespace KaraokeLib.Video.Elements
 				EasingCurve = _context.Config.TransitionOutCurve,
 				Duration = endDuration
 			};
+		}
+
+		private void GetMinMaxTimes(IEnumerable<KaraokeEvent> events, out TimeSpanTimecode minTime, out TimeSpanTimecode maxTime)
+		{
+			var minSeconds = double.MaxValue;
+			var maxSeconds = double.MinValue;
+			foreach(var ev in events)
+			{
+				minSeconds = Math.Min(ev.StartTimeSeconds, minSeconds);
+				maxSeconds = Math.Max(ev.EndTimeSeconds, maxSeconds);
+			}
+
+			minTime = new TimeSpanTimecode(minSeconds);
+			maxTime = new TimeSpanTimecode(maxSeconds);
 		}
 	}
 }

@@ -1,6 +1,8 @@
 ﻿using KaraokeLib.Audio;
 using KaraokeLib.Config;
 using KaraokeLib.Video;
+using NAudio.Vorbis;
+using NAudio.Wave;
 using Newtonsoft.Json;
 
 namespace KaraokeLib.Events
@@ -26,6 +28,7 @@ namespace KaraokeLib.Events
 			: this(ev)
 		{
 			Settings = settings;
+			_sourceLength = GetSourceLength();
 		}
 
 		public AudioClipKaraokeEvent(KaraokeEvent ev)
@@ -65,7 +68,12 @@ namespace KaraokeLib.Events
 
 		private double GetSourceLength()
 		{
-			var info = AudioUtil.GetFileInfo(Settings?.AudioFile ?? "");
+			if(Settings?.AudioFile == null)
+			{
+				return 0;
+			}
+
+			var info = AudioUtil.GetFileInfo(Settings.AudioFile);
 			return info?.LengthSeconds ?? 0;
 		}
 	}
@@ -85,6 +93,28 @@ namespace KaraokeLib.Events
 		public AudioClipSettings(string audioFile)
 		{
 			AudioFile = audioFile;
+		}
+
+		public WaveStream LoadAudioFile()
+		{
+			var info = AudioUtil.GetFileInfo(AudioFile);
+			if (info == null)
+			{
+				throw new InvalidDataException($"Can't load file {AudioFile}");
+			}
+
+			switch (info.FormatType)
+			{
+				case AudioUtil.AudioFormatType.Mp3:
+					return new Mp3FileReader(AudioFile);
+				case AudioUtil.AudioFormatType.Wav:
+					return new WaveFileReader(AudioFile);
+				case AudioUtil.AudioFormatType.Ogg:
+					return new VorbisWaveReader(AudioFile);
+				case AudioUtil.AudioFormatType.Invalid:
+				default:
+					throw new InvalidDataException("Unsupported audio format " + AudioFile);
+			}
 		}
 	}
 }

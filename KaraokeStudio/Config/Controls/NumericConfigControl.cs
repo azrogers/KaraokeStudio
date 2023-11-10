@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
-namespace KaraokeStudio.Config
+﻿namespace KaraokeStudio.Config.Controls
 {
 	public partial class NumericConfigControl : BaseConfigControl
 	{
@@ -22,7 +12,7 @@ namespace KaraokeStudio.Config
 			ConfigureRange();
 
 			var val = Field?.GetValue<decimal>(config);
-			if(val != null)
+			if (val != null)
 			{
 				numericUpDown.Value = (decimal)val;
 			}
@@ -36,7 +26,7 @@ namespace KaraokeStudio.Config
 		private void ConfigureRange()
 		{
 			var configRange = Field?.ConfigRange;
-			if(configRange == null)
+			if (configRange == null)
 			{
 				numericUpDown.Minimum = decimal.MinValue;
 				numericUpDown.Maximum = decimal.MaxValue;

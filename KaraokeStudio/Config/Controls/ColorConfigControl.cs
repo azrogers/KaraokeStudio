@@ -1,7 +1,7 @@
 ﻿using Cyotek.Windows.Forms;
 using KaraokeLib.Util;
 
-namespace KaraokeStudio.Config
+namespace KaraokeStudio.Config.Controls
 {
 	public partial class ColorConfigControl : BaseConfigControl
 	{

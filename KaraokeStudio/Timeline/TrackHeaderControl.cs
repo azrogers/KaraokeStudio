@@ -1,11 +1,12 @@
 ﻿using FontAwesome.Sharp;
 using KaraokeLib.Tracks;
 using KaraokeStudio.Config;
+using KaraokeStudio.Project;
 using KaraokeStudio.Util;
 
 namespace KaraokeStudio.Timeline
 {
-	public partial class TrackHeaderControl : UserControl
+    public partial class TrackHeaderControl : UserControl
 	{
 		public KaraokeTrack? Track
 		{

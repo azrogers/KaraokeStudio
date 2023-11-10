@@ -2,6 +2,7 @@
 using KaraokeLib.Events;
 using KaraokeLib.Files;
 using KaraokeLib.Tracks;
+using KaraokeStudio.Video;
 using SkiaSharp;
 
 namespace KaraokeStudio.Config

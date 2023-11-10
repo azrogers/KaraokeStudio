@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace KaraokeLib.Video.Transitions
 {
-	public class TransitionConfig
+	public struct TransitionConfig
 	{
 		public VideoTransitionType Type { get; set; }
 

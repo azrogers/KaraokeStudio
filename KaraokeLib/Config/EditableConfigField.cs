@@ -1,4 +1,5 @@
-﻿using KaraokeLib.Util;
+﻿using KaraokeLib.Config.Attributes;
+using KaraokeLib.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace KaraokeLib.Config
 {
-	public class EditableConfigField
+    public class EditableConfigField
 	{
 		/// <summary>
 		/// The name of the field on the config object.
@@ -121,7 +122,7 @@ namespace KaraokeLib.Config
 				return ConfigControlType.Padding;
 			}
 
-			if(fieldType == typeof(String))
+			if(fieldType == typeof(string))
 			{
 				return ConfigControlType.String;
 			}

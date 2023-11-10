@@ -1,5 +1,6 @@
 ﻿using KaraokeLib.Events;
 using KaraokeLib.Tracks;
+using KaraokeStudio.Project;
 using NLog;
 
 namespace KaraokeStudio.Timeline

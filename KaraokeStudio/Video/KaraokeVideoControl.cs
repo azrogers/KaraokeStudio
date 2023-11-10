@@ -1,12 +1,13 @@
 ﻿using FontAwesome.Sharp;
 using KaraokeLib.Tracks;
 using KaraokeLib.Video;
+using KaraokeStudio.Project;
 using KaraokeStudio.Util;
 using SkiaSharp;
 
 namespace KaraokeStudio.Video
 {
-	internal partial class KaraokeVideoControl : UserControl
+    internal partial class KaraokeVideoControl : UserControl
 	{
 		private static SKPaint _notActiveOverlayPaint = new SKPaint()
 		{

@@ -1,6 +1,6 @@
-﻿namespace KaraokeStudio.Config
+﻿namespace KaraokeStudio.Config.Controls
 {
-	partial class EnumConfigControl
+	partial class NumericConfigControl
 	{
 		/// <summary> 
 		/// Required designer variable.
@@ -28,34 +28,35 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.comboBox = new System.Windows.Forms.ComboBox();
+			this.numericUpDown = new System.Windows.Forms.NumericUpDown();
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDown)).BeginInit();
 			this.SuspendLayout();
 			// 
-			// comboBox
+			// numericUpDown
 			// 
-			this.comboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.comboBox.FormattingEnabled = true;
-			this.comboBox.Location = new System.Drawing.Point(3, 3);
-			this.comboBox.Name = "comboBox";
-			this.comboBox.Size = new System.Drawing.Size(150, 23);
-			this.comboBox.TabIndex = 0;
-			this.comboBox.SelectedIndexChanged += new System.EventHandler(this.comboBox_SelectedIndexChanged);
+			this.numericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.numericUpDown.Location = new System.Drawing.Point(0, 0);
+			this.numericUpDown.Name = "numericUpDown";
+			this.numericUpDown.Size = new System.Drawing.Size(150, 23);
+			this.numericUpDown.TabIndex = 0;
+			this.numericUpDown.ValueChanged += new System.EventHandler(this.numericUpDown_ValueChanged);
 			// 
-			// EnumConfigControl
+			// NumericConfigControl
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.AutoSize = true;
 			this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.Controls.Add(this.comboBox);
-			this.Name = "EnumConfigControl";
-			this.Size = new System.Drawing.Size(156, 29);
+			this.Controls.Add(this.numericUpDown);
+			this.Name = "NumericConfigControl";
+			this.Size = new System.Drawing.Size(153, 26);
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDown)).EndInit();
 			this.ResumeLayout(false);
 
 		}
 
 		#endregion
 
-		private ComboBox comboBox;
+		private NumericUpDown numericUpDown;
 	}
 }

@@ -1,4 +1,4 @@
-﻿namespace KaraokeStudio.Config
+﻿namespace KaraokeStudio.Config.Controls
 {
 	partial class ColorConfigControl
 	{

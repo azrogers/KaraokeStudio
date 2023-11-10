@@ -1,17 +1,7 @@
 ﻿using KaraokeLib.Util;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using SkiaSharp;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
-namespace KaraokeStudio.Config
+namespace KaraokeStudio.Config.Controls
 {
 	public partial class FontConfigControl : BaseConfigControl
 	{
@@ -26,7 +16,7 @@ namespace KaraokeStudio.Config
 		{
 			var dialog = new FontDialog();
 			dialog.Font = FontFromKFont(_font, _font.Size);
-			if(dialog.ShowDialog() == DialogResult.OK)
+			if (dialog.ShowDialog() == DialogResult.OK)
 			{
 				_font = new KFont()
 				{
@@ -65,7 +55,7 @@ namespace KaraokeStudio.Config
 		internal override void UpdateValue(object config)
 		{
 			var val = Field?.GetValue<KFont>(config);
-			if(val != null)
+			if (val != null)
 			{
 				_font = val ?? new KFont();
 				UpdateLabel();

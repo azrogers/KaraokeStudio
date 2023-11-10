@@ -1,4 +1,4 @@
-﻿namespace KaraokeStudio.Config
+﻿namespace KaraokeStudio.Config.Controls
 {
 	partial class SizeConfigControl
 	{
@@ -41,23 +41,23 @@
 			this.widthControl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.widthControl.Location = new System.Drawing.Point(27, 3);
 			this.widthControl.Maximum = new decimal(new int[] {
-            100000,
-            0,
-            0,
-            0});
+			100000,
+			0,
+			0,
+			0});
 			this.widthControl.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+			1,
+			0,
+			0,
+			0});
 			this.widthControl.Name = "widthControl";
 			this.widthControl.Size = new System.Drawing.Size(120, 23);
 			this.widthControl.TabIndex = 0;
 			this.widthControl.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+			1,
+			0,
+			0,
+			0});
 			this.widthControl.ValueChanged += new System.EventHandler(this.widthControl_ValueChanged);
 			// 
 			// widthLabel
@@ -85,23 +85,23 @@
 			this.heightControl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.heightControl.Location = new System.Drawing.Point(175, 3);
 			this.heightControl.Maximum = new decimal(new int[] {
-            100000,
-            0,
-            0,
-            0});
+			100000,
+			0,
+			0,
+			0});
 			this.heightControl.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+			1,
+			0,
+			0,
+			0});
 			this.heightControl.Name = "heightControl";
 			this.heightControl.Size = new System.Drawing.Size(120, 23);
 			this.heightControl.TabIndex = 3;
 			this.heightControl.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+			1,
+			0,
+			0,
+			0});
 			this.heightControl.ValueChanged += new System.EventHandler(this.heightControl_ValueChanged);
 			// 
 			// SizeConfigControl
