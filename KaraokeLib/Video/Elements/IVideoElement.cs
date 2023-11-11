@@ -1,16 +1,11 @@
 ﻿using KaraokeLib.Events;
 using KaraokeLib.Video.Transitions;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeLib.Video.Elements
 {
-    // a single element in the video (a renderable bit of text, an intermission, etc)
-    public interface IVideoElement
+	// a single element in the video (a renderable bit of text, an intermission, etc)
+	public interface IVideoElement
 	{
 		/// <summary>
 		/// The type of element this class implements.

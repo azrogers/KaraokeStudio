@@ -44,9 +44,16 @@ namespace KaraokeLib.Video
 				{
 					// 0 when starting, 1 when finishing
 					var t = (float)Math.Clamp((posSeconds - startTime) / ev.Element.StartTransition.Duration, 0, 1);
-					surface.Canvas.Clear();
-					ev.Element.Render(_context, surface.Canvas, posSeconds);
-					HandleTransition(ev.Element.StartTransition, ev.Element, surface, canvas, t, true);
+					var context = new TransitionContext()
+					{
+						Destination = canvas,
+						Surface = surface,
+						IsStartTransition = true,
+						TransitionPosition = t,
+						VideoContext = _context,
+						VideoPosition = posSeconds
+					};
+					HandleTransition(ev.Element.StartTransition, ev.Element, context);
 				}
 				else if (
 					posSeconds < endTime &&
@@ -55,9 +62,16 @@ namespace KaraokeLib.Video
 					var beforeT = (ev.Element.EndTransition.Duration - (endTime - posSeconds)) / ev.Element.EndTransition.Duration;
 					// 1 when starting, 0 when finishing
 					var t = (float)Math.Clamp(1.0 - beforeT, 0, 1);
-					surface.Canvas.Clear();
-					ev.Element.Render(_context, surface.Canvas, posSeconds);
-					HandleTransition(ev.Element.EndTransition, ev.Element, surface, canvas, t, false);
+					var context = new TransitionContext()
+					{
+						Destination = canvas,
+						Surface = surface,
+						IsStartTransition = false,
+						TransitionPosition = t,
+						VideoContext = _context,
+						VideoPosition = posSeconds
+					};
+					HandleTransition(ev.Element.StartTransition, ev.Element, context);
 				}
 				else
 				{
@@ -69,10 +83,10 @@ namespace KaraokeLib.Video
 			surface.Dispose();
 		}
 
-		private void HandleTransition(TransitionConfig transition, IVideoElement elem, SKSurface surface, SKCanvas dest, float t, bool isStartTransition)
+		private void HandleTransition(TransitionConfig transition, IVideoElement elem, TransitionContext context)
 		{
-			var realT = EasingFunctions.Evaluate(transition.EasingCurve, t);
-			TransitionManager.Get(transition.Type).Blit(elem, surface, dest, realT, isStartTransition);
+			var realT = EasingFunctions.Evaluate(transition.EasingCurve, context.TransitionPosition);
+			TransitionManager.Get(transition.Type).Blit(elem, context);
 		}
 	}
 }

@@ -1,10 +1,5 @@
 ﻿using KaraokeLib.Video.Elements;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeLib.Video.Transitions
 {
@@ -12,18 +7,18 @@ namespace KaraokeLib.Video.Transitions
 	{
 		public VideoTransitionType Type => VideoTransitionType.Swipe;
 
-		public void Blit(IVideoElement elem, SKSurface source, SKCanvas dest, float t, bool isStartTransition)
+		public void Blit(IVideoElement elem, TransitionContext context)
 		{
 			var rect = new SKRect(
-				elem.Position.X + (isStartTransition ? 0 : (1.0f - t) * elem.Size.Width),
+				elem.Position.X + (context.IsStartTransition ? 0 : (1.0f - context.TransitionPosition) * elem.Size.Width),
 				elem.Position.Y,
-				elem.Position.X + (isStartTransition ? t * elem.Size.Width : elem.Size.Width),
+				elem.Position.X + (context.IsStartTransition ? context.TransitionPosition * elem.Size.Width : elem.Size.Width),
 				elem.Position.Y + elem.Size.Height * 2);
 
-			var savePos = dest.Save();
-			dest.ClipRect(rect);
-			dest.DrawSurface(source, SKPoint.Empty);
-			dest.RestoreToCount(savePos);
+			var savePos = context.Destination.Save();
+			context.Destination.ClipRect(rect);
+			elem.Render(context.VideoContext, context.Destination, context.VideoPosition);
+			context.Destination.RestoreToCount(savePos);
 		}
 	}
 }

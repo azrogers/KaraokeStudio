@@ -25,7 +25,7 @@ namespace KaraokeLib.Video.Transitions
 		/// </summary>
 		/// <param name="t">The position between the beginning and the end of the transition as a normalized value between [0, 1].</param>
 		/// <param name="isStartTransition">Is this a start transition (going from non-visible to visible) or an end transition (going from visible to non-visible).</param>
-		void Blit(IVideoElement elem, SKSurface source, SKCanvas destination, float t, bool isStartTransition);
+		void Blit(IVideoElement elem, TransitionContext context);
 	}
 
 	public enum VideoTransitionType

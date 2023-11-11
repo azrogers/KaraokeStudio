@@ -1,10 +1,5 @@
 ﻿using KaraokeLib.Video.Elements;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeLib.Video.Transitions
 {
@@ -12,14 +7,16 @@ namespace KaraokeLib.Video.Transitions
 	{
 		public VideoTransitionType Type => VideoTransitionType.Fade;
 
-		public void Blit(IVideoElement elem, SKSurface surface, SKCanvas canvas, float t, bool isStartTransition)
+		public void Blit(IVideoElement elem, TransitionContext context)
 		{
 			var paint = new SKPaint()
 			{
-					ColorF = new SKColorF(1.0f, 1.0f, 1.0f, t)
+				ColorF = new SKColorF(1.0f, 1.0f, 1.0f, context.TransitionPosition)
 			};
 
-			canvas.DrawSurface(surface, SKPoint.Empty, paint);
+			context.Surface.Canvas.Clear();
+			elem.Render(context.VideoContext, context.Surface.Canvas, context.VideoPosition);
+			context.Destination.DrawSurface(context.Surface, SKPoint.Empty, paint);
 		}
 	}
 }

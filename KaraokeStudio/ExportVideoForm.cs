@@ -24,6 +24,7 @@ namespace KaraokeStudio
 
 		private VideoExporter _exporter;
 		private KaraokeProject? _project;
+		private int _frameCounter = 0;
 
 		public ExportVideoForm()
 		{
@@ -112,6 +113,13 @@ namespace KaraokeStudio
 
 		private void _exporter_OnExportProgress(float obj)
 		{
+			_frameCounter++;
+
+			if(_frameCounter % 25 == 0)
+			{
+				_exporter_OnExportMessage($"Progress: {obj:P}");
+			}
+
 			messageBox.Invoke(() =>
 			{
 				exportProgress.Value = (int)(obj * exportProgress.Maximum);
