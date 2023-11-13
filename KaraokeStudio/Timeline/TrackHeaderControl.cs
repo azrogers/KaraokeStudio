@@ -6,7 +6,7 @@ using KaraokeStudio.Util;
 
 namespace KaraokeStudio.Timeline
 {
-    public partial class TrackHeaderControl : UserControl
+	public partial class TrackHeaderControl : UserControl
 	{
 		public KaraokeTrack? Track
 		{
@@ -66,7 +66,7 @@ namespace KaraokeStudio.Timeline
 
 			_buttonOnClickHandlers.Clear();
 			trackButtonsContainer.Controls.Clear();
-			foreach(var tooltip in _tooltips)
+			foreach (var tooltip in _tooltips)
 			{
 				tooltip.RemoveAll();
 				tooltip.Dispose();
@@ -79,9 +79,9 @@ namespace KaraokeStudio.Timeline
 				return;
 			}
 
-			CreateButton("Track Settings", IconChar.Gear, (o, e) =>
+			CreateButton("Track Properties", IconChar.Gear, (o, e) =>
 			{
-				if (_configEditorForm == null)
+				if (_configEditorForm == null || _configEditorForm.IsDisposed)
 				{
 					_configEditorForm = new GenericConfigEditorForm();
 				}
@@ -93,11 +93,11 @@ namespace KaraokeStudio.Timeline
 				});
 			});
 
-			if(Track.Type == KaraokeTrackType.Lyrics)
+			if (Track.Type == KaraokeTrackType.Lyrics)
 			{
 				CreateButton("Sync Lyrics", IconChar.Music, (o, e) =>
 				{
-					if(MainForm.Instance != null)
+					if (MainForm.Instance != null)
 					{
 						MainForm.Instance.OpenSyncForm(Track);
 					}

@@ -60,6 +60,7 @@ namespace KaraokeLib.Video.Encoders
 			if (string.IsNullOrWhiteSpace(ext))
 			{
 				ext = _settings.GetExtensionFromOutputType();
+				_outputFile += ext;
 			}
 
 			var outputFilename = Path.GetFileNameWithoutExtension(outFile);

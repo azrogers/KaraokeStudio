@@ -307,6 +307,11 @@ namespace KaraokeStudio
 
 			syncLyricsToolStripMenuItem.Enabled = SelectionManager.SelectedTracks.Count() == 1 && SelectionManager.SelectedTracks.First().Type == KaraokeTrackType.Lyrics;
 			removeTrackToolStripMenuItem.Enabled = SelectionManager.SelectedTracks.Any();
+			trackPropertiesToolStripMenuItem.Enabled = SelectionManager.SelectedTracks.Any();
+
+			addAudioClipToolStripMenuItem.Enabled = SelectionManager.SelectedTracks.Any(t => t.Type == KaraokeTrackType.Audio);
+			removeEventToolStripMenuItem.Enabled = SelectionManager.SelectedEvents.Any();
+			eventPropertiesToolStripMenuItem.Enabled = SelectionManager.SelectedEvents.Any();
 
 			undoToolStripMenuItem.Enabled = UndoHandler.CurrentItem != null;
 			undoToolStripMenuItem.Text = UndoHandler.CurrentItem == null ? "Undo" : "Undo " + UndoHandler.CurrentItem.Value.Action;
@@ -327,6 +332,26 @@ namespace KaraokeStudio
 
 			_exportVideoForm.OnProjectChanged(_projectHandler.Project);
 			_exportVideoForm.Show();
+		}
+
+		private void addAudioClipToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void removeEventToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void eventPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void trackPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+
 		}
 	}
 }

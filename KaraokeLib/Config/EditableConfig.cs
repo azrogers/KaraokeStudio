@@ -9,7 +9,7 @@ namespace KaraokeLib.Config
 		/// <summary>
 		/// Information about all of the editable fields on this config object.
 		/// </summary>
-		public IEnumerable<EditableConfigField> Fields { get; }
+		public IEnumerable<IConfigField> Fields { get; }
 
 		/// <summary>
 		/// Returns a copy of this config.
@@ -22,18 +22,18 @@ namespace KaraokeLib.Config
 	/// </summary>
 	public class EditableConfig<T> : IEditableConfig where T : EditableConfig<T>
 	{
-		private Dictionary<string, EditableConfigField> _fields;
+		private Dictionary<string, IConfigField> _fields;
 
 		/// <inheritdoc />
 		[JsonIgnore]
-		public IEnumerable<EditableConfigField> Fields => _fields.Values;
+		public IEnumerable<IConfigField> Fields => _fields.Values;
 
 		/// <summary>
 		/// Creates a new default config.
 		/// </summary>
 		public EditableConfig()
 		{
-			_fields = new Dictionary<string, EditableConfigField>();
+			_fields = new Dictionary<string, IConfigField>();
 			foreach (var field in typeof(T).GetFields(BindingFlags.Public | BindingFlags.Instance))
 			{
 				var configHide = field.GetCustomAttribute<ConfigHideAttribute>();

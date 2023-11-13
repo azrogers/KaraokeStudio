@@ -1,24 +1,63 @@
 ﻿using KaraokeLib.Config.Attributes;
 using KaraokeLib.Util;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeLib.Config
 {
-    public class EditableConfigField
+	public interface IConfigField
+	{
+		/// <summary>
+		/// The name of the config field.
+		/// </summary>
+		string Name { get; }
+
+		/// <summary>
+		/// The type of control to use for this field.
+		/// </summary>
+		ConfigControlType ControlType { get; }
+
+		/// <summary>
+		/// The ConfigRangeAttribute specified on this field, if present.
+		/// </summary>
+		ConfigRangeAttribute? ConfigRange { get; }
+
+		/// <summary>
+		/// Is this field a decimal type?
+		/// </summary>
+		bool IsDecimal { get; }
+
+		/// <summary>
+		/// The underlying type of this field.
+		/// </summary>
+		Type FieldType { get; }
+
+		/// <summary>
+		/// Gets the current value of this field on the given instance.
+		/// </summary>
+		T? GetValue<T>(object instance);
+
+		/// <summary>
+		/// Gets the current value of this field on the given instance and casts it to the given type.
+		/// Non-generic version of <see cref="GetValue{T}(object)"/>.
+		/// </summary>
+		object? GetValue(Type t, object instance);
+
+		/// <summary>
+		/// Sets the value of this field on the given instance to the given value.
+		/// </summary>
+		void SetValue<T>(object instance, T val);
+
+	}
+
+	public class EditableConfigField : IConfigField
 	{
 		/// <summary>
 		/// The name of the field on the config object.
 		/// </summary>
 		public string Name { get; private set; }
 
-		/// <summary>
-		/// The type of control to use for this field.
-		/// </summary>
+		/// <inheritdoc />
 		public ConfigControlType ControlType { get; private set; }
 
 		/// <summary>
@@ -26,6 +65,7 @@ namespace KaraokeLib.Config
 		/// </summary>
 		public ConfigRangeAttribute? ConfigRange => _range;
 
+		/// <inheritdoc />
 		public bool IsDecimal
 		{
 			get
@@ -40,6 +80,7 @@ namespace KaraokeLib.Config
 			}
 		}
 
+		/// <inheritdoc />
 		public Type FieldType => _fieldType;
 
 		private FieldInfo _field;
@@ -59,27 +100,20 @@ namespace KaraokeLib.Config
 			ControlType = GetControlType(_fieldType);
 		}
 
-		/// <summary>
-		/// Gets the current value of this field on the given instance.
-		/// </summary>
+		/// <inheritdoc/>
 		public T? GetValue<T>(object instance)
 		{
 			var fieldValue = _field.GetValue(instance);
 			return (T?)Convert.ChangeType(fieldValue, typeof(T));
 		}
 
-		/// <summary>
-		/// Gets the current value of this field on the given instance and casts it to the given type.
-		/// Non-generic version of <see cref="GetValue{T}(object)"/>.
-		/// </summary>
+		/// <inheritdoc/>
 		public object? GetValue(Type t, object instance)
 		{
 			return Convert.ChangeType(_field.GetValue(instance), t);
 		}
 
-		/// <summary>
-		/// Sets the value of this field on the given instance to the given value.
-		/// </summary>
+		/// <inheritdoc/>
 		public void SetValue<T>(object instance, T val)
 		{
 			_field.SetValue(instance, Convert.ChangeType(val, _field.FieldType));
@@ -122,7 +156,7 @@ namespace KaraokeLib.Config
 				return ConfigControlType.Padding;
 			}
 
-			if(fieldType == typeof(string))
+			if (fieldType == typeof(string))
 			{
 				return ConfigControlType.String;
 			}
@@ -150,18 +184,18 @@ namespace KaraokeLib.Config
 					return false;
 			}
 		}
+	}
 
-		public enum ConfigControlType
-		{
-			Numeric,
-			Range,
-			Size,
-			Color,
-			Font,
-			Enum,
-			Bool,
-			Padding,
-			String
-		}
+	public enum ConfigControlType
+	{
+		Numeric,
+		Range,
+		Size,
+		Color,
+		Font,
+		Enum,
+		Bool,
+		Padding,
+		String
 	}
 }

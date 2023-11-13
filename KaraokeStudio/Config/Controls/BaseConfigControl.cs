@@ -4,7 +4,7 @@ namespace KaraokeStudio.Config.Controls
 {
     public class BaseConfigControl : UserControl
     {
-        internal EditableConfigField? Field;
+        internal IConfigField? Field;
         public event Action<Control>? OnValueChanged;
 
         protected void SendValueChanged()

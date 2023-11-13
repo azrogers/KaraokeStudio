@@ -1,27 +1,17 @@
 ﻿using KaraokeLib.Config;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using KaraokeStudio.Util;
-using static KaraokeLib.Config.EditableConfigField;
 using KaraokeStudio.Config.Controls;
+using KaraokeStudio.Util;
 
 namespace KaraokeStudio.Config
 {
-    /// <summary>
-    /// A reusable editor component for classes deriving from EditorConfig.
-    /// </summary>
-    public partial class ConfigEditor : UserControl
+	/// <summary>
+	/// A reusable editor component for classes deriving from EditorConfig.
+	/// </summary>
+	public partial class ConfigEditor : UserControl
 	{
 		private IEditableConfig? _temporaryConfig = null;
 		private List<BaseConfigControl> _controls = new List<BaseConfigControl>();
 		private List<Label> _labels = new List<Label>();
-		private Size? _lastSize;
 
 		/// <summary>
 		/// Event called when a config value has been changed.
@@ -41,11 +31,11 @@ namespace KaraokeStudio.Config
 				var oldValue = _temporaryConfig;
 				_temporaryConfig = value;
 
-				if(value == null)
+				if (value == null)
 				{
 					ClearControls();
 				}
-				else if(oldValue == null || value.GetType() != oldValue.GetType())
+				else if (oldValue == null || value.GetType() != oldValue.GetType())
 				{
 					// type changed, rebuild the whole thing
 					CreateFields();
@@ -73,7 +63,7 @@ namespace KaraokeStudio.Config
 		/// </summary>
 		public T GetConfig<T>() where T : IEditableConfig
 		{
-			if(_temporaryConfig == null)
+			if (_temporaryConfig == null)
 			{
 				return Activator.CreateInstance<T>();
 			}
@@ -87,7 +77,7 @@ namespace KaraokeStudio.Config
 
 			configContainer.ColumnCount = 2;
 
-			if(_temporaryConfig == null)
+			if (_temporaryConfig == null)
 			{
 				return;
 			}
@@ -130,7 +120,7 @@ namespace KaraokeStudio.Config
 
 			control.OnValueChanged += (_) =>
 			{
-				if(_temporaryConfig == null)
+				if (_temporaryConfig == null)
 				{
 					throw new InvalidDataException("Value changed but config is null?");
 				}
@@ -151,7 +141,7 @@ namespace KaraokeStudio.Config
 			configContainer.Controls.Add(label, 0, _controls.Count);
 			configContainer.Controls.Add(control, 1, _controls.Count);
 
-			if(_temporaryConfig != null)
+			if (_temporaryConfig != null)
 			{
 				control.UpdateValue(_temporaryConfig);
 			}
@@ -162,7 +152,7 @@ namespace KaraokeStudio.Config
 
 		private void UpdateControls()
 		{
-			if(_temporaryConfig == null)
+			if (_temporaryConfig == null)
 			{
 				return;
 			}
