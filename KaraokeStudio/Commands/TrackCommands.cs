@@ -1,4 +1,5 @@
-﻿using KaraokeLib.Events;
+﻿using KaraokeLib.Config;
+using KaraokeLib.Events;
 using KaraokeLib.Tracks;
 using KaraokeStudio.Commands.Updates;
 
@@ -24,7 +25,7 @@ namespace KaraokeStudio.Commands
 
 		public IEnumerable<IUpdate> Execute(CommandContext context)
 		{
-			if(context.Project == null)
+			if (context.Project == null)
 			{
 				Logger.Warn($"Attempted to add a track to non-existent project, giving up");
 				yield break;
@@ -45,7 +46,7 @@ namespace KaraokeStudio.Commands
 				yield break;
 			}
 
-			if(_createdTrackId == null)
+			if (_createdTrackId == null)
 			{
 				Logger.Warn($"Tried to undo a create track action without a created track ID, giving up");
 				yield break;
@@ -68,70 +69,57 @@ namespace KaraokeStudio.Commands
 		}
 	}
 
-	internal class SetEventTimingsCommand : ICommand
+	internal class SetTrackSettingsCommand : ICommand
 	{
 		private static NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-		private int _trackId;
-		private Dictionary<int, KaraokeEvent> _newEvents = new Dictionary<int, KaraokeEvent>();
-		private Dictionary<int, KaraokeEvent> _oldEvents = new Dictionary<int, KaraokeEvent>();
+		public string Description => _actionString;
 
-		public string Description => "Set event timings";
 		public bool CanUndo => true;
 
-		public SetEventTimingsCommand(KaraokeTrack track, KaraokeEvent[] events)
+		private IEditableConfig? _oldConfig = null;
+		private IEditableConfig _newConfig;
+		private string _actionString;
+		private int _trackId;
+
+		public SetTrackSettingsCommand(KaraokeTrack track, IEditableConfig config, string actionString = "Change track properties")
 		{
 			_trackId = track.Id;
-
-			foreach (var ev in track.Events)
-			{
-				_oldEvents[ev.Id] = ev;
-			}
-
-			foreach (var ev in events)
-			{
-				_newEvents[ev.Id] = ev;
-			}
+			_newConfig = config;
+			_actionString = actionString;
 		}
 
 		public IEnumerable<IUpdate> Execute(CommandContext context)
 		{
-			var track = context.Project?.Tracks.Where(t => t.Id == _trackId).FirstOrDefault();
+			var track = context.Project?.Tracks.FirstOrDefault(t => t.Id == _trackId);
 			if (track == null)
 			{
 				Logger.Warn($"Can't find track ID {_trackId}, giving up");
 				yield break;
 			}
 
-			foreach (var ev in track.Events)
-			{
-				if (_newEvents.ContainsKey(ev.Id))
-				{
-					ev.SetTiming(_newEvents[ev.Id].StartTime, _newEvents[ev.Id].EndTime);
-				}
-			}
-
-			yield return new EventsUpdate(_newEvents.Keys.ToArray());
+			_oldConfig = track.GetTrackConfig().Copy();
+			track.SetTrackConfig(_newConfig);
+			yield return new TrackSettingsUpdate(track.Id, _newConfig);
 		}
 
 		public IEnumerable<IUpdate> Undo(CommandContext context)
 		{
-			var track = context.Project?.Tracks.Where(t => t.Id == _trackId).FirstOrDefault();
+			var track = context.Project?.Tracks.FirstOrDefault(t => t.Id == _trackId);
 			if (track == null)
 			{
 				Logger.Warn($"Can't find track ID {_trackId}, giving up");
 				yield break;
 			}
 
-			foreach (var ev in track.Events)
+			if (_oldConfig == null)
 			{
-				if (_newEvents.ContainsKey(ev.Id))
-				{
-					ev.SetTiming(_oldEvents[ev.Id].StartTime, _oldEvents[ev.Id].EndTime);
-				}
+				Logger.Warn("Attempted to undo a track settings change but _oldConfig was null, giving up");
+				yield break;
 			}
 
-			yield return new EventsUpdate(_newEvents.Keys.ToArray());
+			track.SetTrackConfig(_oldConfig);
+			yield return new TrackSettingsUpdate(track.Id, _oldConfig);
 		}
 	}
 }

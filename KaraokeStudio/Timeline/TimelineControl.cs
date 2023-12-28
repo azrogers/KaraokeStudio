@@ -50,11 +50,6 @@ namespace KaraokeStudio.Timeline
 		/// </summary>
 		public event Action? OnTrackPositioningChanged;
 
-		/// <summary>
-		/// Called when an event on the timeline has changed (moved, for example)
-		/// </summary>
-		public event Action<KaraokeTrack>? OnTrackEventsChanged;
-
 		public TimelineControl()
 		{
 			InitializeComponent();
@@ -68,7 +63,6 @@ namespace KaraokeStudio.Timeline
 			_tracks = new KaraokeTrack[0];
 
 			_timelineCanvas = new TimelineCanvas();
-			_timelineCanvas.OnTrackEventsChanged += _timelineCanvas_OnTrackEventsChanged; ;
 
 			_backgroundColor = VisualStyle.NeutralDarkColor.ToSKColor();
 
@@ -84,7 +78,7 @@ namespace KaraokeStudio.Timeline
 			horizScroll.Enabled = false;
 			verticalScroll.Enabled = false;
 
-			_eventsUpdateHandle = UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
+			_eventsUpdateHandle = UpdateDispatcher.RegisterHandler<EventTimingsUpdate>(update =>
 			{
 				RecalculateScrollBars();
 				skiaControl.Invalidate();
@@ -112,11 +106,6 @@ namespace KaraokeStudio.Timeline
 			}
 
 			SelectionManager.OnSelectedEventsChanged -= OnSelectedEventsChanged;
-		}
-
-		private void _timelineCanvas_OnTrackEventsChanged(KaraokeTrack obj)
-		{
-			OnTrackEventsChanged?.Invoke(obj);
 		}
 
 		public RectangleF GetTrackRect(int trackId)
@@ -449,15 +438,7 @@ namespace KaraokeStudio.Timeline
 			}
 			else if(_uiState == TimelineUIState.Dragging)
 			{
-				var dragEvs = _timelineCanvas.DragEvents;
-
 				_timelineCanvas.EndDrag();
-				if (dragEvs != null)
-				{
-					var dragEvIds = dragEvs.Select(ev => ev.Id).ToHashSet();
-					var track = _tracks.Where(t => t.Events.Any(ev => dragEvIds.Contains(ev.Id))).First();
-					OnTrackEventsChanged?.Invoke(track);
-				}
 			}
 
 			_uiState = TimelineUIState.Idle;

@@ -10,19 +10,8 @@ namespace KaraokeStudio.Timeline
 	{
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-		/// <summary>
-		/// Called when a track has its track settings changed.
-		/// </summary>
-		public event Action<KaraokeTrack>? OnTrackSettingsChanged;
-
-		/// <summary>
-		/// Called when a track has an event change.
-		/// </summary>
-		public event Action<KaraokeTrack>? OnTrackEventsChanged;
-
 		private UpdateDispatcher.Handle _tracksUpdateHandle;
 
-		private int _selectedTrackId = -1;
 		private KaraokeProject? _currentProject;
 		private List<TrackHeaderControl> _trackHeaders = new List<TrackHeaderControl>();
 
@@ -37,7 +26,6 @@ namespace KaraokeStudio.Timeline
 
 			SelectionManager.OnSelectedTracksChanged += OnSelectedTracksChanged;
 			timeline.OnTrackPositioningChanged += timeline_OnTrackPositioningChanged;
-			timeline.OnTrackEventsChanged += Timeline_OnTrackEventsChanged;
 
 			_tracksUpdateHandle = UpdateDispatcher.RegisterHandler<TracksUpdate>(update =>
 			{
@@ -70,7 +58,6 @@ namespace KaraokeStudio.Timeline
 			timeline.OnProjectChanged(project);
 
 			_currentProject = project;
-			_selectedTrackId = -1;
 			RecreateTracks();
 		}
 
@@ -87,7 +74,6 @@ namespace KaraokeStudio.Timeline
 			{
 				// remove event listeners before destroying
 				header.Click -= OnHeaderClick;
-				header.OnTrackConfigChanged -= OnHeaderTrackSettingsChanged;
 			}
 
 			headersContainer.Controls.Clear();
@@ -104,17 +90,11 @@ namespace KaraokeStudio.Timeline
 				control.Track = track;
 				control.Project = _currentProject;
 				control.Click += OnHeaderClick;
-				control.OnTrackConfigChanged += OnHeaderTrackSettingsChanged;
 				headersContainer.Controls.Add(control);
 				_trackHeaders.Add(control);
 			}
 
 			RepositionTracks();
-		}
-
-		private void OnHeaderTrackSettingsChanged(KaraokeTrack obj)
-		{
-			OnTrackSettingsChanged?.Invoke(obj);
 		}
 
 		private void OnHeaderClick(object? sender, EventArgs e)
@@ -127,11 +107,6 @@ namespace KaraokeStudio.Timeline
 			}
 
 			SelectionManager.Select(headerControl.Track, !ModifierKeys.HasFlag(Keys.Shift));
-		}
-
-		private void Timeline_OnTrackEventsChanged(KaraokeTrack obj)
-		{
-			OnTrackEventsChanged?.Invoke(obj);
 		}
 
 		private void RepositionTracks()

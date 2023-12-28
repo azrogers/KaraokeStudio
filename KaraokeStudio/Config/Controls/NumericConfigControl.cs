@@ -14,7 +14,9 @@
 			var val = Field?.GetValue<decimal>(config);
 			if (val != null)
 			{
+				numericUpDown.ValueChanged -= numericUpDown_ValueChanged;
 				numericUpDown.Value = (decimal)val;
+				numericUpDown.ValueChanged += numericUpDown_ValueChanged;
 			}
 		}
 
@@ -41,7 +43,7 @@
 			numericUpDown.Increment = (Field?.IsDecimal ?? true) ? 0.25M : 1M;
 		}
 
-		private void numericUpDown_ValueChanged(object sender, EventArgs e)
+		private void numericUpDown_ValueChanged(object? sender, EventArgs e)
 		{
 			SendValueChanged();
 		}

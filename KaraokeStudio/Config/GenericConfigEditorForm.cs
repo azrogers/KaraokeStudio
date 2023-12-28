@@ -38,6 +38,17 @@ namespace KaraokeStudio.Config
 			Show();
 		}
 
+		public void ReplaceConfigIfNotChanged(IEditableConfig newConfig)
+		{
+			if(_isDirty)
+			{
+				return;
+			}
+
+			_originalConfig = newConfig;
+			configEditor.Config = newConfig.Copy();
+		}
+
 		private void UpdateButtons()
 		{
 			applyButton.Enabled = _isDirty;

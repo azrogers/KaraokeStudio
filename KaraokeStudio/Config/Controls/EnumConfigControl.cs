@@ -36,7 +36,9 @@ namespace KaraokeStudio.Config.Controls
 				return;
 			}
 
+			comboBox.SelectedIndexChanged -= comboBox_SelectedIndexChanged;
 			comboBox.SelectedIndex = Array.IndexOf(_originalEnumNames, name);
+			comboBox.SelectedIndexChanged += comboBox_SelectedIndexChanged;
 		}
 
 		internal override void SetValue(object config)
@@ -78,7 +80,7 @@ namespace KaraokeStudio.Config.Controls
 			}
 		}
 
-		private void comboBox_SelectedIndexChanged(object sender, EventArgs e)
+		private void comboBox_SelectedIndexChanged(object? sender, EventArgs e)
 		{
 			SendValueChanged();
 		}

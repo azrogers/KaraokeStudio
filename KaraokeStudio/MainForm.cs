@@ -49,9 +49,6 @@ namespace KaraokeStudio
 
 			UndoHandler.OnUndoItemsChanged += OnUndoItemsChanged;
 
-			timelineContainer.OnTrackSettingsChanged += OnTrackSettingsChanged;
-			timelineContainer.OnTrackEventsChanged += OnTrackEventsChanged;
-
 			// handles the project itself
 			_projectHandler = new ProjectFormHandler();
 			_projectHandler.OnProjectChanged += OnProjectChanged;
@@ -63,7 +60,7 @@ namespace KaraokeStudio
 
 			_consoleForm = new ConsoleForm();
 
-			_eventUpdateHandle = UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
+			_eventUpdateHandle = UpdateDispatcher.RegisterHandler<EventTimingsUpdate>(update =>
 			{
 				video.OnProjectEventsChanged(_projectHandler.Project);
 			});
@@ -76,26 +73,9 @@ namespace KaraokeStudio
 			OnProjectChanged(null);
 		}
 
-		private void OnTrackSettingsChanged(KaraokeTrack obj)
-		{
-			_projectHandler.UpdateTrackSettings(obj);
-		}
-
 		public void LoadProject(string path)
 		{
 			_projectHandler.OpenProject(path);
-		}
-
-		private void OnTrackEventsChanged(KaraokeTrack obj)
-		{
-			_projectHandler.UpdateEvents(obj);
-			video.OnProjectEventsChanged(_projectHandler.Project);
-			timelineContainer.OnProjectEventsChanged(_projectHandler.Project);
-			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
-			if (_projectHandler.Project != null)
-			{
-				WindowManager.OnTrackEventsChanged(_projectHandler.Project, obj);
-			}
 		}
 
 		private void OnProjectConfigApplied(KaraokeConfig obj)
@@ -321,7 +301,12 @@ namespace KaraokeStudio
 
 		private void trackPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			if(!SelectionManager.SelectedTracks.Any())
+			{
+				return;
+			}
 
+			CommandDispatcher.Dispatch(new OpenTrackSettingsCommand(SelectionManager.SelectedTracks.First()));
 		}
 	}
 }

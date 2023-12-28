@@ -53,7 +53,7 @@ namespace KaraokeStudio.FormHandlers
 
 		public ProjectFormHandler()
 		{
-			UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
+			UpdateDispatcher.RegisterHandler<EventTimingsUpdate>(update =>
 			{
 				var idLookup = new HashSet<int>(update.EventIds);
 				if(Project != null)
@@ -67,6 +67,11 @@ namespace KaraokeStudio.FormHandlers
 
 				RecalculateProjectLength();
 				_loadedProject?.UpdateMixer();
+				IsPendingChanges = true;
+			});
+
+			UpdateDispatcher.RegisterHandler<TrackSettingsUpdate>(update =>
+			{
 				IsPendingChanges = true;
 			});
 		}
@@ -106,11 +111,6 @@ namespace KaraokeStudio.FormHandlers
 			var lengthSeconds = _loadedProject.Tracks.Any() ? _loadedProject.Tracks.Max(t => t.Events.Any() ? t.Events.Max(e => e.EndTimeSeconds) : 0) : 0;
 			_loadedProject.Length = TimeSpan.FromSeconds(lengthSeconds);
 			_loadedProject.PlaybackState.UpdateProjectLength();
-		}
-
-		public void UpdateTrackSettings(KaraokeTrack track)
-		{
-			IsPendingChanges = true;
 		}
 
 		// create new project

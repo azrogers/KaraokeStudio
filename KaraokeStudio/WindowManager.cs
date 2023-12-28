@@ -2,6 +2,7 @@
 using KaraokeLib.Tracks;
 using KaraokeStudio.Commands;
 using KaraokeStudio.Commands.Updates;
+using KaraokeStudio.Config;
 using KaraokeStudio.Project;
 
 namespace KaraokeStudio
@@ -22,6 +23,43 @@ namespace KaraokeStudio
 		}
 
 		private static SyncForm? _syncForm = null;
+
+		private static Dictionary<int, GenericConfigEditorForm> _trackSettingsEditors = new Dictionary<int, GenericConfigEditorForm>();
+
+		static WindowManager()
+		{
+			// when track settings change, replace the settings in any active properties windows unless they're dirty
+			UpdateDispatcher.RegisterHandler<TrackSettingsUpdate>(update =>
+			{
+				foreach(var id in update.TrackIds)
+				{
+					if (_trackSettingsEditors.ContainsKey(id) && !_trackSettingsEditors[id].IsDisposed)
+					{
+						_trackSettingsEditors[id].ReplaceConfigIfNotChanged(update.NewConfig);
+					}
+				}
+			});
+		}
+
+		internal static void OpenTrackSettingsEditor(KaraokeTrack track)
+		{
+			if(!_trackSettingsEditors.ContainsKey(track.Id) || _trackSettingsEditors[track.Id].IsDisposed)
+			{
+				_trackSettingsEditors[track.Id] = new GenericConfigEditorForm();
+			}
+
+			if (_trackSettingsEditors[track.Id].Visible)
+			{
+				_trackSettingsEditors[track.Id].Focus();
+			}
+			else
+			{
+				_trackSettingsEditors[track.Id].Open(track.GetTrackConfig(), newConfig =>
+				{
+					CommandDispatcher.Dispatch(new SetTrackSettingsCommand(track, newConfig));
+				});
+			}
+		}
 
 		internal static bool OnProjectWillChange()
 		{
@@ -65,6 +103,21 @@ namespace KaraokeStudio
 			{
 				WindowManager.Sync.Open(_project, _track);
 			}
+		}
+	}
+
+	internal class OpenTrackSettingsCommand : UndolessCommand
+	{
+		private KaraokeTrack _track;
+
+		public OpenTrackSettingsCommand(KaraokeTrack track)
+		{
+			_track = track;
+		}
+
+		public override void DoExecute(CommandContext context)
+		{
+			WindowManager.OpenTrackSettingsEditor(_track);
 		}
 	}
 }

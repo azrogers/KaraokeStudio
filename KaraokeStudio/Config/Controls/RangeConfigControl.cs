@@ -19,7 +19,12 @@
 				var min = Field?.ConfigRange?.Minimum ?? 0.0;
 				var max = Field?.ConfigRange?.Maximum ?? 1.0;
 				var normalizedValue = Math.Clamp((valNotNull - min) / (max - min), 0.0, 1.0);
+
+				// ignore events when setting value
+				trackBar.ValueChanged -= trackBar_ValueChanged;
 				trackBar.Value = (int)(normalizedValue * trackBar.Maximum);
+				trackBar.ValueChanged += trackBar_ValueChanged;
+				valueLabel.Text = CalculateValue().ToString();
 			}
 		}
 
@@ -35,7 +40,7 @@
 			return min + (max - min) * ((double)trackBar.Value / trackBar.Maximum);
 		}
 
-		private void trackBar_ValueChanged(object sender, EventArgs e)
+		private void trackBar_ValueChanged(object? sender, EventArgs e)
 		{
 			valueLabel.Text = CalculateValue().ToString();
 			SendValueChanged();

@@ -13,13 +13,13 @@ namespace KaraokeStudio.Config.Controls
 			InitializeComponent();
 		}
 
-		private void widthControl_ValueChanged(object sender, EventArgs e)
+		private void widthControl_ValueChanged(object? sender, EventArgs e)
 		{
 			WidthValue = (int)widthControl.Value;
 			SendValueChanged();
 		}
 
-		private void heightControl_ValueChanged(object sender, EventArgs e)
+		private void heightControl_ValueChanged(object? sender, EventArgs e)
 		{
 			HeightValue = (int)heightControl.Value;
 			SendValueChanged();
@@ -33,8 +33,12 @@ namespace KaraokeStudio.Config.Controls
 				throw new NullReferenceException("Can't convert field to KSize");
 			}
 
+			widthControl.ValueChanged -= widthControl_ValueChanged;
 			widthControl.Value = val.Value.Width;
+			widthControl.ValueChanged += widthControl_ValueChanged;
+			heightControl.ValueChanged -= heightControl_ValueChanged;
 			heightControl.Value = val.Value.Height;
+			heightControl.ValueChanged += heightControl_ValueChanged;
 		}
 
 		internal override void SetValue(object config)

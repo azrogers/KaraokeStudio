@@ -56,7 +56,7 @@ namespace KaraokeStudio.LyricsEditor
 
 			Controls.Add(_scintilla);
 
-			_eventsUpdateHandle = UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
+			_eventsUpdateHandle = UpdateDispatcher.RegisterHandler<EventTimingsUpdate>(update =>
 			{
 				UpdateTextBox();
 			});
