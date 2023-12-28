@@ -160,18 +160,17 @@ namespace KaraokeStudio.LyricsEditor
 
 		private void RestyleArea(int highlightIndex, int startIndex, int endIndex)
 		{
-			if (highlightIndex < endIndex)
-			{
-				var start = Math.Max(highlightIndex, startIndex);
-				_scintilla.StartStyling(start);
-				_scintilla.SetStyling(endIndex - start, LYRIC_STYLE);
-			}
-
-			if (highlightIndex > startIndex)
+			_scintilla.StartStyling(startIndex);
+			if(highlightIndex > startIndex)
 			{
 				var end = Math.Min(highlightIndex, endIndex);
-				_scintilla.StartStyling(startIndex);
 				_scintilla.SetStyling(end - startIndex, LYRIC_HIGHLIGHT_STYLE);
+			}
+
+			if(highlightIndex < endIndex)
+			{
+				var start = Math.Max(highlightIndex, startIndex);
+				_scintilla.SetStyling(endIndex - start, LYRIC_STYLE);
 			}
 		}
 
