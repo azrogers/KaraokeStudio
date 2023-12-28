@@ -18,6 +18,11 @@ namespace KaraokeLib.Files
 		KaraokeTrack AddTrack(IKaraokeFile file, KaraokeTrackType type);
 
 		/// <summary>
+		/// Removes a track with the given ID.
+		/// </summary>
+		void RemoveTrack(int trackId);
+
+		/// <summary>
 		/// The total duration in seconds of the lyrics content of this provider.
 		/// </summary>
 		double GetLengthSeconds();

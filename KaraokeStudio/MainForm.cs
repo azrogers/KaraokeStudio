@@ -57,7 +57,6 @@ namespace KaraokeStudio
 			_projectHandler.OnProjectChanged += OnProjectChanged;
 			_projectHandler.OnPendingStateChanged += OnPendingStateChanged;
 			_projectHandler.OnProjectWillChangeCallback = WindowManager.OnProjectWillChange;
-			_projectHandler.OnTrackChanged += OnTrackChanged;
 
 			_styleForm = new StyleForm();
 			_styleForm.OnProjectConfigApplied += OnProjectConfigApplied;
@@ -65,6 +64,11 @@ namespace KaraokeStudio
 			_consoleForm = new ConsoleForm();
 
 			_eventUpdateHandle = UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
+			{
+				video.OnProjectEventsChanged(_projectHandler.Project);
+			});
+
+			UpdateDispatcher.RegisterHandler<TracksUpdate>(update =>
 			{
 				video.OnProjectEventsChanged(_projectHandler.Project);
 			});
@@ -118,15 +122,6 @@ namespace KaraokeStudio
 			{
 				WindowManager.OnLyricsEventsChanged(_projectHandler.Project, obj);
 			}
-		}
-
-		private void OnTrackChanged(KaraokeTrack obj)
-		{
-			UndoHandler.Clear();
-			SelectionManager.Deselect();
-			video.OnProjectEventsChanged(_projectHandler.Project);
-			timelineContainer.OnProjectEventsChanged(_projectHandler.Project);
-			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
 		}
 
 		private void OnUndoItemsChanged()
@@ -204,7 +199,7 @@ namespace KaraokeStudio
 				return;
 			}
 
-			WindowManager.OpenSyncForm(_projectHandler.Project, SelectionManager.SelectedTracks.First());
+			CommandDispatcher.Dispatch(new OpenSyncFormCommand(_projectHandler.Project, SelectionManager.SelectedTracks.First()));
 		}
 
 		private void audioToolStripMenuItem_Click(object sender, EventArgs e)

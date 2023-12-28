@@ -66,6 +66,15 @@ namespace KaraokeStudio
 				// TODO: actually use information in update to tell which events to update
 				OnProjectEventsChanged();
 			}).Release);
+
+			_onDispose.Add(UpdateDispatcher.RegisterHandler<TracksUpdate>(update =>
+			{
+				// track we're syncing was deleted
+				if(!update.Added && update.TrackIds.Any(t => t == _lyricsTrack?.Id))
+				{
+					Hide();
+				}
+			}).Release);
 		}
 
 		internal void Open(KaraokeProject project, KaraokeTrack track)

@@ -1,5 +1,6 @@
 ﻿using KaraokeLib.Events;
 using KaraokeLib.Tracks;
+using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Project;
 using NLog;
 
@@ -19,6 +20,8 @@ namespace KaraokeStudio.Timeline
 		/// </summary>
 		public event Action<KaraokeTrack>? OnTrackEventsChanged;
 
+		private UpdateDispatcher.Handle _tracksUpdateHandle;
+
 		private int _selectedTrackId = -1;
 		private KaraokeProject? _currentProject;
 		private List<TrackHeaderControl> _trackHeaders = new List<TrackHeaderControl>();
@@ -35,11 +38,17 @@ namespace KaraokeStudio.Timeline
 			SelectionManager.OnSelectedTracksChanged += OnSelectedTracksChanged;
 			timeline.OnTrackPositioningChanged += timeline_OnTrackPositioningChanged;
 			timeline.OnTrackEventsChanged += Timeline_OnTrackEventsChanged;
+
+			_tracksUpdateHandle = UpdateDispatcher.RegisterHandler<TracksUpdate>(update =>
+			{
+				RecreateTracks();
+			});
 		}
 
 		private void OnDispose(object? sender, EventArgs e)
 		{
 			SelectionManager.OnSelectedTracksChanged -= OnSelectedTracksChanged;
+			_tracksUpdateHandle.Release();
 		}
 
 		private void OnSelectedTracksChanged()

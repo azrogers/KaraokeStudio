@@ -19,6 +19,7 @@ namespace KaraokeStudio.LyricsEditor
 		private int _previousHighlightIndex = 0;
 
 		private UpdateDispatcher.Handle _eventsUpdateHandle;
+		private UpdateDispatcher.Handle _tracksUpdateHandle;
 
 		public event Action<(KaraokeTrack Track, IEnumerable<KaraokeEvent> NewEvents)>? OnLyricsEventsChanged;
 
@@ -59,6 +60,11 @@ namespace KaraokeStudio.LyricsEditor
 			{
 				UpdateTextBox();
 			});
+
+			_tracksUpdateHandle = UpdateDispatcher.RegisterHandler<TracksUpdate>(update =>
+			{
+				UpdateTextBox();
+			});
 		}
 
 		private void OnDispose(object? sender, EventArgs e)
@@ -69,6 +75,7 @@ namespace KaraokeStudio.LyricsEditor
 			}
 
 			_eventsUpdateHandle.Release();
+			_tracksUpdateHandle.Release();
 		}
 
 		internal void OnProjectChanged(KaraokeProject? project)

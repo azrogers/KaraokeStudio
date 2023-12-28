@@ -43,6 +43,7 @@ namespace KaraokeStudio.Timeline
 		private float _prevPlaybackHeadXPos = 0;
 
 		private UpdateDispatcher.Handle _eventsUpdateHandle;
+		private UpdateDispatcher.Handle _tracksUpdateHandle;
 
 		/// <summary>
 		/// Called when the positioning of tracks has changed.
@@ -88,16 +89,20 @@ namespace KaraokeStudio.Timeline
 				RecalculateScrollBars();
 				skiaControl.Invalidate();
 			});
-		}
 
-		private void _timelineCanvas_OnTrackEventsChanged(KaraokeTrack obj)
-		{
-			OnTrackEventsChanged?.Invoke(obj);
+			_tracksUpdateHandle = UpdateDispatcher.RegisterHandler<TracksUpdate>(update =>
+			{
+				_tracks = _currentProject?.Tracks.OrderBy(t => t.Id).ToArray() ?? new KaraokeTrack[0];
+				RecalculateScrollBars();
+				skiaControl.Invalidate();
+			});
 		}
 
 		private void OnDispose(object? sender, EventArgs e)
 		{
 			_eventsUpdateHandle.Release();
+			_tracksUpdateHandle.Release();
+
 			_mouseTimer.Dispose();
 			_timelineCanvas.Dispose();
 
@@ -107,6 +112,11 @@ namespace KaraokeStudio.Timeline
 			}
 
 			SelectionManager.OnSelectedEventsChanged -= OnSelectedEventsChanged;
+		}
+
+		private void _timelineCanvas_OnTrackEventsChanged(KaraokeTrack obj)
+		{
+			OnTrackEventsChanged?.Invoke(obj);
 		}
 
 		public RectangleF GetTrackRect(int trackId)

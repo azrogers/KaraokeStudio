@@ -60,6 +60,7 @@ namespace KaraokeStudio.Timeline
 		private Dictionary<int, KaraokeEvent> _events = new Dictionary<int, KaraokeEvent>();
 
 		private UpdateDispatcher.Handle _eventsUpdateHandle;
+		private UpdateDispatcher.Handle _tracksUpdateHandle;
 
 		public event Action<KaraokeTrack>? OnTrackEventsChanged;
 
@@ -122,11 +123,17 @@ namespace KaraokeStudio.Timeline
 			{
 				OnProjectEventsChanged();
 			});
+
+			_tracksUpdateHandle = UpdateDispatcher.RegisterHandler<TracksUpdate>(update =>
+			{
+				OnProjectEventsChanged();
+			});
 		}
 
 		public void Dispose()
 		{
 			_eventsUpdateHandle.Release();
+			_tracksUpdateHandle.Release();
 		}
 
 		/// <summary>

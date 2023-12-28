@@ -60,6 +60,14 @@ namespace KaraokeLib.Files
 			return _provider.AddTrack(this, newTrackType);
 		}
 
+		/// <summary>
+		/// Removes the track with the given ID from this file.
+		/// </summary>
+		public void RemoveTrack(int trackId)
+		{
+			_provider.RemoveTrack(trackId);
+		}
+
 		/// <inheritdoc />
 		public double GetLengthSeconds()
 		{

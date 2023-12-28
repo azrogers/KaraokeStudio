@@ -106,6 +106,12 @@ namespace KaraokeLib.Files
 			return track;
 		}
 
+		/// <inheritdoc />
+		public void RemoveTrack(int trackId)
+		{
+			FileObject.SetTracks(FileObject.Tracks.Where(t => t.Id != trackId));
+		}
+
 		/// <inheritdoc/>
 		public void Save(Stream outStream)
 		{

@@ -30,4 +30,22 @@ namespace KaraokeStudio.Commands.Updates
             EventIds = eventIds;
         }
     }
+
+    internal class TracksUpdate : IUpdate
+    {
+        public int[] TrackIds;
+        public bool Added;
+
+        public TracksUpdate(int[] trackIds, bool added = true)
+        {
+            TrackIds = trackIds;
+			Added = added;
+		}
+
+        public TracksUpdate(int trackId, bool added = true)
+        {
+            TrackIds = new int[] { trackId };
+            Added = added;
+        }
+    }
 }

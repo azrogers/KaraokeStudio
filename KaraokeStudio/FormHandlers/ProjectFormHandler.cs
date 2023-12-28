@@ -3,6 +3,7 @@ using KaraokeLib.Config;
 using KaraokeLib.Events;
 using KaraokeLib.Files;
 using KaraokeLib.Tracks;
+using KaraokeStudio.Commands;
 using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Project;
 using KaraokeStudio.Util;
@@ -30,11 +31,6 @@ namespace KaraokeStudio.FormHandlers
 		/// Called when the project changes (new project, open project)
 		/// </summary>
 		public event Action<KaraokeProject?>? OnProjectChanged;
-
-		/// <summary>
-		/// Called when a track is added or removed.
-		/// </summary>
-		public event Action<KaraokeTrack>? OnTrackChanged;
 
 		/// <summary>
 		/// Callback that's run when the project is about to change.
@@ -335,13 +331,10 @@ namespace KaraokeStudio.FormHandlers
 			}
 
 			var settings = new AudioClipSettings(audioFile);
-
-			var track = _loadedProject.AddTrack(KaraokeTrackType.Audio);
-			track.AddAudioClipEvent(settings, new TimeSpanTimecode(0), new TimeSpanTimecode(info.LengthSeconds));
+			CommandDispatcher.Dispatch(new AddAudioTrackCommand(settings, new TimeSpanTimecode(0), new TimeSpanTimecode(info.LengthSeconds)));
 
 			IsPendingChanges = true;
 			_loadedProject?.UpdateMixer();
-			OnTrackChanged?.Invoke(track);
 
 			return true;
 		}

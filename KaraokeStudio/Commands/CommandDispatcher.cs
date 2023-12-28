@@ -14,13 +14,16 @@ namespace KaraokeStudio.Commands
 				UpdateDispatcher.Dispatch(update);
 			}
 
-			UndoHandler.Push(command.Description, () =>
+			if(command.CanUndo)
 			{
-				foreach(var update in command.Undo(CurrentContext))
+				UndoHandler.Push(command.Description, () =>
 				{
-					UpdateDispatcher.Dispatch(update);
-				}
-			});
+					foreach (var update in command.Undo(CurrentContext))
+					{
+						UpdateDispatcher.Dispatch(update);
+					}
+				});
+			}
 		}
 	}
 }

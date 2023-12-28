@@ -1,22 +1,18 @@
 ﻿using KaraokeLib.Events;
 using KaraokeLib.Tracks;
+using KaraokeStudio.Commands;
+using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Project;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace KaraokeStudio
 {
 	internal static class WindowManager
 	{
-		private static SyncForm Sync
+		public static SyncForm Sync
 		{
 			get
 			{
-				if(_syncForm == null || _syncForm.IsDisposed)
+				if (_syncForm == null || _syncForm.IsDisposed)
 				{
 					_syncForm = new SyncForm();
 				}
@@ -26,18 +22,6 @@ namespace KaraokeStudio
 		}
 
 		private static SyncForm? _syncForm = null;
-
-		internal static void OpenSyncForm(KaraokeProject project, KaraokeTrack track)
-		{
-			if(Sync.Visible)
-			{
-				Sync.Focus();
-			}
-			else
-			{
-				Sync.Open(project, track);
-			}
-		}
 
 		internal static bool OnProjectWillChange()
 		{
@@ -57,6 +41,30 @@ namespace KaraokeStudio
 		internal static void OnTrackEventsChanged(KaraokeProject project, KaraokeTrack obj)
 		{
 			Sync.OnProjectEventsChanged();
+		}
+	}
+
+	internal class OpenSyncFormCommand : UndolessCommand
+	{
+		private KaraokeProject _project;
+		private KaraokeTrack _track;
+
+		public OpenSyncFormCommand(KaraokeProject project, KaraokeTrack track)
+		{
+			_project = project;
+			_track = track;
+		}
+
+		public override void DoExecute(CommandContext context)
+		{
+			if (WindowManager.Sync.Visible)
+			{
+				WindowManager.Sync.Focus();
+			}
+			else
+			{
+				WindowManager.Sync.Open(_project, _track);
+			}
 		}
 	}
 }

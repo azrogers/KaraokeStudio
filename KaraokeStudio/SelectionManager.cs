@@ -1,5 +1,6 @@
 ﻿using KaraokeLib.Events;
 using KaraokeLib.Tracks;
+using KaraokeStudio.Commands.Updates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,6 +36,19 @@ namespace KaraokeStudio
 		/// Called when the selected events have changed.
 		/// </summary>
 		public static event Action? OnSelectedEventsChanged;
+
+		static SelectionManager()
+		{
+			UpdateDispatcher.RegisterHandler<TracksUpdate>(update =>
+			{
+				foreach(var id in update.TrackIds)
+				{
+					_selectedTracks.RemoveAll(t => t.Id == id);
+				}
+
+				OnSelectedTracksChanged?.Invoke();
+			});
+		}
 
 		public static void Deselect()
 		{

@@ -18,6 +18,11 @@ namespace KaraokeLib.Files
 			return track;
 		}
 
+		public void RemoveTrack(int trackId)
+		{
+			_tracks.RemoveAll(t => t.Id == trackId);
+		}
+
 		public double GetLengthSeconds()
 		{
 			return _tracks.Any() ? _tracks.Max(t => t.Events.Any() ? t.Events.Max(t => t.EndTimeSeconds) : 0) : 0;

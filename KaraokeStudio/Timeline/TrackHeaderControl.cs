@@ -1,5 +1,6 @@
 ﻿using FontAwesome.Sharp;
 using KaraokeLib.Tracks;
+using KaraokeStudio.Commands;
 using KaraokeStudio.Config;
 using KaraokeStudio.Project;
 using KaraokeStudio.Util;
@@ -99,7 +100,7 @@ namespace KaraokeStudio.Timeline
 				{
 					if(Project != null)
 					{
-						WindowManager.OpenSyncForm(Project, Track);
+						CommandDispatcher.Dispatch(new OpenSyncFormCommand(Project, Track));
 					}
 				});
 			}
