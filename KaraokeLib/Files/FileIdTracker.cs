@@ -57,7 +57,15 @@ namespace KaraokeLib.Files
 
 			foreach (var ev in eventsNeedNewId)
 			{
-				Logger.Warn($"Event with ID {ev.Id} collides with existing event ID - reassigning to ID {_nextEventId}");
+				Logger.Debug($"Event with ID {ev.Id} collides with existing event ID - reassigning to ID {_nextEventId}");
+				// remap linked ids
+				foreach(var e in events)
+				{
+					if(e.LinkedId == ev.Id)
+					{
+						e.LinkedId = _nextEventId;
+					}
+				}
 				ev.Id = _nextEventId++;
 				_events[ev.Id] = ev;
 			}

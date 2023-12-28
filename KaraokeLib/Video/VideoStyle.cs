@@ -66,7 +66,7 @@ namespace KaraokeLib.Video
 				Style = SKPaintStyle.Fill
 			};
 
-			LineHeight = StyleUtil.GetFontHeight(_font);
+			LineHeight = StyleUtil.GetFontHeight(_font) * config.LineHeightMultiplier;
 			_config = config;
 		}
 

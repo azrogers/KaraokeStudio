@@ -1,21 +1,23 @@
 using KaraokeLib.Config;
 using KaraokeLib.Events;
-using KaraokeStudio.FormHandlers;
-using KaraokeStudio.Util;
-using KaraokeStudio.Video;
-using KaraokeStudio.LyricsEditor;
 using KaraokeLib.Tracks;
+using KaraokeStudio.Commands;
+using KaraokeStudio.Commands.Updates;
+using KaraokeStudio.FormHandlers;
+using KaraokeStudio.LyricsEditor;
 using KaraokeStudio.Project;
+using KaraokeStudio.Util;
 
 namespace KaraokeStudio
 {
-    public partial class MainForm : Form
+	public partial class MainForm : Form
 	{
 		private ProjectFormHandler _projectHandler;
 		private StyleForm _styleForm;
-		private SyncForm _syncForm;
 		private ConsoleForm _consoleForm;
 		private ExportVideoForm? _exportVideoForm;
+
+		private UpdateDispatcher.Handle _eventUpdateHandle;
 
 		// designer doesn't like handling this one itself so we set it up manually
 		private LyricsEditorControl lyricsEditor;
@@ -54,40 +56,20 @@ namespace KaraokeStudio
 			_projectHandler = new ProjectFormHandler();
 			_projectHandler.OnProjectChanged += OnProjectChanged;
 			_projectHandler.OnPendingStateChanged += OnPendingStateChanged;
-			_projectHandler.OnProjectWillChangeCallback = OnProjectWillChange;
+			_projectHandler.OnProjectWillChangeCallback = WindowManager.OnProjectWillChange;
 			_projectHandler.OnTrackChanged += OnTrackChanged;
 
 			_styleForm = new StyleForm();
 			_styleForm.OnProjectConfigApplied += OnProjectConfigApplied;
 
-			_syncForm = new SyncForm();
-			_syncForm.OnSyncDataApplied += OnSyncDataApplied;
-
 			_consoleForm = new ConsoleForm();
 
+			_eventUpdateHandle = UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
+			{
+				video.OnProjectEventsChanged(_projectHandler.Project);
+			});
+
 			OnProjectChanged(null);
-		}
-
-		public void OpenSyncForm(KaraokeTrack track)
-		{
-			if (_projectHandler.Project == null)
-			{
-				return;
-			}
-
-			if (_syncForm.IsDisposed)
-			{
-				_syncForm = new SyncForm();
-				_syncForm.OnSyncDataApplied += OnSyncDataApplied;
-			}
-
-			if (_syncForm.Visible)
-			{
-				_syncForm.Focus();
-				return;
-			}
-
-			_syncForm.Open(_projectHandler.Project, track);
 		}
 
 		private void OnTrackSettingsChanged(KaraokeTrack obj)
@@ -100,27 +82,16 @@ namespace KaraokeStudio
 			_projectHandler.OpenProject(path);
 		}
 
-		private void OnSyncDataApplied(KaraokeTrack obj)
-		{
-			UndoHandler.Clear();
-			_projectHandler.UpdateEvents(obj);
-			video.OnProjectEventsChanged(_projectHandler.Project);
-			timelineContainer.OnProjectEventsChanged(_projectHandler.Project);
-			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
-		}
-
 		private void OnTrackEventsChanged(KaraokeTrack obj)
 		{
 			_projectHandler.UpdateEvents(obj);
 			video.OnProjectEventsChanged(_projectHandler.Project);
 			timelineContainer.OnProjectEventsChanged(_projectHandler.Project);
 			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
-			_syncForm.OnProjectEventsChanged(_projectHandler.Project);
-		}
-
-		private bool OnProjectWillChange()
-		{
-			return _syncForm.OnProjectWillChange();
+			if (_projectHandler.Project != null)
+			{
+				WindowManager.OnTrackEventsChanged(_projectHandler.Project, obj);
+			}
 		}
 
 		private void OnProjectConfigApplied(KaraokeConfig obj)
@@ -143,7 +114,10 @@ namespace KaraokeStudio
 			video.OnProjectEventsChanged(_projectHandler.Project);
 			timelineContainer.OnProjectEventsChanged(_projectHandler.Project);
 			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
-			_syncForm.OnProjectEventsChanged(_projectHandler.Project);
+			if (_projectHandler.Project != null)
+			{
+				WindowManager.OnLyricsEventsChanged(_projectHandler.Project, obj);
+			}
 		}
 
 		private void OnTrackChanged(KaraokeTrack obj)
@@ -168,15 +142,16 @@ namespace KaraokeStudio
 		private void OnProjectChanged(KaraokeProject? project)
 		{
 			UpdateTitleAndMenu();
+			CommandDispatcher.CurrentContext.Project = project;
 
 			UndoHandler.Clear();
 			video.OnProjectChanged(project);
 			_styleForm.OnProjectChanged(project);
 			timelineContainer.OnProjectChanged(project);
 			lyricsEditor.OnProjectChanged(project);
-			_syncForm.Hide();
+			WindowManager.OnProjectChanged(project);
 			SelectionManager.Deselect();
-			if(_exportVideoForm != null && !_exportVideoForm.IsDisposed)
+			if (_exportVideoForm != null && !_exportVideoForm.IsDisposed)
 			{
 				_exportVideoForm.OnProjectChanged(_projectHandler.Project);
 			}
@@ -229,7 +204,7 @@ namespace KaraokeStudio
 				return;
 			}
 
-			OpenSyncForm(SelectionManager.SelectedTracks.First());
+			WindowManager.OpenSyncForm(_projectHandler.Project, SelectionManager.SelectedTracks.First());
 		}
 
 		private void audioToolStripMenuItem_Click(object sender, EventArgs e)
@@ -319,13 +294,13 @@ namespace KaraokeStudio
 
 		private void exportVideoToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if(_exportVideoForm != null && _exportVideoForm.Visible)
+			if (_exportVideoForm != null && _exportVideoForm.Visible)
 			{
 				_exportVideoForm.Focus();
 				return;
 			}
 
-			if(_exportVideoForm == null || _exportVideoForm.IsDisposed)
+			if (_exportVideoForm == null || _exportVideoForm.IsDisposed)
 			{
 				_exportVideoForm = new ExportVideoForm();
 			}

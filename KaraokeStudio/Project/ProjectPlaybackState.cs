@@ -9,7 +9,7 @@ namespace KaraokeStudio.Project
     /// <summary>
     /// Keeps track of playback position and handles audio playback across the project.
     /// </summary>
-    internal class ProjectPlaybackState
+    internal class ProjectPlaybackState : IDisposable
     {
         private bool _isPlayingInternal = false;
 
@@ -73,13 +73,14 @@ namespace KaraokeStudio.Project
 
             _project = project;
             AppSettings.Instance.OnVolumeChanged += OnVolumeChanged;
-        }
+		}
 
-        ~ProjectPlaybackState()
-        {
-            _timer.Tick -= OnTimerTick;
-            AppSettings.Instance.OnVolumeChanged -= OnVolumeChanged;
-        }
+		public void Dispose()
+		{
+			_timer.Tick -= OnTimerTick;
+			AppSettings.Instance.OnVolumeChanged -= OnVolumeChanged;
+			_output.Stop();
+		}
 
         public void UpdateProjectLength()
         {
@@ -215,5 +216,5 @@ namespace KaraokeStudio.Project
         {
             OnTick();
         }
-    }
+	}
 }

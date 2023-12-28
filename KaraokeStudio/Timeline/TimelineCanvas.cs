@@ -1,20 +1,19 @@
 ﻿using KaraokeLib.Events;
 using KaraokeLib.Tracks;
 using KaraokeLib.Util;
-using KaraokeLib.Video;
+using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Project;
 using KaraokeStudio.Timeline.EventRenderers;
 using KaraokeStudio.Util;
 using SkiaSharp;
-using System.Windows.Controls;
 
 namespace KaraokeStudio.Timeline
 {
-    /// <summary>
-    /// The actual canvas that the timeline is drawn to.
-    /// The TimelineControl presents a scrolled view into this canvas.
-    /// </summary>
-    internal class TimelineCanvas
+	/// <summary>
+	/// The actual canvas that the timeline is drawn to.
+	/// The TimelineControl presents a scrolled view into this canvas.
+	/// </summary>
+	internal class TimelineCanvas : IDisposable
 	{
 		// the width of the handles on each side of the event for grabbing, in control space
 		private const float EVENT_HANDLE_WIDTH = 5.0f;
@@ -59,6 +58,8 @@ namespace KaraokeStudio.Timeline
 
 		private Dictionary<KaraokeEventType, SKPaint> _eventTypePaints = new Dictionary<KaraokeEventType, SKPaint>();
 		private Dictionary<int, KaraokeEvent> _events = new Dictionary<int, KaraokeEvent>();
+
+		private UpdateDispatcher.Handle _eventsUpdateHandle;
 
 		public event Action<KaraokeTrack>? OnTrackEventsChanged;
 
@@ -116,6 +117,16 @@ namespace KaraokeStudio.Timeline
 			_ellipsisWidth = ellipsisBounds.Width;
 
 			_lineHeight = StyleUtil.GetFontHeight(_font);
+
+			_eventsUpdateHandle = UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
+			{
+				OnProjectEventsChanged();
+			});
+		}
+
+		public void Dispose()
+		{
+			_eventsUpdateHandle.Release();
 		}
 
 		/// <summary>
@@ -137,7 +148,7 @@ namespace KaraokeStudio.Timeline
 			{
 				destination.Save();
 				destination.SetMatrix(matrix);
-				foreach(var ev in _dragState.Value.Events)
+				foreach (var ev in _dragState.Value.Events)
 				{
 					rectOverrides[ev.Id] = DrawEvent(destination, _dragState.Value.TrackIndex, ev);
 				}
@@ -283,7 +294,7 @@ namespace KaraokeStudio.Timeline
 				UndoHandler.Push("Drag Event", () =>
 				{
 					var tracks = _project?.Tracks.Where(t => t.Events.Any(ev => eventIds.Contains(ev.Id))) ?? Enumerable.Empty<KaraokeTrack>();
-					if(eventIds.Length > 0)
+					if (eventIds.Length > 0)
 					{
 						var offset = _events[eventIds[0]].StartTimeSeconds - start;
 						foreach (var evId in eventIds)
@@ -293,7 +304,7 @@ namespace KaraokeStudio.Timeline
 						}
 					}
 
-					foreach(var track in tracks)
+					foreach (var track in tracks)
 					{
 						OnTrackEventsChanged?.Invoke(track);
 					}
@@ -365,7 +376,7 @@ namespace KaraokeStudio.Timeline
 			}
 
 			var events = new List<KaraokeEvent>() { ev };
-			if(dragType == DragType.MoveEvent && SelectionManager.SelectedEvents.Count() > 1)
+			if (dragType == DragType.MoveEvent && SelectionManager.SelectedEvents.Count() > 1)
 			{
 				events.AddRange(SelectionManager.SelectedEvents.Where(e => e.Id != ev.Id));
 			}
@@ -384,14 +395,15 @@ namespace KaraokeStudio.Timeline
 		{
 			_project = project;
 
-			foreach(var (type, renderer) in _eventRenderers)
+			foreach (var (type, renderer) in _eventRenderers)
 			{
 				renderer.RecreateContext();
 			}
-			OnProjectEventsChanged(project);
+
+			OnProjectEventsChanged();
 		}
 
-		internal void OnProjectEventsChanged(KaraokeProject? project)
+		internal void OnProjectEventsChanged()
 		{
 			_events.Clear();
 			_textBounds.Clear();
@@ -418,7 +430,7 @@ namespace KaraokeStudio.Timeline
 			var (origStart, origEnd) = _dragState.Value.OriginalEventTimes;
 			var precedingEvents = activeTrack.Events.Where(ev => !ids.Contains(ev.Id) && ev.EndTimeSeconds <= origStart);
 			var precedingEventEnd = precedingEvents.Any() ? precedingEvents.Max(ev => ev.EndTimeSeconds) : 0;
-			var succeedingEvents = activeTrack.Events.Where(ev => !ids.Contains(ev.Id) &&  ev.StartTimeSeconds >= origEnd);
+			var succeedingEvents = activeTrack.Events.Where(ev => !ids.Contains(ev.Id) && ev.StartTimeSeconds >= origEnd);
 			var succeedingEventStart = succeedingEvents.Any() ? succeedingEvents.Min(ev => ev.StartTimeSeconds) : double.MaxValue;
 			var minEventSize = 0.05;
 
@@ -426,9 +438,9 @@ namespace KaraokeStudio.Timeline
 			{
 				case DragType.MoveStart:
 					{
-						var dragPos = GetDragPos(matrix, time, precedingEventEnd, origEnd - minEventSize, new double[] { 
-							precedingEventEnd, 
-							origEnd - minEventSize, 
+						var dragPos = GetDragPos(matrix, time, precedingEventEnd, origEnd - minEventSize, new double[] {
+							precedingEventEnd,
+							origEnd - minEventSize,
 							origStart,
 							_project.PlaybackState.Position });
 						_dragState.Value.Events[0].SetTiming(new TimeSpanTimecode(dragPos), _dragState.Value.Events[0].EndTime);
@@ -436,9 +448,9 @@ namespace KaraokeStudio.Timeline
 					break;
 				case DragType.MoveEnd:
 					{
-						var dragPos = GetDragPos(matrix, time, origStart + minEventSize, succeedingEventStart, new double[] { 
-							origStart + minEventSize, 
-							succeedingEventStart, 
+						var dragPos = GetDragPos(matrix, time, origStart + minEventSize, succeedingEventStart, new double[] {
+							origStart + minEventSize,
+							succeedingEventStart,
 							origEnd,
 							_project.PlaybackState.Position });
 						_dragState.Value.Events[0].SetTiming(_dragState.Value.Events[0].StartTime, new TimeSpanTimecode(dragPos));
@@ -450,7 +462,7 @@ namespace KaraokeStudio.Timeline
 						var len = _dragState.Value.Events.Max(ev => ev.EndTimeSeconds) - _dragState.Value.Events.Min(ev => ev.StartTimeSeconds);
 						var timeOffset = time - (_dragStartPoint?.X ?? 0) / PIXELS_PER_SECOND;
 						var curTime = origStart + timeOffset;
-						var dragPos = GetDragPos(matrix, curTime, precedingEventEnd, succeedingEventStart - len, new double[] { 
+						var dragPos = GetDragPos(matrix, curTime, precedingEventEnd, succeedingEventStart - len, new double[] {
 							precedingEventEnd,
 							succeedingEventStart - len,
 							_project.PlaybackState.Position,
@@ -459,7 +471,7 @@ namespace KaraokeStudio.Timeline
 
 						var start = _dragState.Value.Events.Min(ev => ev.StartTimeSeconds);
 
-						foreach(var ev in _dragState.Value.Events)
+						foreach (var ev in _dragState.Value.Events)
 						{
 							var offset = ev.StartTimeSeconds - start;
 							ev.SetTiming(new TimeSpanTimecode(dragPos + offset), new TimeSpanTimecode(dragPos + offset + ev.LengthSeconds));
@@ -562,7 +574,7 @@ namespace KaraokeStudio.Timeline
 
 			canvas.DrawRect(eventRect, paint);
 
-			if(_eventRenderers.ContainsKey(ev.Type))
+			if (_eventRenderers.ContainsKey(ev.Type))
 			{
 				_eventRenderers[ev.Type].Render(canvas, eventRect, ev);
 			}

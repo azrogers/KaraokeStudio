@@ -36,6 +36,9 @@ namespace KaraokeLib.Config
             Width = SKFontStyleWidth.Normal
         };
 
+        [ConfigRange(0.0f)]
+        public float LineHeightMultiplier = 1.0f;
+
         public KPadding Padding = new KPadding(30.0f, 60.0f, 30.0f, 60.0f);
 
         [ConfigRange(0.0)]

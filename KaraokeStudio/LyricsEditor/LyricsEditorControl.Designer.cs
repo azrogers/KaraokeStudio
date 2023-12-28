@@ -30,6 +30,7 @@
 		{
 			this.lyricsEditorStatusStrip = new System.Windows.Forms.StatusStrip();
 			this.updateLyricsButton = new System.Windows.Forms.ToolStripSplitButton();
+			this.overwriteLyricsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.lyricsEditorStatusStrip.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -45,14 +46,21 @@
 			// 
 			// updateLyricsButton
 			// 
-			this.updateLyricsButton.DropDownButtonWidth = 0;
+			this.updateLyricsButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.overwriteLyricsToolStripMenuItem});
 			this.updateLyricsButton.Image = global::KaraokeStudio.Properties.Resources.RefreshIcon32;
 			this.updateLyricsButton.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.updateLyricsButton.Name = "updateLyricsButton";
-			this.updateLyricsButton.Size = new System.Drawing.Size(98, 20);
+			this.updateLyricsButton.Size = new System.Drawing.Size(109, 20);
 			this.updateLyricsButton.Text = "Update Lyrics";
 			this.updateLyricsButton.ToolTipText = "Update Lyrics";
-			this.updateLyricsButton.ButtonClick += new System.EventHandler(this.updateLyricsButton_ButtonClick);
+			// 
+			// overwriteLyricsToolStripMenuItem
+			// 
+			this.overwriteLyricsToolStripMenuItem.Name = "overwriteLyricsToolStripMenuItem";
+			this.overwriteLyricsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.overwriteLyricsToolStripMenuItem.Text = "Overwrite Lyrics";
+			this.overwriteLyricsToolStripMenuItem.Click += new System.EventHandler(this.overwriteLyricsToolStripMenuItem_Click);
 			// 
 			// LyricsEditorControl
 			// 
@@ -73,5 +81,6 @@
 
 		private StatusStrip lyricsEditorStatusStrip;
 		private ToolStripSplitButton updateLyricsButton;
+		private ToolStripMenuItem overwriteLyricsToolStripMenuItem;
 	}
 }

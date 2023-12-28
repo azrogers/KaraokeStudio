@@ -9,6 +9,8 @@ namespace KaraokeStudio.LyricsEditor
 {
     internal static class LyricsEditorText
 	{
+		const float NEW_ELEMENT_SIZE = 0.25f;
+
 		/// <summary>
 		/// Creates LyricsEditorTextElement instances from the given stream of events.
 		/// </summary>
@@ -87,7 +89,7 @@ namespace KaraokeStudio.LyricsEditor
 		/// <summary>
 		/// Uses old LyricsEditorTextElement instances to fill in missing time information for a new body of text.
 		/// </summary>
-		public static IEnumerable<KaraokeEvent> GetEventsFromString(string text, LyricsEditorTextElement[] oldElementsArr)
+		public static IEnumerable<KaraokeEvent> GetEventsFromString(string text, LyricsEditorTextElement[] oldElementsArr, double length)
 		{
 			var nextEventId = 0;
 			var nextElementId = 0;
@@ -105,7 +107,7 @@ namespace KaraokeStudio.LyricsEditor
 			var resultIndex = 0;
 			var oldIndex = 0;
 			var newIndex = 0;
-			while (oldIndex < oldArr.Length)
+			while (oldIndex < oldArr.Length || newIndex < newArr.Length)
 			{
 				Diff.Item? result = results.Length > resultIndex ? results[resultIndex] : null;
 				// we have a diff! handle it
@@ -113,16 +115,39 @@ namespace KaraokeStudio.LyricsEditor
 				{
 					var item = result.Value;
 
-					var timeStart = oldElements[item.StartA].StartTime;
-					var endIndex = item.StartA + item.deletedA + 1;
-					var timeEnd = endIndex < oldElements.Length ? oldElements[endIndex].StartTime : oldElements[oldElements.Length - 1].EndTime;
+					var minSizeNeeded = NEW_ELEMENT_SIZE * item.insertedB;
+					var timeStart = 0.0;
+					var timeEnd = length;
+					if(oldElements.Length > 0)
+					{
+						// we deleted items, so we can insert the new items in the bounds of the elements we just deleted
+						if (item.deletedA > 0)
+						{
+							timeStart = oldElements[item.StartA].StartTime;
+							var endIndex = item.StartA + item.deletedA;
+							timeEnd = endIndex < oldElements.Length ? oldElements[endIndex].StartTime : oldElements[oldElements.Length - 1].EndTime;
+						}
+						// we're at the start but there's enough room to insert it between the start of the song and the first event,
+						// or there's enough room to insert it between the last event and this event
+						else if ((item.StartA == 0 && oldElements[item.StartA].StartTime > minSizeNeeded) || (item.StartA > 0 && (oldElements[item.StartA].StartTime - oldElements[item.StartA - 1].EndTime) >= minSizeNeeded))
+						{
+							timeEnd = oldElements[item.StartA].StartTime;
+							timeStart = timeEnd - minSizeNeeded;
+						}
+						// just kinda throw em in there and let god sort it out
+						else
+						{
+							timeStart = oldElements[item.StartA].StartTime;
+							timeEnd = item.StartA + 1 < oldElements.Length ? oldElements[item.StartA + 1].StartTime : timeStart + minSizeNeeded;
+						}
+					}
 
-					var totalLen = newElements.Skip(item.StartB).Take(item.insertedB).Select(r => r.Tokens.Sum(t => t.Length)).Sum() + item.insertedB;
+					var totalLen = newElements.Skip(item.StartB).Take(item.insertedB).Select(r => r.Tokens.Sum(t => t.Length)).Sum();
 					var startPos = 0;
 					// handle all the skipped elements
 					foreach (var elem in newElements.Skip(item.StartB).Take(item.insertedB))
 					{
-						createdElements.Add(ToTextElement(elem, timeStart, timeEnd, startPos, totalLen, ref nextEventId, ref nextElementId, out var len));
+						createdElements.Add(ToTextElement(elem, timeStart, timeEnd, startPos, totalLen, nextEventId: ref nextEventId, nextElementId: ref nextElementId, out var len));
 						startPos += len;
 					}
 
@@ -210,9 +235,6 @@ namespace KaraokeStudio.LyricsEditor
 
 					lastId = nextEventId++;
 				}
-
-				// add char for space
-				pos++;
 
 				len = pos - startPos;
 				return new LyricsEditorTextElement(nextElementId++, KaraokeEventType.Lyric, events);

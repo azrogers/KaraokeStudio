@@ -27,6 +27,8 @@ namespace KaraokeStudio.Timeline
 		{
 			InitializeComponent();
 
+			Disposed += OnDispose;
+
 			headersContainer.SuspendLayout();
 			BackColor = VisualStyle.NeutralDarkColor;
 
@@ -35,7 +37,7 @@ namespace KaraokeStudio.Timeline
 			timeline.OnTrackEventsChanged += Timeline_OnTrackEventsChanged;
 		}
 
-		~TimelineContainerControl()
+		private void OnDispose(object? sender, EventArgs e)
 		{
 			SelectionManager.OnSelectedTracksChanged -= OnSelectedTracksChanged;
 		}

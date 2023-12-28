@@ -23,11 +23,12 @@ namespace KaraokeStudio.Video
 		public KaraokeVideoControl()
 		{
 			InitializeComponent();
+			Disposed += OnDispose;
 
 			volumeSlider.Volume = AppSettings.Instance.Volume;
 		}
 
-		~KaraokeVideoControl()
+		private void OnDispose(object? sender, EventArgs e)
 		{
 			if (_project != null)
 			{
@@ -35,7 +36,7 @@ namespace KaraokeStudio.Video
 				_project.PlaybackState.ReleaseVideoPlaybackClaim(this);
 			}
 
-			if(_lastFrame != null)
+			if (_lastFrame != null)
 			{
 				_lastFrame.Dispose();
 			}

@@ -4,16 +4,17 @@ using KaraokeLib.Tracks;
 using KaraokeLib.Util;
 using KaraokeLib.Video;
 using KaraokeLib.Video.Elements;
+using KaraokeStudio.Commands;
+using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.LyricsEditor;
 using KaraokeStudio.Project;
-using KaraokeStudio.Util;
 using KaraokeStudio.Video;
 using SkiaSharp;
 using System.Data;
 
 namespace KaraokeStudio
 {
-    public partial class SyncForm : Form
+	public partial class SyncForm : Form
 	{
 		private KaraokeProject? _currentProject;
 		private KaraokeTrack? _lyricsTrack;
@@ -24,6 +25,8 @@ namespace KaraokeStudio
 		private bool _finishedLastSyllable = true;
 		private SyncFormVideoGenerator? _generator;
 		private List<KaraokeEvent> _eventsNeedRepositioning = new List<KaraokeEvent>();
+
+		private List<Action> _onDispose = new List<Action>();
 
 		private Stack<(int EventIndex, double VideoPosition)> _undoContext = new Stack<(int EventIndex, double VideoPosition)>();
 		private Stack<(int EventIndex, double VideoPosition)> _undoLineContext = new Stack<(int EventIndex, double VideoPosition)>();
@@ -48,11 +51,21 @@ namespace KaraokeStudio
 
 		public bool IsDirty { get; private set; } = false;
 
-		public event Action<KaraokeTrack>? OnSyncDataApplied;
-
 		public SyncForm()
 		{
 			InitializeComponent();
+
+			_onDispose.Add(UpdateDispatcher.RegisterHandler<ProjectUpdate>(update =>
+			{
+				_currentProject = update.Project;
+				Hide();
+			}).Release);
+
+			_onDispose.Add(UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
+			{
+				// TODO: actually use information in update to tell which events to update
+				OnProjectEventsChanged();
+			}).Release);
 		}
 
 		internal void Open(KaraokeProject project, KaraokeTrack track)
@@ -76,19 +89,14 @@ namespace KaraokeStudio
 			Show();
 		}
 
-		internal void OnProjectEventsChanged(KaraokeProject? project)
+		internal void OnProjectEventsChanged()
 		{
-			if (_lyricsTrack == null || project == null || !Visible)
+			if (_lyricsTrack == null || _currentProject == null || !Visible)
 			{
 				return;
 			}
 
-			if (project != _currentProject)
-			{
-				throw new InvalidOperationException("SyncForm shouldn't be receiving OnProjectEventsChanged from a different project than it was opened for");
-			}
-
-			var trackMatch = project.Tracks.Where(t => t.Id == _lyricsTrack.Id).FirstOrDefault();
+			var trackMatch = _currentProject.Tracks.Where(t => t.Id == _lyricsTrack.Id).FirstOrDefault();
 			// track must've been deleted
 			if (trackMatch == null)
 			{
@@ -180,21 +188,8 @@ namespace KaraokeStudio
 				return;
 			}
 
-			var eventDict = new Dictionary<int, KaraokeEvent>();
-			foreach (var ev in _events)
-			{
-				eventDict[ev.Id] = ev;
-			}
+			CommandDispatcher.Dispatch(new SetEventTimingsCommand(_lyricsTrack, _events));
 
-			foreach (var ev in _lyricsTrack.Events)
-			{
-				if (eventDict.ContainsKey(ev.Id))
-				{
-					ev.SetTiming(eventDict[ev.Id].StartTime, eventDict[ev.Id].EndTime);
-				}
-			}
-
-			OnSyncDataApplied?.Invoke(_lyricsTrack);
 			_undoContext.Clear();
 			_undoLineContext.Clear();
 			UpdateButtons();
@@ -251,7 +246,7 @@ namespace KaraokeStudio
 				var origStartTime = _eventsNeedRepositioning.Min(e => e.StartTimeSeconds);
 				var origEndTime = _eventsNeedRepositioning.Max(e => e.EndTimeSeconds);
 
-				for(var i = 0; i < _eventsNeedRepositioning.Count; i++)
+				for (var i = 0; i < _eventsNeedRepositioning.Count; i++)
 				{
 					var evLength = 0.05;
 					var start = reposStartTime;
@@ -378,6 +373,13 @@ namespace KaraokeStudio
 		private void SyncForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			e.Cancel = !OnProjectWillChange();
+			if(!e.Cancel)
+			{
+				foreach(var d in _onDispose)
+				{
+					d();
+				}
+			}
 		}
 
 		private void undoLineButton_Click(object sender, EventArgs e) => HandleRewindLine();

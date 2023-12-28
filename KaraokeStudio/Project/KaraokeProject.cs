@@ -7,7 +7,7 @@ using KaraokeStudio.Util;
 
 namespace KaraokeStudio.Project
 {
-    internal class KaraokeProject
+    internal class KaraokeProject : IDisposable
     {
         public TimeSpan Length
         {
@@ -33,6 +33,11 @@ namespace KaraokeStudio.Project
         {
             _file = lyricsFile;
             PlaybackState = new ProjectPlaybackState(this, lyricsFile.GetTracks());
+        }
+
+        public void Dispose()
+        {
+            PlaybackState.Dispose();
         }
 
         public KaraokeTrack AddTrack(KaraokeTrackType type)
@@ -74,6 +79,7 @@ namespace KaraokeStudio.Project
             }
 
             var settings = new AudioClipSettings(audioPath);
+            file.AddTrack(KaraokeTrackType.Lyrics);
             var track = file.AddTrack(KaraokeTrackType.Audio);
             track.AddAudioClipEvent(settings, new TimeSpanTimecode(0), new TimeSpanTimecode(fileInfo.LengthSeconds));
 

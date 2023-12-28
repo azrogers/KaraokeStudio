@@ -12,6 +12,7 @@ namespace KaraokeStudio.Config
 		private IEditableConfig? _temporaryConfig = null;
 		private List<BaseConfigControl> _controls = new List<BaseConfigControl>();
 		private List<Label> _labels = new List<Label>();
+		private Size? _lastSize;
 
 		/// <summary>
 		/// Event called when a config value has been changed.

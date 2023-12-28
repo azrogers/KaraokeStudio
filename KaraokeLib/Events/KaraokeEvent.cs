@@ -56,7 +56,7 @@ namespace KaraokeLib.Events
 		///		"ly" { Id = 3, LinkedId = 2 }
 		///	]
 		/// </remarks>
-		public int LinkedId => _linkedId;
+		public int LinkedId { get => _linkedId; set => _linkedId = value; }
 
 		public KaraokeEvent(KaraokeEvent ev) : this(ev.Type, ev.Id, ev.StartTime, ev.EndTime, ev.LinkedId)
 		{

@@ -1,5 +1,6 @@
 ﻿using KaraokeLib.Events;
 using KaraokeLib.Tracks;
+using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Project;
 using ScintillaNET;
 using System.Data;
@@ -17,11 +18,15 @@ namespace KaraokeStudio.LyricsEditor
 		private Scintilla _scintilla;
 		private int _previousHighlightIndex = 0;
 
+		private UpdateDispatcher.Handle _eventsUpdateHandle;
+
 		public event Action<(KaraokeTrack Track, IEnumerable<KaraokeEvent> NewEvents)>? OnLyricsEventsChanged;
 
 		public LyricsEditorControl()
 		{
 			InitializeComponent();
+
+			Disposed += OnDispose;
 
 			BackColor = Color.Black;
 
@@ -49,14 +54,21 @@ namespace KaraokeStudio.LyricsEditor
 			_scintilla.WrapMode = WrapMode.Word;
 
 			Controls.Add(_scintilla);
+
+			_eventsUpdateHandle = UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
+			{
+				UpdateTextBox();
+			});
 		}
 
-		~LyricsEditorControl()
+		private void OnDispose(object? sender, EventArgs e)
 		{
-			if(_project != null)
+			if (_project != null)
 			{
 				_project.PlaybackState.OnPositionChanged -= OnPositionChanged;
 			}
+
+			_eventsUpdateHandle.Release();
 		}
 
 		internal void OnProjectChanged(KaraokeProject? project)
@@ -157,6 +169,19 @@ namespace KaraokeStudio.LyricsEditor
 			}
 		}
 
+		private void UpdateLyrics(LyricsEditorTextElement[] prevElements)
+		{
+			var track = _project?.Tracks.FirstOrDefault(t => t.Type == KaraokeTrackType.Lyrics);
+			if (track == null)
+			{
+				return;
+			}
+
+			var newEvents = LyricsEditorText.GetEventsFromString(_scintilla.Text, prevElements, _project?.Length.TotalSeconds ?? 0).ToArray();
+
+			OnLyricsEventsChanged?.Invoke((track, newEvents));
+		}
+
 		private void _scintilla_StyleNeeded(object? sender, StyleNeededEventArgs e)
 		{
 			var start = _scintilla.GetEndStyled();
@@ -179,15 +204,12 @@ namespace KaraokeStudio.LyricsEditor
 
 		private void updateLyricsButton_ButtonClick(object sender, EventArgs e)
 		{
-			var track = _project?.Tracks.FirstOrDefault(t => t.Type == KaraokeTrackType.Lyrics);
-			if (track == null)
-			{
-				return;
-			}
+			UpdateLyrics(_textElements);
+		}
 
-			var newEvents = LyricsEditorText.GetEventsFromString(_scintilla.Text, _textElements).ToArray();
-
-			OnLyricsEventsChanged?.Invoke((track, newEvents));
+		private void overwriteLyricsToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			UpdateLyrics(new LyricsEditorTextElement[0]);
 		}
 	}
 }

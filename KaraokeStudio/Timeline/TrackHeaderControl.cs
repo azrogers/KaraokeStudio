@@ -97,9 +97,9 @@ namespace KaraokeStudio.Timeline
 			{
 				CreateButton("Sync Lyrics", IconChar.Music, (o, e) =>
 				{
-					if (MainForm.Instance != null)
+					if(Project != null)
 					{
-						MainForm.Instance.OpenSyncForm(Track);
+						WindowManager.OpenSyncForm(Project, Track);
 					}
 				});
 			}

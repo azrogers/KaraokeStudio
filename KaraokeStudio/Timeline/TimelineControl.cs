@@ -1,4 +1,5 @@
 ﻿using KaraokeLib.Tracks;
+using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Project;
 using KaraokeStudio.Util;
 using NLog;
@@ -16,7 +17,7 @@ namespace KaraokeStudio.Timeline
     /// A coordinate in control space is in screen coordinates, relative to the location of the control on the screen.
     /// A coordinate in canvas space is in the coordinates of the full canvas, which may be scaled or scrolled depending on the user's inputs.
     /// </remarks>
-    public partial class TimelineControl : UserControl
+    public partial class TimelineControl : UserControl, IDisposable
 	{
 		private const float PADDING_TOP = 5.0f;
 		// width of the playhead for clicking and dragging to scrub
@@ -41,6 +42,8 @@ namespace KaraokeStudio.Timeline
 		private bool _awaitingMouseTimer = false;
 		private float _prevPlaybackHeadXPos = 0;
 
+		private UpdateDispatcher.Handle _eventsUpdateHandle;
+
 		/// <summary>
 		/// Called when the positioning of tracks has changed.
 		/// </summary>
@@ -54,6 +57,8 @@ namespace KaraokeStudio.Timeline
 		public TimelineControl()
 		{
 			InitializeComponent();
+
+			Disposed += OnDispose;
 
 			_mouseTimer = new System.Windows.Forms.Timer();
 			_mouseTimer.Interval = 100;
@@ -77,6 +82,12 @@ namespace KaraokeStudio.Timeline
 
 			horizScroll.Enabled = false;
 			verticalScroll.Enabled = false;
+
+			_eventsUpdateHandle = UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
+			{
+				RecalculateScrollBars();
+				skiaControl.Invalidate();
+			});
 		}
 
 		private void _timelineCanvas_OnTrackEventsChanged(KaraokeTrack obj)
@@ -84,9 +95,11 @@ namespace KaraokeStudio.Timeline
 			OnTrackEventsChanged?.Invoke(obj);
 		}
 
-		~TimelineControl()
+		private void OnDispose(object? sender, EventArgs e)
 		{
+			_eventsUpdateHandle.Release();
 			_mouseTimer.Dispose();
+			_timelineCanvas.Dispose();
 
 			if (_currentProject != null)
 			{
@@ -146,7 +159,7 @@ namespace KaraokeStudio.Timeline
 		internal void OnProjectEventsChanged(KaraokeProject? project)
 		{
 			_tracks = project?.Tracks.OrderBy(t => t.Id).ToArray() ?? new KaraokeTrack[0];
-			_timelineCanvas.OnProjectEventsChanged(project);
+			_timelineCanvas.OnProjectEventsChanged();
 			RecalculateScrollBars();
 			skiaControl.Invalidate();
 		}

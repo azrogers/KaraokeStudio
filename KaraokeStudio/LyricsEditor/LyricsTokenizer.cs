@@ -11,6 +11,7 @@ namespace KaraokeStudio.LyricsEditor
 			{
 				int nextCh = -1;
 				var lineCount = 0;
+				var blockLevel = 0;
 				var currentType = LyricsTokenType.Invalid;
 				var currentValue = new StringBuilder();
 				var isEscaped = false;
@@ -52,14 +53,17 @@ namespace KaraokeStudio.LyricsEditor
 					// handle spaces and tabs
 					if (char.IsWhiteSpace(ch))
 					{
-						if (currentType == LyricsTokenType.Text)
+						if(blockLevel <= 0)
 						{
-							yield return new LyricsToken(LyricsTokenType.Text, currentValue.ToString());
-							currentValue.Clear();
+							if (currentType == LyricsTokenType.Text)
+							{
+								yield return new LyricsToken(LyricsTokenType.Text, currentValue.ToString());
+								currentValue.Clear();
+							}
+							currentType = LyricsTokenType.Whitespace;
 						}
 
 						currentValue.Append(ch);
-						currentType = LyricsTokenType.Whitespace;
 						continue;
 					}
 
@@ -81,7 +85,11 @@ namespace KaraokeStudio.LyricsEditor
 					if (isEscaped)
 					{
 						isEscaped = false;
-						if (ch != LyricsConstants.ESCAPE_CHAR && ch != LyricsConstants.SYLLABLE_SEPERATOR)
+						if (
+							ch != LyricsConstants.ESCAPE_CHAR && 
+							ch != LyricsConstants.SYLLABLE_SEPERATOR && 
+							ch != LyricsConstants.BLOCK_OPEN && 
+							ch != LyricsConstants.BLOCK_CLOSE)
 						{
 							// if it's not escaping something that needs to be escaped, just include it
 							currentValue.Append(LyricsConstants.ESCAPE_CHAR);
@@ -98,6 +106,15 @@ namespace KaraokeStudio.LyricsEditor
 						currentType = LyricsTokenType.Invalid;
 						currentValue.Clear();
 						continue;
+					}
+
+					if(ch == LyricsConstants.BLOCK_OPEN)
+					{
+						blockLevel++;
+					}
+					else if(ch == LyricsConstants.BLOCK_CLOSE)
+					{
+						blockLevel--;
 					}
 
 					currentType = LyricsTokenType.Text;

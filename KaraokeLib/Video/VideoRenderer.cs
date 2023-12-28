@@ -71,7 +71,7 @@ namespace KaraokeLib.Video
 						VideoContext = _context,
 						VideoPosition = posSeconds
 					};
-					HandleTransition(ev.Element.StartTransition, ev.Element, context);
+					HandleTransition(ev.Element.EndTransition, ev.Element, context);
 				}
 				else
 				{

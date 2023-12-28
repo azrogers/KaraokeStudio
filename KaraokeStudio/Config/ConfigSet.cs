@@ -3,7 +3,7 @@ using KaraokeLib.Config.Attributes;
 
 namespace KaraokeStudio.Config
 {
-	internal class ConfigSet
+	public class ConfigSet
 	{
 		private List<IConfigField> _fields = new List<IConfigField>();
 

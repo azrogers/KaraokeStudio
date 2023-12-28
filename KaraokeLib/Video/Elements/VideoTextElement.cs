@@ -233,6 +233,8 @@ namespace KaraokeLib.Video.Elements
 			var drawNormal = true;
 
 			var highlightPos = GetNormalizedPosition(videoPos);
+			// offset to center within line height
+			var yPos = Position.Y + lineHeight - (lineHeight - _textBlob.Bounds.Height) / 2;
 
 			if (drawNormal)
 			{
@@ -245,7 +247,7 @@ namespace KaraokeLib.Video.Elements
 					Position.Y + context.Size.Height);
 
 				canvas.ClipRect(rect, SKClipOperation.Intersect, true);
-				canvas.DrawText(_textBlob, Position.Item1, Position.Item2 + lineHeight, context.Style.NormalPaint);
+				canvas.DrawText(_textBlob, Position.X, yPos, context.Style.NormalPaint);
 
 				canvas.Restore();
 			}
@@ -261,7 +263,7 @@ namespace KaraokeLib.Video.Elements
 					Position.Y + context.Size.Height);
 
 				canvas.ClipRect(rect, SKClipOperation.Intersect, true);
-				canvas.DrawText(_textBlob, Position.Item1, Position.Item2 + lineHeight, context.Style.HighlightedPaint);
+				canvas.DrawText(_textBlob, Position.X, yPos, context.Style.HighlightedPaint);
 
 				canvas.Restore();
 			}
@@ -277,7 +279,7 @@ namespace KaraokeLib.Video.Elements
 					Position.Y + context.Size.Height);
 
 				canvas.ClipRect(rect, SKClipOperation.Intersect, true);
-				canvas.DrawText(_textBlob, Position.Item1, Position.Item2 + lineHeight, context.Style.StrokePaint);
+				canvas.DrawText(_textBlob, Position.X, yPos, context.Style.StrokePaint);
 
 				canvas.Restore();
 			}

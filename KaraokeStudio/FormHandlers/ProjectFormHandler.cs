@@ -3,6 +3,7 @@ using KaraokeLib.Config;
 using KaraokeLib.Events;
 using KaraokeLib.Files;
 using KaraokeLib.Tracks;
+using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Project;
 using KaraokeStudio.Util;
 using Ookii.Dialogs.WinForms;
@@ -52,6 +53,26 @@ namespace KaraokeStudio.FormHandlers
 				_pendingChangesInternal = value;
 				OnPendingStateChanged?.Invoke(value);
 			}
+		}
+
+		public ProjectFormHandler()
+		{
+			UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
+			{
+				var idLookup = new HashSet<int>(update.EventIds);
+				if(Project != null)
+				{
+					var relevantTracks = Project.Tracks.Where(t => t.Events.Any(e => idLookup.Contains(e.Id)));
+					foreach(var track in relevantTracks)
+					{
+						track.UpdateEvents();
+					}
+				}
+
+				RecalculateProjectLength();
+				_loadedProject?.UpdateMixer();
+				IsPendingChanges = true;
+			});
 		}
 
 		public void SetConfig(KaraokeConfig config)
@@ -110,6 +131,11 @@ namespace KaraokeStudio.FormHandlers
 				return;
 			}
 
+			if(_loadedProject != null)
+			{
+				_loadedProject.Dispose();
+			}
+
 			_loadedProject = KaraokeProject.Create(audioFile);
 			_loadedProjectPath = null;
 			IsPendingChanges = true;
@@ -126,6 +152,11 @@ namespace KaraokeStudio.FormHandlers
 			if (!File.Exists(file))
 			{
 				return;
+			}
+
+			if (_loadedProject != null)
+			{
+				_loadedProject.Dispose();
 			}
 
 			_loadedProject = KaraokeProject.Load(file);
@@ -181,6 +212,11 @@ namespace KaraokeStudio.FormHandlers
 			if (audioFile == null)
 			{
 				return;
+			}
+
+			if (_loadedProject != null)
+			{
+				_loadedProject.Dispose();
 			}
 
 			_loadedProject = KaraokeProject.FromMidi(midiFile, audioFile);
