@@ -54,6 +54,7 @@
 			this.updateLyricsButton.Size = new System.Drawing.Size(109, 20);
 			this.updateLyricsButton.Text = "Update Lyrics";
 			this.updateLyricsButton.ToolTipText = "Update Lyrics";
+			this.updateLyricsButton.ButtonClick += new System.EventHandler(this.updateLyricsButton_ButtonClick);
 			// 
 			// overwriteLyricsToolStripMenuItem
 			// 

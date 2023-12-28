@@ -79,7 +79,7 @@ namespace KaraokeStudio.Commands
 				}
 			}
 
-			yield return new EventTimingsUpdate(_newEventTimings.Keys.ToArray());
+			yield return new EventsUpdate(_newEventTimings.Keys.ToArray(), EventsUpdate.UpdateType.Timing);
 		}
 
 		public IEnumerable<IUpdate> Undo(CommandContext context)
@@ -102,7 +102,7 @@ namespace KaraokeStudio.Commands
 				}
 			}
 
-			yield return new EventTimingsUpdate(_newEventTimings.Keys.ToArray());
+			yield return new EventsUpdate(_newEventTimings.Keys.ToArray(), EventsUpdate.UpdateType.Timing);
 		}
 	}
 }

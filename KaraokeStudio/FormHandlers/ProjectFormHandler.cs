@@ -53,7 +53,7 @@ namespace KaraokeStudio.FormHandlers
 
 		public ProjectFormHandler()
 		{
-			UpdateDispatcher.RegisterHandler<EventTimingsUpdate>(update =>
+			UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
 			{
 				var idLookup = new HashSet<int>(update.EventIds);
 				if(Project != null)
@@ -88,14 +88,6 @@ namespace KaraokeStudio.FormHandlers
 		public void SetEvents(KaraokeTrack track, IEnumerable<KaraokeEvent> events)
 		{
 			track.ReplaceEvents(events);
-			RecalculateProjectLength();
-			_loadedProject?.UpdateMixer();
-			IsPendingChanges = true;
-		}
-
-		public void UpdateEvents(KaraokeTrack track)
-		{
-			track.UpdateEvents();
 			RecalculateProjectLength();
 			_loadedProject?.UpdateMixer();
 			IsPendingChanges = true;

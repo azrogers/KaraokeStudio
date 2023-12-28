@@ -59,6 +59,9 @@ namespace KaraokeLib.Files
 		public KaraokeTrack AddTrack(IKaraokeFile file, KaraokeTrackType type) => throw new NotImplementedException("LrcLyricsProvider.AddTrack not implemented");
 
 		/// <inheritdoc />
+		public KaraokeTrack AddTrack(KaraokeTrack track) => throw new NotImplementedException("LrcLyricsProvider.AddTrack not implemented");
+
+		/// <inheritdoc />
 		public void RemoveTrack(int trackId) => throw new NotImplementedException("LrcLyricsProvider.RemoveTrack not implemented");
 
 		/// <inheritdoc />

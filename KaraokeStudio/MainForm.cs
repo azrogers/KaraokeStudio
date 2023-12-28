@@ -42,8 +42,6 @@ namespace KaraokeStudio
 			lyricsEditor.Size = new Size(549, 297);
 			lyricsEditor.TabIndex = 0;
 
-			lyricsEditor.OnLyricsEventsChanged += OnLyricsEventsChanged;
-
 			SelectionManager.OnSelectedEventsChanged += OnEventSelectionChanged;
 			SelectionManager.OnSelectedTracksChanged += OnTrackSelectionChanged;
 
@@ -60,7 +58,7 @@ namespace KaraokeStudio
 
 			_consoleForm = new ConsoleForm();
 
-			_eventUpdateHandle = UpdateDispatcher.RegisterHandler<EventTimingsUpdate>(update =>
+			_eventUpdateHandle = UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
 			{
 				video.OnProjectEventsChanged(_projectHandler.Project);
 			});
@@ -88,20 +86,6 @@ namespace KaraokeStudio
 			}
 
 			video.UpdateGenerationContext();
-		}
-
-		private void OnLyricsEventsChanged((KaraokeTrack Track, IEnumerable<KaraokeEvent> NewEvents) obj)
-		{
-			UndoHandler.Clear();
-			SelectionManager.Deselect();
-			_projectHandler.SetEvents(obj.Track, obj.NewEvents);
-			video.OnProjectEventsChanged(_projectHandler.Project);
-			timelineContainer.OnProjectEventsChanged(_projectHandler.Project);
-			lyricsEditor.OnProjectEventsChanged(_projectHandler.Project);
-			if (_projectHandler.Project != null)
-			{
-				WindowManager.OnLyricsEventsChanged(_projectHandler.Project, obj);
-			}
 		}
 
 		private void OnUndoItemsChanged()
@@ -189,12 +173,12 @@ namespace KaraokeStudio
 
 		private void removeTrackToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (!SelectionManager.SelectedTracks.Any())
+			if (_projectHandler.Project == null || !SelectionManager.SelectedTracks.Any())
 			{
 				return;
 			}
 
-			// remove track
+			CommandDispatcher.Dispatch(new RemoveTracksCommand(SelectionManager.SelectedTracks.ToArray()));
 		}
 
 		private void consoleToolStripMenuItem_Click(object sender, EventArgs e)

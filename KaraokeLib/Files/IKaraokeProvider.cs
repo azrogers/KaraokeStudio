@@ -18,6 +18,12 @@ namespace KaraokeLib.Files
 		KaraokeTrack AddTrack(IKaraokeFile file, KaraokeTrackType type);
 
 		/// <summary>
+		/// Adds an existing track object to the provider.
+		/// The ID of this track and its events must not overlap with any existing IDs.
+		/// </summary>
+		KaraokeTrack AddTrack(KaraokeTrack track);
+
+		/// <summary>
 		/// Removes a track with the given ID.
 		/// </summary>
 		void RemoveTrack(int trackId);

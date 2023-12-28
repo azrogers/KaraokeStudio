@@ -61,6 +61,11 @@ namespace KaraokeLib.Files
 		}
 
 		/// <summary>
+		/// Adds an existing track object to this file.
+		/// </summary>
+		public KaraokeTrack AddTrack(KaraokeTrack track) => _provider.AddTrack(track);
+
+		/// <summary>
 		/// Removes the track with the given ID from this file.
 		/// </summary>
 		public void RemoveTrack(int trackId)

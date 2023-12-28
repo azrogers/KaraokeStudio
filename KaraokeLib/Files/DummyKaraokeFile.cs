@@ -18,6 +18,12 @@ namespace KaraokeLib.Files
 			return track;
 		}
 
+		public KaraokeTrack AddTrack(KaraokeTrack track)
+		{
+			_tracks.Add(track);
+			return track;
+		}
+
 		public void RemoveTrack(int trackId)
 		{
 			_tracks.RemoveAll(t => t.Id == trackId);

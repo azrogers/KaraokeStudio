@@ -107,6 +107,13 @@ namespace KaraokeLib.Files
 		}
 
 		/// <inheritdoc />
+		public KaraokeTrack AddTrack(KaraokeTrack track)
+		{
+			FileObject.SetTracks(FileObject.Tracks.Concat(new KaraokeTrack[] { track }));
+			return track;
+		}
+
+		/// <inheritdoc />
 		public void RemoveTrack(int trackId)
 		{
 			FileObject.SetTracks(FileObject.Tracks.Where(t => t.Id != trackId));

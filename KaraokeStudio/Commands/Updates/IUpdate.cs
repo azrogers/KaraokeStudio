@@ -21,15 +21,25 @@ namespace KaraokeStudio.Commands.Updates
 	}
 
 	/// <summary>
-	/// An update denoting that one or more events have had their timings changed.
+	/// An update denoting that one or more events have changed.
 	/// </summary>
-	internal class EventTimingsUpdate : IUpdate
+	internal class EventsUpdate : IUpdate
 	{
 		public int[] EventIds;
+		public UpdateType Type;
 
-		public EventTimingsUpdate(int[] eventIds)
+		public EventsUpdate(int[] eventIds, UpdateType type)
 		{
 			EventIds = eventIds;
+			Type = type;
+		}
+
+		public enum UpdateType
+		{
+			Timing,
+			Add,
+			Remove,
+			Replace
 		}
 	}
 

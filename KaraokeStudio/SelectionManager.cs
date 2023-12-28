@@ -39,6 +39,15 @@ namespace KaraokeStudio
 
 		static SelectionManager()
 		{
+			UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
+			{
+				if(update.Type == EventsUpdate.UpdateType.Replace)
+				{
+					var idsLookup = new HashSet<int>(update.EventIds);
+					_selectedEvents.RemoveAll(ev => !idsLookup.Contains(ev.Id));
+				}
+			});
+
 			UpdateDispatcher.RegisterHandler<TracksUpdate>(update =>
 			{
 				foreach(var id in update.TrackIds)

@@ -46,6 +46,8 @@ namespace KaraokeStudio.Project
             return track;
         }
 
+        public KaraokeTrack AddTrack(KaraokeTrack track) => _file.AddTrack(track);
+
         public void RemoveTrack(int trackId)
         {
             _file.RemoveTrack(trackId);

@@ -1,5 +1,6 @@
 ﻿using KaraokeLib.Events;
 using KaraokeLib.Tracks;
+using KaraokeStudio.Commands;
 using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Project;
 using ScintillaNET;
@@ -20,8 +21,6 @@ namespace KaraokeStudio.LyricsEditor
 
 		private UpdateDispatcher.Handle _eventsUpdateHandle;
 		private UpdateDispatcher.Handle _tracksUpdateHandle;
-
-		public event Action<(KaraokeTrack Track, IEnumerable<KaraokeEvent> NewEvents)>? OnLyricsEventsChanged;
 
 		public LyricsEditorControl()
 		{
@@ -56,7 +55,7 @@ namespace KaraokeStudio.LyricsEditor
 
 			Controls.Add(_scintilla);
 
-			_eventsUpdateHandle = UpdateDispatcher.RegisterHandler<EventTimingsUpdate>(update =>
+			_eventsUpdateHandle = UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
 			{
 				UpdateTextBox();
 			});
@@ -185,8 +184,7 @@ namespace KaraokeStudio.LyricsEditor
 			}
 
 			var newEvents = LyricsEditorText.GetEventsFromString(_scintilla.Text, prevElements, _project?.Length.TotalSeconds ?? 0).ToArray();
-
-			OnLyricsEventsChanged?.Invoke((track, newEvents));
+			CommandDispatcher.Dispatch(new SetTrackEventsCommand(track, newEvents, "Update lyrics"));
 		}
 
 		private void _scintilla_StyleNeeded(object? sender, StyleNeededEventArgs e)

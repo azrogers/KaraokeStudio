@@ -78,7 +78,7 @@ namespace KaraokeStudio.Timeline
 			horizScroll.Enabled = false;
 			verticalScroll.Enabled = false;
 
-			_eventsUpdateHandle = UpdateDispatcher.RegisterHandler<EventTimingsUpdate>(update =>
+			_eventsUpdateHandle = UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
 			{
 				RecalculateScrollBars();
 				skiaControl.Invalidate();

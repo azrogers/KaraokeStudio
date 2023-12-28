@@ -61,7 +61,7 @@ namespace KaraokeStudio
 				Hide();
 			}).Release);
 
-			_onDispose.Add(UpdateDispatcher.RegisterHandler<EventTimingsUpdate>(update =>
+			_onDispose.Add(UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
 			{
 				// TODO: actually use information in update to tell which events to update
 				OnProjectEventsChanged();

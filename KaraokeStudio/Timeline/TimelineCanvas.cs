@@ -116,7 +116,7 @@ namespace KaraokeStudio.Timeline
 
 			_lineHeight = StyleUtil.GetFontHeight(_font);
 
-			_eventsUpdateHandle = UpdateDispatcher.RegisterHandler<EventTimingsUpdate>(update =>
+			_eventsUpdateHandle = UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
 			{
 				OnProjectEventsChanged();
 			});
