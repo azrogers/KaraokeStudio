@@ -207,6 +207,53 @@ namespace KaraokeStudio
 			UndoHandler.Undo();
 		}
 
+		private void redoToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			UndoHandler.Redo();
+		}
+
+		private void exportVideoToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (_exportVideoForm != null && _exportVideoForm.Visible)
+			{
+				_exportVideoForm.Focus();
+				return;
+			}
+
+			if (_exportVideoForm == null || _exportVideoForm.IsDisposed)
+			{
+				_exportVideoForm = new ExportVideoForm();
+			}
+
+			_exportVideoForm.OnProjectChanged(_projectHandler.Project);
+			_exportVideoForm.Show();
+		}
+
+		private void addAudioClipToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void removeEventToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void eventPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void trackPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (!SelectionManager.SelectedTracks.Any())
+			{
+				return;
+			}
+
+			CommandDispatcher.Dispatch(new OpenTrackSettingsCommand(SelectionManager.SelectedTracks.First()));
+		}
+
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			if (!_projectHandler.AlertPendingChanges())
@@ -265,48 +312,9 @@ namespace KaraokeStudio
 
 			undoToolStripMenuItem.Enabled = UndoHandler.CurrentItem != null;
 			undoToolStripMenuItem.Text = UndoHandler.CurrentItem == null ? "Undo" : "Undo " + UndoHandler.CurrentItem.Value.Action;
-		}
 
-		private void exportVideoToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_exportVideoForm != null && _exportVideoForm.Visible)
-			{
-				_exportVideoForm.Focus();
-				return;
-			}
-
-			if (_exportVideoForm == null || _exportVideoForm.IsDisposed)
-			{
-				_exportVideoForm = new ExportVideoForm();
-			}
-
-			_exportVideoForm.OnProjectChanged(_projectHandler.Project);
-			_exportVideoForm.Show();
-		}
-
-		private void addAudioClipToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-
-		}
-
-		private void removeEventToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-
-		}
-
-		private void eventPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-
-		}
-
-		private void trackPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			if(!SelectionManager.SelectedTracks.Any())
-			{
-				return;
-			}
-
-			CommandDispatcher.Dispatch(new OpenTrackSettingsCommand(SelectionManager.SelectedTracks.First()));
+			redoToolStripMenuItem.Enabled = UndoHandler.CurrentRedoItem != null;
+			redoToolStripMenuItem.Text = UndoHandler.CurrentRedoItem == null ? "Redo" : "Redo " + UndoHandler.CurrentRedoItem.Value.Action;
 		}
 	}
 }

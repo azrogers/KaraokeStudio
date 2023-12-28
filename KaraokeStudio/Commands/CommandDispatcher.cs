@@ -22,6 +22,12 @@ namespace KaraokeStudio.Commands
 					{
 						UpdateDispatcher.Dispatch(update);
 					}
+				}, () =>
+				{
+					foreach (var update in command.Execute(CurrentContext))
+					{
+						UpdateDispatcher.Dispatch(update);
+					}
 				});
 			}
 		}

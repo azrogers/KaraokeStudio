@@ -50,6 +50,7 @@ namespace KaraokeStudio
 			this.editStyleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
 			this.undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.redoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.trackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.addTrackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.addAudioTrackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -181,19 +182,19 @@ namespace KaraokeStudio
 			// 
 			this.exportVideoToolStripMenuItem.Name = "exportVideoToolStripMenuItem";
 			this.exportVideoToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F1;
-			this.exportVideoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.exportVideoToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
 			this.exportVideoToolStripMenuItem.Text = "Video...";
 			this.exportVideoToolStripMenuItem.Click += new System.EventHandler(this.exportVideoToolStripMenuItem_Click);
 			// 
 			// toolStripSeparator4
 			// 
 			this.toolStripSeparator4.Name = "toolStripSeparator4";
-			this.toolStripSeparator4.Size = new System.Drawing.Size(120, 6);
+			this.toolStripSeparator4.Size = new System.Drawing.Size(129, 6);
 			// 
 			// lRCFileToolStripMenuItem
 			// 
 			this.lRCFileToolStripMenuItem.Name = "lRCFileToolStripMenuItem";
-			this.lRCFileToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+			this.lRCFileToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
 			this.lRCFileToolStripMenuItem.Text = "LRC file...";
 			this.lRCFileToolStripMenuItem.Click += new System.EventHandler(this.lRCFileToolStripMenuItem_Click);
 			// 
@@ -215,7 +216,8 @@ namespace KaraokeStudio
 			this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.editStyleToolStripMenuItem,
             this.toolStripSeparator3,
-            this.undoToolStripMenuItem});
+            this.undoToolStripMenuItem,
+            this.redoToolStripMenuItem});
 			this.editToolStripMenuItem.Name = "editToolStripMenuItem";
 			this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
 			this.editToolStripMenuItem.Text = "Edit";
@@ -231,15 +233,23 @@ namespace KaraokeStudio
 			// toolStripSeparator3
 			// 
 			this.toolStripSeparator3.Name = "toolStripSeparator3";
-			this.toolStripSeparator3.Size = new System.Drawing.Size(141, 6);
+			this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
 			// 
 			// undoToolStripMenuItem
 			// 
 			this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
 			this.undoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
-			this.undoToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+			this.undoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.undoToolStripMenuItem.Text = "Undo";
 			this.undoToolStripMenuItem.Click += new System.EventHandler(this.undoToolStripMenuItem_Click);
+			// 
+			// redoToolStripMenuItem
+			// 
+			this.redoToolStripMenuItem.Name = "redoToolStripMenuItem";
+			this.redoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
+			this.redoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.redoToolStripMenuItem.Text = "Redo";
+			this.redoToolStripMenuItem.Click += new System.EventHandler(this.redoToolStripMenuItem_Click);
 			// 
 			// trackToolStripMenuItem
 			// 
@@ -257,7 +267,7 @@ namespace KaraokeStudio
 			this.addTrackToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addAudioTrackToolStripMenuItem});
 			this.addTrackToolStripMenuItem.Name = "addTrackToolStripMenuItem";
-			this.addTrackToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.addTrackToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
 			this.addTrackToolStripMenuItem.Text = "Add";
 			// 
 			// addAudioTrackToolStripMenuItem
@@ -271,7 +281,7 @@ namespace KaraokeStudio
 			// 
 			this.removeTrackToolStripMenuItem.Name = "removeTrackToolStripMenuItem";
 			this.removeTrackToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Delete)));
-			this.removeTrackToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.removeTrackToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
 			this.removeTrackToolStripMenuItem.Text = "Remove";
 			this.removeTrackToolStripMenuItem.Click += new System.EventHandler(this.removeTrackToolStripMenuItem_Click);
 			// 
@@ -279,7 +289,7 @@ namespace KaraokeStudio
 			// 
 			this.syncLyricsToolStripMenuItem.Name = "syncLyricsToolStripMenuItem";
 			this.syncLyricsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D)));
-			this.syncLyricsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.syncLyricsToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
 			this.syncLyricsToolStripMenuItem.Text = "Sync Lyrics";
 			this.syncLyricsToolStripMenuItem.Click += new System.EventHandler(this.syncLyricsToolStripMenuItem_Click);
 			// 
@@ -287,7 +297,7 @@ namespace KaraokeStudio
 			// 
 			this.trackPropertiesToolStripMenuItem.Name = "trackPropertiesToolStripMenuItem";
 			this.trackPropertiesToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.T)));
-			this.trackPropertiesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.trackPropertiesToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
 			this.trackPropertiesToolStripMenuItem.Text = "Properties";
 			this.trackPropertiesToolStripMenuItem.Click += new System.EventHandler(this.trackPropertiesToolStripMenuItem_Click);
 			// 
@@ -306,7 +316,7 @@ namespace KaraokeStudio
 			this.addEventToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addAudioClipToolStripMenuItem});
 			this.addEventToolStripMenuItem.Name = "addEventToolStripMenuItem";
-			this.addEventToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.addEventToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
 			this.addEventToolStripMenuItem.Text = "Add";
 			// 
 			// addAudioClipToolStripMenuItem
@@ -320,7 +330,7 @@ namespace KaraokeStudio
 			// 
 			this.removeEventToolStripMenuItem.Name = "removeEventToolStripMenuItem";
 			this.removeEventToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.Delete;
-			this.removeEventToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.removeEventToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
 			this.removeEventToolStripMenuItem.Text = "Remove";
 			this.removeEventToolStripMenuItem.Click += new System.EventHandler(this.removeEventToolStripMenuItem_Click);
 			// 
@@ -328,7 +338,7 @@ namespace KaraokeStudio
 			// 
 			this.eventPropertiesToolStripMenuItem.Name = "eventPropertiesToolStripMenuItem";
 			this.eventPropertiesToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.E)));
-			this.eventPropertiesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.eventPropertiesToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
 			this.eventPropertiesToolStripMenuItem.Text = "Properties";
 			this.eventPropertiesToolStripMenuItem.Click += new System.EventHandler(this.eventPropertiesToolStripMenuItem_Click);
 			// 
@@ -465,5 +475,6 @@ namespace KaraokeStudio
 		private ToolStripMenuItem addAudioClipToolStripMenuItem;
 		private ToolStripMenuItem removeEventToolStripMenuItem;
 		private ToolStripMenuItem eventPropertiesToolStripMenuItem;
+		private ToolStripMenuItem redoToolStripMenuItem;
 	}
 }
