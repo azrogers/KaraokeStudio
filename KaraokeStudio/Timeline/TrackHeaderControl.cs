@@ -39,7 +39,7 @@ namespace KaraokeStudio.Timeline
 			_selectedTrackPen = new Pen(Brushes.White, 3.0f);
 			_highlightBrush = new SolidBrush(Color.FromArgb(50, 255, 255, 255));
 
-			_trackSettingsHandle = UpdateDispatcher.RegisterHandler<TrackSettingsUpdate>(update =>
+			_trackSettingsHandle = UpdateDispatcher.RegisterHandler<TrackConfigUpdate>(update =>
 			{
 				foreach(var (button, callback) in _buttonUpdateHandlers)
 				{

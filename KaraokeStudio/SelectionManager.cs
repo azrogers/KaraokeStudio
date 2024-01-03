@@ -41,9 +41,13 @@ namespace KaraokeStudio
 		{
 			UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
 			{
-				if(update.Type == EventsUpdate.UpdateType.Replace)
+				var idsLookup = new HashSet<int>(update.EventIds);
+				if (update.Type == EventsUpdate.UpdateType.Remove)
 				{
-					var idsLookup = new HashSet<int>(update.EventIds);
+					_selectedEvents.RemoveAll(ev => idsLookup.Contains(ev.Id));
+				}
+				else if(update.Type == EventsUpdate.UpdateType.Replace)
+				{
 					_selectedEvents.RemoveAll(ev => !idsLookup.Contains(ev.Id));
 				}
 			});
@@ -98,6 +102,18 @@ namespace KaraokeStudio
 			}
 
 			_selectedEvents.Add(ev);
+			OnSelectedEventsChanged?.Invoke();
+		}
+
+		public static void Select(IEnumerable<KaraokeEvent> evs, bool replace)
+		{
+			DeselectTracks();
+			if(replace)
+			{
+				DeselectEvents();
+			}
+
+			_selectedEvents.AddRange(evs);
 			OnSelectedEventsChanged?.Invoke();
 		}
 

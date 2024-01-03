@@ -1,4 +1,4 @@
-using KaraokeLib.Config;
+using KaraokeLib.Audio;
 using KaraokeLib.Events;
 using KaraokeLib.Tracks;
 using KaraokeStudio.Commands;
@@ -13,9 +13,6 @@ namespace KaraokeStudio
 	public partial class MainForm : Form
 	{
 		private ProjectFormHandler _projectHandler;
-		private StyleForm _styleForm;
-		private ConsoleForm _consoleForm;
-		private ExportVideoForm? _exportVideoForm;
 
 		private UpdateDispatcher.Handle _eventUpdateHandle;
 
@@ -49,14 +46,8 @@ namespace KaraokeStudio
 
 			// handles the project itself
 			_projectHandler = new ProjectFormHandler();
-			_projectHandler.OnProjectChanged += OnProjectChanged;
 			_projectHandler.OnPendingStateChanged += OnPendingStateChanged;
 			_projectHandler.OnProjectWillChangeCallback = WindowManager.OnProjectWillChange;
-
-			_styleForm = new StyleForm();
-			_styleForm.OnProjectConfigApplied += OnProjectConfigApplied;
-
-			_consoleForm = new ConsoleForm();
 
 			_eventUpdateHandle = UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
 			{
@@ -68,24 +59,20 @@ namespace KaraokeStudio
 				video.OnProjectEventsChanged(_projectHandler.Project);
 			});
 
-			OnProjectChanged(null);
+			UpdateDispatcher.RegisterHandler<ProjectUpdate>(update =>
+			{
+				UndoHandler.Clear();
+				SelectionManager.Deselect();
+				video.OnProjectChanged(update.Project);
+			});
+
+			// send a project update to get the ball rolling
+			UpdateDispatcher.Dispatch(new ProjectUpdate(null, null));
 		}
 
 		public void LoadProject(string path)
 		{
 			_projectHandler.OpenProject(path);
-		}
-
-		private void OnProjectConfigApplied(KaraokeConfig obj)
-		{
-			_projectHandler.SetConfig(obj);
-
-			if (_projectHandler.Project != null)
-			{
-				_projectHandler.Project.PlaybackState.OnProjectConfigChanged(_projectHandler.Project);
-			}
-
-			video.UpdateGenerationContext();
 		}
 
 		private void OnUndoItemsChanged()
@@ -96,24 +83,6 @@ namespace KaraokeStudio
 		private void OnPendingStateChanged(bool obj)
 		{
 			UpdateTitleAndMenu();
-		}
-
-		private void OnProjectChanged(KaraokeProject? project)
-		{
-			UpdateTitleAndMenu();
-			CommandDispatcher.CurrentContext.Project = project;
-
-			UndoHandler.Clear();
-			video.OnProjectChanged(project);
-			_styleForm.OnProjectChanged(project);
-			timelineContainer.OnProjectChanged(project);
-			lyricsEditor.OnProjectChanged(project);
-			WindowManager.OnProjectChanged(project);
-			SelectionManager.Deselect();
-			if (_exportVideoForm != null && !_exportVideoForm.IsDisposed)
-			{
-				_exportVideoForm.OnProjectChanged(_projectHandler.Project);
-			}
 		}
 
 		private void OnTrackSelectionChanged()
@@ -146,14 +115,7 @@ namespace KaraokeStudio
 
 		private void editStyleToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (_styleForm.Visible)
-			{
-				_styleForm.Focus();
-			}
-			else
-			{
-				_styleForm.Show();
-			}
+			CommandDispatcher.Dispatch(new OpenStyleCommand());
 		}
 
 		private void syncLyricsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -183,7 +145,7 @@ namespace KaraokeStudio
 
 		private void consoleToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			_consoleForm.Show();
+			CommandDispatcher.Dispatch(new OpenConsoleCommand());
 		}
 
 		private void undoToolStripMenuItem_Click(object sender, EventArgs e)
@@ -198,29 +160,43 @@ namespace KaraokeStudio
 
 		private void exportVideoToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (_exportVideoForm != null && _exportVideoForm.Visible)
-			{
-				_exportVideoForm.Focus();
-				return;
-			}
-
-			if (_exportVideoForm == null || _exportVideoForm.IsDisposed)
-			{
-				_exportVideoForm = new ExportVideoForm();
-			}
-
-			_exportVideoForm.OnProjectChanged(_projectHandler.Project);
-			_exportVideoForm.Show();
+			CommandDispatcher.Dispatch(new OpenExportVideoCommand());
 		}
 
 		private void addAudioClipToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			var track = SelectionManager.SelectedTracks.FirstOrDefault(t => t.Type == KaraokeTrackType.Audio);
+			if(track == null)
+			{
+				return;
+			}
 
+			var audioClip = ProjectUtil.OpenAudioFile(_projectHandler.ProjectPath);
+			if(audioClip == null)
+			{
+				return;
+			}
+
+			var audioInfo = AudioUtil.GetFileInfo(audioClip);
+			if(audioInfo == null)
+			{
+				MessageBox.Show("Failed to obtain info from audio file - not a supported format?", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
+
+			var start = new TimeSpanTimecode(_projectHandler.Project?.PlaybackState.Position ?? 0);
+			var end = new TimeSpanTimecode(start.GetTimeSeconds() + audioInfo.LengthSeconds);
+			CommandDispatcher.Dispatch(new AddAudioClipEventCommand(track, new KaraokeLib.Events.AudioClipSettings(audioClip), start, end));
 		}
 
 		private void removeEventToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			if(!SelectionManager.SelectedEvents.Any())
+			{
+				return;
+			}
 
+			CommandDispatcher.Dispatch(new RemoveEventsCommand(SelectionManager.SelectedEvents.Select(ev => ev.Id).ToArray()));
 		}
 
 		private void eventPropertiesToolStripMenuItem_Click(object sender, EventArgs e)

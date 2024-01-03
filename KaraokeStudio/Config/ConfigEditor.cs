@@ -126,8 +126,8 @@ namespace KaraokeStudio.Config
 					throw new InvalidDataException("Value changed but config is null?");
 				}
 
-				OnValueChanged?.Invoke();
 				control.SetValue(_temporaryConfig);
+				OnValueChanged?.Invoke();
 			};
 
 			var labelWidth = configContainer.ColumnStyles[0].Width;

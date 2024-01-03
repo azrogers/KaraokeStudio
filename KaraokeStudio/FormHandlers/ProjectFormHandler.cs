@@ -70,27 +70,31 @@ namespace KaraokeStudio.FormHandlers
 				IsPendingChanges = true;
 			});
 
-			UpdateDispatcher.RegisterHandler<TrackSettingsUpdate>(update =>
+			UpdateDispatcher.RegisterHandler<TrackConfigUpdate>(update =>
 			{
 				IsPendingChanges = true;
 			});
-		}
 
-		public void SetConfig(KaraokeConfig config)
-		{
-			if (Project != null)
+			UpdateDispatcher.RegisterHandler<ProjectUpdate>(update =>
 			{
-				Project.Config = config;
-				IsPendingChanges = true;
-			}
-		}
+				if(_loadedProject != null)
+				{
+					_loadedProject.Dispose();
+				}
 
-		public void SetEvents(KaraokeTrack track, IEnumerable<KaraokeEvent> events)
-		{
-			track.ReplaceEvents(events);
-			RecalculateProjectLength();
-			_loadedProject?.UpdateMixer();
-			IsPendingChanges = true;
+				_loadedProject = update.Project;
+				_loadedProjectPath = update.Project != null ? update.ProjectPath : null;
+				if (_loadedProjectPath != null)
+				{
+					AppSettings.Instance.AddRecentFile(_loadedProjectPath);
+				}
+				IsPendingChanges = update.Project != null && update.ProjectPath == null;
+			});
+
+			UpdateDispatcher.RegisterHandler<ProjectConfigUpdate>(update =>
+			{
+				IsPendingChanges = true;
+			});
 		}
 
 		public void RecalculateProjectLength()
@@ -113,21 +117,7 @@ namespace KaraokeStudio.FormHandlers
 				return;
 			}
 
-			var audioFile = OpenAudioFile(null);
-			if (audioFile == null)
-			{
-				return;
-			}
-
-			if(_loadedProject != null)
-			{
-				_loadedProject.Dispose();
-			}
-
-			_loadedProject = KaraokeProject.Create(audioFile);
-			_loadedProjectPath = null;
-			IsPendingChanges = true;
-			OnProjectChanged?.Invoke(_loadedProject);
+			CommandDispatcher.Dispatch(new NewProjectCommand());
 		}
 
 		public void OpenProject(string file)
@@ -137,24 +127,7 @@ namespace KaraokeStudio.FormHandlers
 				return;
 			}
 
-			if (!File.Exists(file))
-			{
-				return;
-			}
-
-			if (_loadedProject != null)
-			{
-				_loadedProject.Dispose();
-			}
-
-			_loadedProject = KaraokeProject.Load(file);
-			_loadedProjectPath = _loadedProject != null ? file : null;
-			IsPendingChanges = false;
-			if (_loadedProjectPath != null)
-			{
-				AppSettings.Instance.AddRecentFile(_loadedProjectPath);
-			}
-			OnProjectChanged?.Invoke(_loadedProject);
+			CommandDispatcher.Dispatch(new OpenProjectCommand(file));
 		}
 
 		// open existing project
@@ -185,32 +158,7 @@ namespace KaraokeStudio.FormHandlers
 				return;
 			}
 
-			var dialog = new VistaOpenFileDialog();
-			dialog.CheckFileExists = true;
-			dialog.Multiselect = false;
-			dialog.Title = "Open MIDI file";
-			dialog.Filter = "Guitar Hero/Rock Band MIDI|notes.mid|MIDI files|*.mid|All files|*.*";
-			if (dialog.ShowDialog() != DialogResult.OK || !File.Exists(dialog.FileName))
-			{
-				return;
-			}
-
-			var midiFile = dialog.FileName;
-			var audioFile = OpenAudioFile(Path.GetDirectoryName(midiFile));
-			if (audioFile == null)
-			{
-				return;
-			}
-
-			if (_loadedProject != null)
-			{
-				_loadedProject.Dispose();
-			}
-
-			_loadedProject = KaraokeProject.FromMidi(midiFile, audioFile);
-			_loadedProjectPath = null;
-			IsPendingChanges = true;
-			OnProjectChanged?.Invoke(_loadedProject);
+			CommandDispatcher.Dispatch(new LoadMidiFileCommand());
 		}
 
 		public void ExportLrcFile()
@@ -310,7 +258,7 @@ namespace KaraokeStudio.FormHandlers
 				return false;
 			}
 
-			var audioFile = OpenAudioFile(_loadedProjectPath);
+			var audioFile = ProjectUtil.OpenAudioFile(_loadedProjectPath);
 			if (audioFile == null)
 			{
 				return false;
@@ -329,22 +277,6 @@ namespace KaraokeStudio.FormHandlers
 			_loadedProject?.UpdateMixer();
 
 			return true;
-		}
-
-		private string? OpenAudioFile(string? baseDir)
-		{
-			var dialog = new VistaOpenFileDialog();
-			dialog.CheckFileExists = true;
-			dialog.Multiselect = false;
-			dialog.Title = "Open audio file";
-			dialog.Filter = "Audio file|*.mp3;*.ogg;*.wav|All files|*.*";
-			dialog.InitialDirectory = baseDir;
-			if (dialog.ShowDialog() != DialogResult.OK || !File.Exists(dialog.FileName))
-			{
-				return null;
-			}
-
-			return dialog.FileName;
 		}
 	}
 }

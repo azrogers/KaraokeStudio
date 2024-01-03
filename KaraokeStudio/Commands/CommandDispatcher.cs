@@ -7,6 +7,14 @@ namespace KaraokeStudio.Commands
 	{
 		public static CommandContext CurrentContext = new CommandContext();
 
+		static CommandDispatcher()
+		{
+			UpdateDispatcher.RegisterHandler<ProjectUpdate>(update =>
+			{
+				CurrentContext.Project = update.Project;
+			});
+		}
+
 		public static void Dispatch(ICommand command)
 		{
 			foreach(var update in command.Execute(CurrentContext))

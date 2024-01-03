@@ -22,14 +22,56 @@ namespace KaraokeStudio
 			}
 		}
 
+		public static StyleForm Style
+		{
+			get
+			{
+				if (_styleForm == null || _styleForm.IsDisposed)
+				{
+					_styleForm = new StyleForm();
+				}
+
+				return _styleForm;
+			}
+		}
+
+		public static ConsoleForm Console
+		{
+			get
+			{
+				if (_consoleForm == null || _consoleForm.IsDisposed)
+				{
+					_consoleForm = new ConsoleForm();
+				}
+
+				return _consoleForm;
+			}
+		}
+
+		public static ExportVideoForm Export
+		{
+			get
+			{
+				if(_exportForm == null || _exportForm.IsDisposed)
+				{
+					_exportForm = new ExportVideoForm();
+				}
+
+				return _exportForm;
+			}
+		}
+
 		private static SyncForm? _syncForm = null;
+		private static ConsoleForm? _consoleForm = null;
+		private static StyleForm? _styleForm = null;
+		private static ExportVideoForm? _exportForm = null;
 
 		private static Dictionary<int, GenericConfigEditorForm> _trackSettingsEditors = new Dictionary<int, GenericConfigEditorForm>();
 
 		static WindowManager()
 		{
 			// when track settings change, replace the settings in any active properties windows unless they're dirty
-			UpdateDispatcher.RegisterHandler<TrackSettingsUpdate>(update =>
+			UpdateDispatcher.RegisterHandler<TrackConfigUpdate>(update =>
 			{
 				foreach(var id in update.TrackIds)
 				{
@@ -64,11 +106,6 @@ namespace KaraokeStudio
 		internal static bool OnProjectWillChange()
 		{
 			return Sync.OnProjectWillChange();
-		}
-
-		internal static void OnProjectChanged(KaraokeProject? project)
-		{
-			Sync.Hide();
 		}
 
 		internal static void OnLyricsEventsChanged(KaraokeProject project, (KaraokeTrack Track, IEnumerable<KaraokeEvent> NewEvents) obj)
@@ -118,6 +155,51 @@ namespace KaraokeStudio
 		public override void DoExecute(CommandContext context)
 		{
 			WindowManager.OpenTrackSettingsEditor(_track);
+		}
+	}
+
+	internal class OpenConsoleCommand : UndolessCommand
+	{
+		public override void DoExecute(CommandContext context)
+		{
+			if(WindowManager.Console.Visible)
+			{
+				WindowManager.Console.Focus();
+			}
+			else
+			{
+				WindowManager.Console.Show();
+			}
+		}
+	}
+
+	internal class OpenStyleCommand : UndolessCommand
+	{
+		public override void DoExecute(CommandContext context)
+		{
+			if(WindowManager.Style.Visible)
+			{
+				WindowManager.Style.Focus();
+			}
+			else
+			{
+				WindowManager.Style.Open(context.Project);
+			}
+		}
+	}
+
+	internal class OpenExportVideoCommand : UndolessCommand
+	{
+		public override void DoExecute(CommandContext context)
+		{
+			if (WindowManager.Export.Visible)
+			{
+				WindowManager.Export.Focus();
+			}
+			else
+			{
+				WindowManager.Export.Open(context.Project);
+			}
 		}
 	}
 }

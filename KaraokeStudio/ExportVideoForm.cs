@@ -1,5 +1,6 @@
 ﻿using KaraokeLib.Video;
 using KaraokeLib.Video.Encoders;
+using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Project;
 using Ookii.Dialogs.WinForms;
 using System.Data;
@@ -26,9 +27,17 @@ namespace KaraokeStudio
 		private KaraokeProject? _project;
 		private int _frameCounter = 0;
 
+		private UpdateDispatcher.Handle _projectHandle;
+
 		public ExportVideoForm()
 		{
 			InitializeComponent();
+			Disposed += OnDispose;
+
+			_projectHandle = UpdateDispatcher.RegisterHandler<ProjectUpdate>(update =>
+			{
+				OnProjectChanged(update.Project);
+			});
 
 			_exporter = new VideoExporter();
 			_exporter.OnExportMessage += _exporter_OnExportMessage;
@@ -42,7 +51,18 @@ namespace KaraokeStudio
 			UpdateButtons();
 		}
 
-		internal void OnProjectChanged(KaraokeProject? project)
+		internal void Open(KaraokeProject? project)
+		{
+			OnProjectChanged(project);
+			Show();
+		}
+
+		private void OnDispose(object? sender, EventArgs e)
+		{
+			_projectHandle.Release();
+		}
+
+		private void OnProjectChanged(KaraokeProject? project)
 		{
 			if (project == null)
 			{

@@ -1,5 +1,6 @@
 ﻿using KaraokeLib.Audio;
 using KaraokeLib.Tracks;
+using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Util;
 using NAudio.Wave;
 using System.Diagnostics;
@@ -23,6 +24,8 @@ namespace KaraokeStudio.Project
 
         private Stopwatch _stopwatch = new Stopwatch();
         private Stack<object> _claims = new Stack<object>();
+
+        private UpdateDispatcher.Handle _projectConfigHandle;
 
         public event Action<bool>? OnPlayStateChanged;
         public event Action<double>? OnPositionChanged;
@@ -69,14 +72,21 @@ namespace KaraokeStudio.Project
             _timer = new System.Windows.Forms.Timer();
             _timer.Enabled = false;
             _timer.Tick += OnTimerTick;
-            OnProjectConfigChanged(project);
 
             _project = project;
-            AppSettings.Instance.OnVolumeChanged += OnVolumeChanged;
+			_timer.Interval = (int)Math.Round(1.0 / project.Config.FrameRate * 1000);
+			AppSettings.Instance.OnVolumeChanged += OnVolumeChanged;
+
+            _projectConfigHandle = UpdateDispatcher.RegisterHandler<ProjectConfigUpdate>(update =>
+            {
+				_project = update.Project;
+				_timer.Interval = (int)Math.Round(1.0 / project.Config.FrameRate * 1000);
+			});
 		}
 
 		public void Dispose()
 		{
+            _projectConfigHandle.Release();
 			_timer.Tick -= OnTimerTick;
 			AppSettings.Instance.OnVolumeChanged -= OnVolumeChanged;
 			_output.Stop();
@@ -133,12 +143,6 @@ namespace KaraokeStudio.Project
         public void OnVolumeChanged(float volume)
         {
             _output.Volume = volume;
-        }
-
-        public void OnProjectConfigChanged(KaraokeProject project)
-        {
-            _project = project;
-            _timer.Interval = (int)Math.Round(1.0 / project.Config.FrameRate * 1000);
         }
 
         public void TogglePlay()

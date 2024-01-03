@@ -8,13 +8,28 @@ namespace KaraokeStudio.Commands.Updates
 	}
 
 	/// <summary>
-	/// An update denoting that which project is currently open has changed.
+	/// An update denoting that the project that's currently open has changed.
 	/// </summary>
 	internal class ProjectUpdate : IUpdate
 	{
 		public KaraokeProject? Project;
+		public string? ProjectPath;
 
-		public ProjectUpdate(KaraokeProject? project)
+		public ProjectUpdate(KaraokeProject? project, string? projectPath)
+		{
+			Project = project;
+			ProjectPath = projectPath;
+		}
+	}
+
+	/// <summary>
+	/// An update denoting that the project's config has changed.
+	/// </summary>
+	internal class ProjectConfigUpdate : IUpdate
+	{
+		public KaraokeProject Project;
+
+		public ProjectConfigUpdate(KaraokeProject project)
 		{
 			Project = project;
 		}
@@ -67,12 +82,12 @@ namespace KaraokeStudio.Commands.Updates
 	/// <summary>
 	/// An update denoting that one or more tracks have had their settings changed.
 	/// </summary>
-	internal class TrackSettingsUpdate : IUpdate
+	internal class TrackConfigUpdate : IUpdate
 	{
 		public int[] TrackIds;
 		public IEditableConfig NewConfig;
 
-		public TrackSettingsUpdate(int trackId, IEditableConfig newConfig)
+		public TrackConfigUpdate(int trackId, IEditableConfig newConfig)
 		{
 			TrackIds = new int[] { trackId };
 			NewConfig = newConfig;

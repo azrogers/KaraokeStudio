@@ -60,6 +60,7 @@ namespace KaraokeStudio.Timeline
 		private Dictionary<KaraokeEventType, SKPaint> _eventTypePaints = new Dictionary<KaraokeEventType, SKPaint>();
 		private Dictionary<int, KaraokeEvent> _events = new Dictionary<int, KaraokeEvent>();
 
+		private UpdateDispatcher.Handle _projectHandle;
 		private UpdateDispatcher.Handle _eventsUpdateHandle;
 		private UpdateDispatcher.Handle _tracksUpdateHandle;
 
@@ -116,6 +117,18 @@ namespace KaraokeStudio.Timeline
 
 			_lineHeight = StyleUtil.GetFontHeight(_font);
 
+			_projectHandle = UpdateDispatcher.RegisterHandler<ProjectUpdate>(update =>
+			{
+				_project = update.Project;
+
+				foreach (var (type, renderer) in _eventRenderers)
+				{
+					renderer.RecreateContext();
+				}
+
+				OnProjectEventsChanged();
+			});
+
 			_eventsUpdateHandle = UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
 			{
 				OnProjectEventsChanged();
@@ -131,6 +144,7 @@ namespace KaraokeStudio.Timeline
 		{
 			_eventsUpdateHandle.Release();
 			_tracksUpdateHandle.Release();
+			_projectHandle.Release();
 		}
 
 		/// <summary>
@@ -372,18 +386,6 @@ namespace KaraokeStudio.Timeline
 
 			_hasSetCursor = true;
 			_dragState = new DragState(dragType, item.Value.TrackIndex, events.ToArray());
-		}
-
-		internal void OnProjectChanged(KaraokeProject? project)
-		{
-			_project = project;
-
-			foreach (var (type, renderer) in _eventRenderers)
-			{
-				renderer.RecreateContext();
-			}
-
-			OnProjectEventsChanged();
 		}
 
 		internal void OnProjectEventsChanged()

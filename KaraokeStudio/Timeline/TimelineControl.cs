@@ -42,6 +42,7 @@ namespace KaraokeStudio.Timeline
 		private bool _awaitingMouseTimer = false;
 		private float _prevPlaybackHeadXPos = 0;
 
+		private UpdateDispatcher.Handle _projectHandle;
 		private UpdateDispatcher.Handle _eventsUpdateHandle;
 		private UpdateDispatcher.Handle _tracksUpdateHandle;
 
@@ -90,12 +91,33 @@ namespace KaraokeStudio.Timeline
 				RecalculateScrollBars();
 				skiaControl.Invalidate();
 			});
+
+			_projectHandle = UpdateDispatcher.RegisterHandler<ProjectUpdate>(update =>
+			{
+				if (_currentProject != null)
+				{
+					// cleanup old event listeners
+					_currentProject.PlaybackState.OnPositionChanged -= OnPositionChanged;
+				}
+
+				if (update.Project != null)
+				{
+					update.Project.PlaybackState.OnPositionChanged += OnPositionChanged;
+				}
+
+				_tracks = update.Project?.Tracks.OrderBy(t => t.Id).ToArray() ?? new KaraokeTrack[0];
+				_currentProject = update.Project;
+
+				RecalculateScrollBars();
+				skiaControl.Invalidate();
+			});
 		}
 
 		private void OnDispose(object? sender, EventArgs e)
 		{
 			_eventsUpdateHandle.Release();
 			_tracksUpdateHandle.Release();
+			_projectHandle.Release();
 
 			_mouseTimer.Dispose();
 			_timelineCanvas.Dispose();
@@ -132,27 +154,6 @@ namespace KaraokeStudio.Timeline
 				_timelineCanvas.Size.Width,
 				(trackIndex + 1) * TimelineCanvas.TRACK_HEIGHT - 2));
 			return new RectangleF(skRect.Left, skRect.Top, skRect.Width, skRect.Height);
-		}
-
-		internal void OnProjectChanged(KaraokeProject? project)
-		{
-			if (_currentProject != null)
-			{
-				// cleanup old event listeners
-				_currentProject.PlaybackState.OnPositionChanged -= OnPositionChanged;
-			}
-
-			if (project != null)
-			{
-				project.PlaybackState.OnPositionChanged += OnPositionChanged;
-			}
-
-			_tracks = project?.Tracks.OrderBy(t => t.Id).ToArray() ?? new KaraokeTrack[0];
-			_currentProject = project;
-			_timelineCanvas.OnProjectChanged(project);
-
-			RecalculateScrollBars();
-			skiaControl.Invalidate();
 		}
 
 		internal void OnProjectEventsChanged(KaraokeProject? project)

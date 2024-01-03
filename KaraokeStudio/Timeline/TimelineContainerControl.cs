@@ -10,6 +10,7 @@ namespace KaraokeStudio.Timeline
 	{
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+		private UpdateDispatcher.Handle _projectHandle;
 		private UpdateDispatcher.Handle _tracksUpdateHandle;
 
 		private KaraokeProject? _currentProject;
@@ -27,6 +28,12 @@ namespace KaraokeStudio.Timeline
 			SelectionManager.OnSelectedTracksChanged += OnSelectedTracksChanged;
 			timeline.OnTrackPositioningChanged += timeline_OnTrackPositioningChanged;
 
+			_projectHandle = UpdateDispatcher.RegisterHandler<ProjectUpdate>(update =>
+			{
+				_currentProject = update.Project;
+				RecreateTracks();
+			});
+
 			_tracksUpdateHandle = UpdateDispatcher.RegisterHandler<TracksUpdate>(update =>
 			{
 				RecreateTracks();
@@ -37,6 +44,7 @@ namespace KaraokeStudio.Timeline
 		{
 			SelectionManager.OnSelectedTracksChanged -= OnSelectedTracksChanged;
 			_tracksUpdateHandle.Release();
+			_projectHandle.Release();
 		}
 
 		private void OnSelectedTracksChanged()
@@ -51,14 +59,6 @@ namespace KaraokeStudio.Timeline
 		private void timeline_OnTrackPositioningChanged()
 		{
 			RepositionTracks();
-		}
-
-		internal void OnProjectChanged(KaraokeProject? project)
-		{
-			timeline.OnProjectChanged(project);
-
-			_currentProject = project;
-			RecreateTracks();
 		}
 
 		internal void OnProjectEventsChanged(KaraokeProject? project)

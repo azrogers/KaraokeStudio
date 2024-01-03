@@ -19,6 +19,7 @@ namespace KaraokeStudio.LyricsEditor
 		private Scintilla _scintilla;
 		private int _previousHighlightIndex = 0;
 
+		private UpdateDispatcher.Handle _projectHandle;
 		private UpdateDispatcher.Handle _eventsUpdateHandle;
 		private UpdateDispatcher.Handle _tracksUpdateHandle;
 
@@ -64,6 +65,22 @@ namespace KaraokeStudio.LyricsEditor
 			{
 				UpdateTextBox();
 			});
+
+			_projectHandle = UpdateDispatcher.RegisterHandler<ProjectUpdate>(update =>
+			{
+				if (_project != null)
+				{
+					_project.PlaybackState.OnPositionChanged -= OnPositionChanged;
+				}
+
+				if (update.Project != null)
+				{
+					update.Project.PlaybackState.OnPositionChanged += OnPositionChanged;
+				}
+
+				_project = update.Project;
+				UpdateTextBox();
+			});
 		}
 
 		private void OnDispose(object? sender, EventArgs e)
@@ -75,22 +92,7 @@ namespace KaraokeStudio.LyricsEditor
 
 			_eventsUpdateHandle.Release();
 			_tracksUpdateHandle.Release();
-		}
-
-		internal void OnProjectChanged(KaraokeProject? project)
-		{
-			if(_project != null)
-			{
-				_project.PlaybackState.OnPositionChanged -= OnPositionChanged;
-			}
-
-			if(project != null)
-			{
-				project.PlaybackState.OnPositionChanged += OnPositionChanged;
-			}
-
-			_project = project;
-			UpdateTextBox();
+			_projectHandle.Release();
 		}
 
 		internal void OnProjectEventsChanged(KaraokeProject? project)

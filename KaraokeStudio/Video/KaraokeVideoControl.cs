@@ -1,6 +1,7 @@
 ﻿using FontAwesome.Sharp;
 using KaraokeLib.Tracks;
 using KaraokeLib.Video;
+using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Project;
 using KaraokeStudio.Util;
 using SkiaSharp;
@@ -18,12 +19,20 @@ namespace KaraokeStudio.Video
 		private KaraokeProject? _project;
 		private SKImage? _lastFrame;
 
+		private UpdateDispatcher.Handle _projectConfigHandle;
+
 		private IVideoGenerator _videoGenerator = new KaraokeProjectVideoGenerator();
 
 		public KaraokeVideoControl()
 		{
 			InitializeComponent();
 			Disposed += OnDispose;
+
+			_projectConfigHandle = UpdateDispatcher.RegisterHandler<ProjectConfigUpdate>(update =>
+			{
+				UpdateGenerationContext();
+				videoSkiaControl.Invalidate();
+			});
 
 			volumeSlider.Volume = AppSettings.Instance.Volume;
 		}
@@ -40,6 +49,8 @@ namespace KaraokeStudio.Video
 			{
 				_lastFrame.Dispose();
 			}
+
+			_projectConfigHandle.Release();
 		}
 
 		public void ForceRerender() => videoSkiaControl.Invalidate();
@@ -170,7 +181,7 @@ namespace KaraokeStudio.Video
 			playPauseButton.IconChar = (_project?.PlaybackState.IsPlaying ?? false) ? IconChar.Pause : IconChar.Play;
 		}
 
-		public void UpdateGenerationContext()
+		private void UpdateGenerationContext()
 		{
 			if (_project == null)
 			{

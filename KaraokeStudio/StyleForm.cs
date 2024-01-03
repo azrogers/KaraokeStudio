@@ -1,4 +1,6 @@
 ﻿using KaraokeLib.Config;
+using KaraokeStudio.Commands;
+using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Config;
 using KaraokeStudio.Project;
 using KaraokeStudio.Util;
@@ -11,13 +13,19 @@ namespace KaraokeStudio
 		private KaraokeProject? _currentProject = null;
 		private ConfigPreviewHandler _previewHandler = new ConfigPreviewHandler();
 
-		private bool _isDirty = false;
+		private UpdateDispatcher.Handle _projectHandle;
 
-		internal event Action<KaraokeConfig>? OnProjectConfigApplied;
+		private bool _isDirty = false;
 
 		public StyleForm()
 		{
 			InitializeComponent();
+			Disposed += OnDispose;
+
+			_projectHandle = UpdateDispatcher.RegisterHandler<ProjectUpdate>(update =>
+			{
+				OnProjectChanged(update.Project);
+			});
 
 			configEditor.Config = new KaraokeConfig();
 
@@ -25,7 +33,18 @@ namespace KaraokeStudio
 			UpdateDirtyUI();
 		}
 
-		internal void OnProjectChanged(KaraokeProject? project)
+		internal void Open(KaraokeProject? project)
+		{
+			OnProjectChanged(project);
+			Show();
+		}
+
+		private void OnDispose(object? sender, EventArgs e)
+		{
+			_projectHandle.Release();
+		}
+
+		private void OnProjectChanged(KaraokeProject? project)
 		{
 			_currentProject = project;
 
@@ -116,7 +135,7 @@ namespace KaraokeStudio
 				return;
 			}
 
-			OnProjectConfigApplied?.Invoke((KaraokeConfig)configEditor.Config);
+			CommandDispatcher.Dispatch(new SetProjectConfigCommand((KaraokeConfig)configEditor.Config, "Change style"));
 		}
 
 		private void videoPanel_Paint(object sender, PaintEventArgs e)

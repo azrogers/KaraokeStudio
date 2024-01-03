@@ -205,7 +205,7 @@ namespace KaraokeStudio.Commands
 
 			_oldConfig = track.GetTrackConfig().Copy();
 			track.SetTrackConfig(_newConfig);
-			yield return new TrackSettingsUpdate(track.Id, _newConfig);
+			yield return new TrackConfigUpdate(track.Id, _newConfig);
 		}
 
 		public IEnumerable<IUpdate> Undo(CommandContext context)
@@ -224,7 +224,7 @@ namespace KaraokeStudio.Commands
 			}
 
 			track.SetTrackConfig(_oldConfig);
-			yield return new TrackSettingsUpdate(track.Id, _oldConfig);
+			yield return new TrackConfigUpdate(track.Id, _oldConfig);
 		}
 	}
 }
