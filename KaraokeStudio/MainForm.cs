@@ -120,7 +120,7 @@ namespace KaraokeStudio
 
 		private void syncLyricsToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (_projectHandler.Project == null || SelectionManager.SelectedTracks.Count() == 1)
+			if (_projectHandler.Project == null || SelectionManager.SelectedTracks.Count() != 1)
 			{
 				return;
 			}
