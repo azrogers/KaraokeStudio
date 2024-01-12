@@ -26,7 +26,11 @@ namespace KaraokeStudio.Util
 
 		[JsonProperty]
 		[ConfigHide]
-		public float Volume { get; private set; }
+		public float Volume { get; private set; } = 1.0f;
+
+		[JsonProperty]
+		[ConfigHide]
+		public float PlaybackRate { get; private set; } = 1.0f;
 
 		public void AddRecentFile(string file)
 		{
@@ -44,6 +48,12 @@ namespace KaraokeStudio.Util
 			Volume = vol;
 			Save();
 			OnVolumeChanged?.Invoke(vol);
+		}
+
+		public void SetPlaybackRate(float rate)
+		{
+			PlaybackRate = rate;
+			Save();
 		}
 
 		public void Save()

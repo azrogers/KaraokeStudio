@@ -39,6 +39,7 @@
 			this.forwardButton = new FontAwesome.Sharp.IconButton();
 			this.backButton = new FontAwesome.Sharp.IconButton();
 			this.positionBar = new System.Windows.Forms.TrackBar();
+			this.playbackRateSelector = new System.Windows.Forms.ComboBox();
 			this.videoPanel.SuspendLayout();
 			this.controlsPanel.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.positionBar)).BeginInit();
@@ -68,6 +69,7 @@
 			// 
 			// controlsPanel
 			// 
+			this.controlsPanel.Controls.Add(this.playbackRateSelector);
 			this.controlsPanel.Controls.Add(this.volumeSlider);
 			this.controlsPanel.Controls.Add(this.currentPosLabel);
 			this.controlsPanel.Controls.Add(this.endPosLabel);
@@ -176,6 +178,25 @@
 			this.positionBar.TickStyle = System.Windows.Forms.TickStyle.None;
 			this.positionBar.Scroll += new System.EventHandler(this.positionBar_Scroll);
 			// 
+			// playbackRateSelector
+			// 
+			this.playbackRateSelector.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.playbackRateSelector.FormattingEnabled = true;
+			this.playbackRateSelector.Items.AddRange(new object[] {
+            "0.1x",
+            "0.25x",
+            "0.5x",
+            "0.75x",
+            "1x",
+            "1.25x",
+            "1.5x",
+            "2x"});
+			this.playbackRateSelector.Location = new System.Drawing.Point(421, 38);
+			this.playbackRateSelector.Name = "playbackRateSelector";
+			this.playbackRateSelector.Size = new System.Drawing.Size(59, 23);
+			this.playbackRateSelector.TabIndex = 8;
+			this.playbackRateSelector.SelectedIndexChanged += new System.EventHandler(this.playbackRateSelector_SelectedIndexChanged);
+			// 
 			// KaraokeVideoControl
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -205,5 +226,6 @@
 		private Label startPosLabel;
 		private SkiaSharp.Views.Desktop.SKGLControl videoSkiaControl;
 		private NAudio.Gui.VolumeSlider volumeSlider;
+		private ComboBox playbackRateSelector;
 	}
 }

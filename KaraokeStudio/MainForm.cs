@@ -186,7 +186,7 @@ namespace KaraokeStudio
 
 			var start = new TimeSpanTimecode(_projectHandler.Project?.PlaybackState.Position ?? 0);
 			var end = new TimeSpanTimecode(start.GetTimeSeconds() + audioInfo.LengthSeconds);
-			CommandDispatcher.Dispatch(new AddAudioClipEventCommand(track, new KaraokeLib.Events.AudioClipSettings(audioClip), start, end));
+			CommandDispatcher.Dispatch(new AddAudioClipEventCommand(track, new AudioClipSettings(audioClip), start, end));
 		}
 
 		private void removeEventToolStripMenuItem_Click(object sender, EventArgs e)

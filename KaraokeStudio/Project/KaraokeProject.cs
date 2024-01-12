@@ -53,7 +53,7 @@ namespace KaraokeStudio.Project
             _file.RemoveTrack(trackId);
         }
 
-        public void UpdateMixer() => PlaybackState.UpdateMixer(_file.GetTracks());
+        public void UpdateMixer() => PlaybackState.UpdateMixer(_file.GetTracks(), AppSettings.Instance.PlaybackRate);
 
         public void Save(string outFile)
         {

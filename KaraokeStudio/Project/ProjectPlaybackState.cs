@@ -18,9 +18,10 @@ namespace KaraokeStudio.Project
 
         private WaveOutEvent _output;
 
-        private AudioMixer _mixer;
+        private PlaybackRateAudioMixer _mixer;
         private double _position;
         private KaraokeProject _project;
+        private float _playbackRate = 2.0f;
 
         private Stopwatch _stopwatch = new Stopwatch();
         private Stack<object> _claims = new Stack<object>();
@@ -64,7 +65,8 @@ namespace KaraokeStudio.Project
 
         public ProjectPlaybackState(KaraokeProject project, IEnumerable<KaraokeTrack> tracks)
         {
-            _mixer = new AudioMixer(tracks);
+            _playbackRate = AppSettings.Instance.PlaybackRate;
+            _mixer = new PlaybackRateAudioMixer(tracks, _playbackRate);
             _output = new WaveOutEvent();
             _output.Init(_mixer);
             _output.Volume = AppSettings.Instance.Volume;
@@ -167,9 +169,10 @@ namespace KaraokeStudio.Project
             IsPlaying = false;
         }
 
-        public void UpdateMixer(IEnumerable<KaraokeTrack> tracks)
+        public void UpdateMixer(IEnumerable<KaraokeTrack> tracks, float playbackRate)
         {
-            _mixer = new AudioMixer(tracks);
+            _playbackRate = playbackRate;
+            _mixer = new PlaybackRateAudioMixer(tracks, _playbackRate);
             _mixer.CurrentTime = TimeSpan.FromSeconds(_position);
             _output.Stop();
             _output.Init(_mixer);
@@ -189,7 +192,7 @@ namespace KaraokeStudio.Project
             var elapsed = _stopwatch.Elapsed.TotalSeconds;
             _stopwatch.Restart();
 
-            _position += elapsed;
+            _position += elapsed * _playbackRate;
             _position = Math.Min(_project.Length.TotalSeconds, _position);
             OnPositionChanged?.Invoke(_position);
         }

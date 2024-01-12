@@ -16,4 +16,17 @@
     <PackageReference Include="SkiaSharp" Version="2.88.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Audio\SoundTouch\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="SoundTouch.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="SoundTouch_x64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

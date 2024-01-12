@@ -35,6 +35,7 @@ namespace KaraokeStudio.Video
 			});
 
 			volumeSlider.Volume = AppSettings.Instance.Volume;
+			playbackRateSelector.SelectedText = AppSettings.Instance.PlaybackRate + "x";
 		}
 
 		private void OnDispose(object? sender, EventArgs e)
@@ -239,6 +240,17 @@ namespace KaraokeStudio.Video
 		private void volumeSlider_VolumeChanged(object sender, EventArgs e)
 		{
 			AppSettings.Instance.SetVolume(volumeSlider.Volume);
+		}
+
+		private void playbackRateSelector_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			var text = playbackRateSelector.SelectedItem.ToString() ?? "1x";
+			var rate = float.Parse(text.Substring(0, text.Length - 1));
+			AppSettings.Instance.SetPlaybackRate(rate);
+			if (_project != null)
+			{
+				_project.PlaybackState.UpdateMixer(_project.File.GetTracks(), rate);
+			}
 		}
 	}
 }
