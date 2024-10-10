@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Collections;
 
 namespace KaraokeLib.Files.Ksf
@@ -196,9 +195,9 @@ namespace KaraokeLib.Files.Ksf
 							// it's some sort of collection - let's see what we can do
 							var newVal = Activator.CreateInstance(valueType);
 							var listVal = newVal as IList;
-							if(listVal != null)
+							if (listVal != null)
 							{
-								foreach(var val in values)
+								foreach (var val in values)
 								{
 									listVal.Add(val);
 								}
@@ -239,6 +238,6 @@ namespace KaraokeLib.Files.Ksf
 			return obj;
 		}
 
-		private static bool IsCollection(Type t) =>  t.IsArray || t.GetInterface(nameof(IList)) != null;
+		private static bool IsCollection(Type t) => t.IsArray || t.GetInterface(nameof(IList)) != null;
 	}
 }

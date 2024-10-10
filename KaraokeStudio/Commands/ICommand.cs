@@ -2,7 +2,7 @@
 
 namespace KaraokeStudio.Commands
 {
-    internal interface ICommand
+	internal interface ICommand
 	{
 		IEnumerable<IUpdate> Execute(CommandContext context);
 		IEnumerable<IUpdate> Undo(CommandContext context);

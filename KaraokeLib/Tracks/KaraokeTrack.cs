@@ -170,7 +170,7 @@ namespace KaraokeLib.Tracks
 		public T GetTrackConfig<T>() where T : IEditableConfig
 		{
 			var config = GetTrackConfig();
-			if(!typeof(T).IsAssignableFrom(config.GetType()))
+			if (!typeof(T).IsAssignableFrom(config.GetType()))
 			{
 				throw new ArgumentException($"Track config is of type {config.GetType().Name} but type {typeof(T).Name} was requested");
 			}

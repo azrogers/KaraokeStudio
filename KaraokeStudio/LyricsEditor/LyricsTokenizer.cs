@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Text;
+﻿using System.Text;
 
 namespace KaraokeStudio.LyricsEditor
 {
@@ -53,7 +52,7 @@ namespace KaraokeStudio.LyricsEditor
 					// handle spaces and tabs
 					if (char.IsWhiteSpace(ch))
 					{
-						if(blockLevel <= 0)
+						if (blockLevel <= 0)
 						{
 							if (currentType == LyricsTokenType.Text)
 							{
@@ -86,9 +85,9 @@ namespace KaraokeStudio.LyricsEditor
 					{
 						isEscaped = false;
 						if (
-							ch != LyricsConstants.ESCAPE_CHAR && 
-							ch != LyricsConstants.SYLLABLE_SEPERATOR && 
-							ch != LyricsConstants.BLOCK_OPEN && 
+							ch != LyricsConstants.ESCAPE_CHAR &&
+							ch != LyricsConstants.SYLLABLE_SEPERATOR &&
+							ch != LyricsConstants.BLOCK_OPEN &&
 							ch != LyricsConstants.BLOCK_CLOSE)
 						{
 							// if it's not escaping something that needs to be escaped, just include it
@@ -108,11 +107,11 @@ namespace KaraokeStudio.LyricsEditor
 						continue;
 					}
 
-					if(ch == LyricsConstants.BLOCK_OPEN)
+					if (ch == LyricsConstants.BLOCK_OPEN)
 					{
 						blockLevel++;
 					}
-					else if(ch == LyricsConstants.BLOCK_CLOSE)
+					else if (ch == LyricsConstants.BLOCK_CLOSE)
 					{
 						blockLevel--;
 					}

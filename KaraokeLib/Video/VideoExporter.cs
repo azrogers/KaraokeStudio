@@ -48,7 +48,7 @@ namespace KaraokeLib.Video
 				{
 					DoExport(file, config, encoder, outFile, startSeconds, lengthSeconds);
 				}
-				catch(Exception ex) 
+				catch (Exception ex)
 				{
 					State = ExportState.Failure;
 					LogMessage($"Exception: {ex.Message}");
@@ -88,7 +88,7 @@ namespace KaraokeLib.Video
 				var position = startTimecode;
 				while (position <= endTimecode)
 				{
-					if(State == ExportState.Cancelled)
+					if (State == ExportState.Cancelled)
 					{
 						encoder.EndRender(false);
 						State = ExportState.Idle;

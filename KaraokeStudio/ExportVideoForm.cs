@@ -135,7 +135,7 @@ namespace KaraokeStudio
 		{
 			_frameCounter++;
 
-			if(_frameCounter % 25 == 0)
+			if (_frameCounter % 25 == 0)
 			{
 				_exporter_OnExportMessage($"Progress: {obj:P}");
 			}

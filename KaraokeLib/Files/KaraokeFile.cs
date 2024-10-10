@@ -2,7 +2,7 @@
 
 namespace KaraokeLib.Files
 {
-    public interface IKaraokeFile
+	public interface IKaraokeFile
 	{
 		/// <summary>
 		/// Keeps track of IDs for events and tracks.
@@ -38,7 +38,7 @@ namespace KaraokeLib.Files
 		{
 			_provider = provider;
 			var tracks = _provider.GetTracks().ToArray();
-			foreach(var track in tracks)
+			foreach (var track in tracks)
 			{
 				track.SetFile(this);
 			}
@@ -82,7 +82,7 @@ namespace KaraokeLib.Files
 		/// <inheritdoc />
 		public void Save(Stream outStream)
 		{
-			if(!_provider.CanWrite)
+			if (!_provider.CanWrite)
 			{
 				throw new InvalidOperationException($"Can't write to a provider of type {_provider.GetType()}");
 			}

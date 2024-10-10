@@ -1,11 +1,4 @@
-﻿using KaraokeLib.Util;
-using KaraokeLib.Video.Elements;
-using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using KaraokeLib.Video.Elements;
 
 namespace KaraokeLib.Video.Transitions
 {

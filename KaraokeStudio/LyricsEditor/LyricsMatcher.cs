@@ -1,13 +1,8 @@
 ﻿using KaraokeLib.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeStudio.LyricsEditor
 {
-    internal class LyricsMatcher
+	internal class LyricsMatcher
 	{
 		public static void Match(LyricsEditorTextElement[] oldElements, LyricsLexerElement[] newElements)
 		{
@@ -50,7 +45,7 @@ namespace KaraokeStudio.LyricsEditor
 
 		private static int LongestCommonSubsequence(LyricsEditorTextElement[] oldElements, LyricsLexerElement[] newElements, LyricsIndex startOld, LyricsIndex startNew)
 		{
-			if(startOld.ElementIndex >= oldElements.Length || startNew.ElementIndex >= newElements.Length)
+			if (startOld.ElementIndex >= oldElements.Length || startNew.ElementIndex >= newElements.Length)
 			{
 				return 0;
 			}
@@ -97,18 +92,18 @@ namespace KaraokeStudio.LyricsEditor
 			public LyricsIndex Increment(LyricsEditorTextElement[] arr)
 			{
 				var elem = arr[ElementIndex];
-				if(EventIndex < elem.Events.Length - 1)
+				if (EventIndex < elem.Events.Length - 1)
 				{
 					return new LyricsIndex(ElementIndex, EventIndex + 1);
 				}
-				
+
 				return new LyricsIndex(ElementIndex + 1, 0);
 			}
 
 			public LyricsIndex Increment(LyricsLexerElement[] arr)
 			{
 				var elem = arr[ElementIndex];
-				if(EventIndex < elem.Tokens.Length - 1)
+				if (EventIndex < elem.Tokens.Length - 1)
 				{
 					return new LyricsIndex(ElementIndex, EventIndex + 1);
 				}

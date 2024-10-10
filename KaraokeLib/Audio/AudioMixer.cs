@@ -1,12 +1,7 @@
-﻿using Concentus.Common;
-using CSCore;
-using CSCore.Codecs.RAW;
+﻿using CSCore;
 using CSCore.DSP;
-using CSCore.Streams;
-using KaraokeLib.Audio.SoundTouch;
 using KaraokeLib.Events;
 using KaraokeLib.Tracks;
-using System.Diagnostics;
 
 namespace KaraokeLib.Audio
 {
@@ -37,28 +32,9 @@ namespace KaraokeLib.Audio
 
 		public bool CanSeek => throw new NotImplementedException();
 
-		public void UpdateTracks(IEnumerable<KaraokeTrack> tracks)
-		{
-			if (TracksNeedRebuild(tracks))
-			{
-				RebuildTracks(tracks);
-			}
-		}
-
-		private bool TracksNeedRebuild(IEnumerable<KaraokeTrack> tracks)
-		{
-			var currentIds = _audioTracks.Select(t => t.Id).ToHashSet();
-			foreach (var track in tracks)
-			{
-				if (currentIds.Contains(track.Id))
-				{
-					return true;
-				}
-			}
-
-			return tracks.Any(t => t.Type == KaraokeTrackType.Audio && !currentIds.Contains(t.Id));
-		}
-
+		/// <summary>
+		/// Rebuilds the internal cache of audio tracks and loaded audio streams.
+		/// </summary>
 		public void RebuildTracks(IEnumerable<KaraokeTrack> tracks)
 		{
 			_audioTracks = tracks.Where(t => t.Type == KaraokeTrackType.Audio).ToArray();
@@ -171,11 +147,6 @@ namespace KaraokeLib.Audio
 
 		public void Dispose()
 		{
-			foreach (var stream in _loadedStreams.Values)
-			{
-				//stream.Dispose();
-			}
-
 			_loadedStreams.Clear();
 			_audioTracks = [];
 		}

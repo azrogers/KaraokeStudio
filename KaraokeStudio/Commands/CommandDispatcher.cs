@@ -17,12 +17,12 @@ namespace KaraokeStudio.Commands
 
 		public static void Dispatch(ICommand command)
 		{
-			foreach(var update in command.Execute(CurrentContext))
+			foreach (var update in command.Execute(CurrentContext))
 			{
 				UpdateDispatcher.Dispatch(update);
 			}
 
-			if(command.CanUndo)
+			if (command.CanUndo)
 			{
 				UndoHandler.Push(command.Description, () =>
 				{

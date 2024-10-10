@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace KaraokeLib.Video
+﻿namespace KaraokeLib.Video
 {
 	public struct VideoTimecode
 	{
@@ -30,7 +24,7 @@ namespace KaraokeLib.Video
 
 		public double ToSeconds()
 		{
-			if(_frameRate == 0)
+			if (_frameRate == 0)
 			{
 				return 0;
 			}
@@ -41,7 +35,7 @@ namespace KaraokeLib.Video
 		public static VideoTimecode operator +(VideoTimecode a, VideoTimecode b)
 		{
 			var targetFramerate = a._frameRate;
-			if(targetFramerate != b._frameRate)
+			if (targetFramerate != b._frameRate)
 			{
 				var newTimecode = new VideoTimecode(b.ToSeconds(), targetFramerate);
 				newTimecode._frameCount += a._frameCount;
@@ -54,7 +48,7 @@ namespace KaraokeLib.Video
 		public static VideoTimecode operator -(VideoTimecode a, VideoTimecode b)
 		{
 			var targetFramerate = a._frameRate;
-			if(targetFramerate != b._frameRate)
+			if (targetFramerate != b._frameRate)
 			{
 				var newTimecode = new VideoTimecode(b.ToSeconds(), targetFramerate);
 				newTimecode._frameCount -= a._frameCount;
@@ -96,7 +90,7 @@ namespace KaraokeLib.Video
 
 		public static bool operator ==(VideoTimecode a, VideoTimecode b)
 		{
-			if(a._frameRate == b._frameRate)
+			if (a._frameRate == b._frameRate)
 			{
 				return a._frameCount == b._frameCount;
 			}
@@ -106,7 +100,7 @@ namespace KaraokeLib.Video
 
 		public static bool operator !=(VideoTimecode a, VideoTimecode b)
 		{
-			if(a._frameRate == b._frameRate)
+			if (a._frameRate == b._frameRate)
 			{
 				return a._frameCount != b._frameCount;
 			}
@@ -126,7 +120,7 @@ namespace KaraokeLib.Video
 
 		public static bool operator <(VideoTimecode a, VideoTimecode b)
 		{
-			if(a._frameRate == b._frameRate)
+			if (a._frameRate == b._frameRate)
 			{
 				return a._frameCount < b._frameCount;
 			}
@@ -141,7 +135,7 @@ namespace KaraokeLib.Video
 
 		public static bool operator >(VideoTimecode a, VideoTimecode b)
 		{
-			if(a._frameRate == b._frameRate)
+			if (a._frameRate == b._frameRate)
 			{
 				return a._frameCount > b._frameCount;
 			}

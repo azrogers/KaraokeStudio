@@ -60,7 +60,7 @@ namespace KaraokeStudio
 
 			AppSettings.Instance.OnVolumeChanged += volume =>
 			{
-				if(_waveOut != null)
+				if (_waveOut != null)
 				{
 					_waveOut.Volume = volume;
 				}
@@ -76,11 +76,11 @@ namespace KaraokeStudio
 
 		public void SetPlaybackState(bool isPlaying)
 		{
-			if(_isPlaying && !isPlaying)
+			if (_isPlaying && !isPlaying)
 			{
 				_waveOut?.Pause();
 			}
-			else if(!_isPlaying && isPlaying)
+			else if (!_isPlaying && isPlaying)
 			{
 				_waveOut?.Play();
 			}
@@ -126,7 +126,7 @@ namespace KaraokeStudio
 			}
 
 			_waveOut?.Initialize(_mixerSource);
-			if(_waveOut != null)
+			if (_waveOut != null)
 			{
 				_waveOut.Volume = AppSettings.Instance.Volume;
 			}

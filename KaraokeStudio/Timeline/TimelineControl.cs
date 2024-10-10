@@ -8,16 +8,16 @@ using System.Data;
 
 namespace KaraokeStudio.Timeline
 {
-    /// <summary>
-    /// Represents the timeline that displays events and allows the user to modify them.
-    /// </summary>
-    /// <remarks>
-    /// The control contains a canvas. The canvas is larger than the client rect of the control - it's as long as is needed to display every event.
-    /// We use the concept of "canvas space" and "control space" to distinguish between these. 
-    /// A coordinate in control space is in screen coordinates, relative to the location of the control on the screen.
-    /// A coordinate in canvas space is in the coordinates of the full canvas, which may be scaled or scrolled depending on the user's inputs.
-    /// </remarks>
-    public partial class TimelineControl : UserControl, IDisposable
+	/// <summary>
+	/// Represents the timeline that displays events and allows the user to modify them.
+	/// </summary>
+	/// <remarks>
+	/// The control contains a canvas. The canvas is larger than the client rect of the control - it's as long as is needed to display every event.
+	/// We use the concept of "canvas space" and "control space" to distinguish between these. 
+	/// A coordinate in control space is in screen coordinates, relative to the location of the control on the screen.
+	/// A coordinate in canvas space is in the coordinates of the full canvas, which may be scaled or scrolled depending on the user's inputs.
+	/// </remarks>
+	public partial class TimelineControl : UserControl, IDisposable
 	{
 		private const float PADDING_TOP = 5.0f;
 		// width of the playhead for clicking and dragging to scrub
@@ -173,7 +173,7 @@ namespace KaraokeStudio.Timeline
 		{
 			var viewportRect = GetViewportClientRect();
 			// playback head has moved off screen, let's scroll to catch up with it
-			if(viewportRect.Contains(new Point((int)_prevPlaybackHeadXPos, 10)) && !viewportRect.Contains(new Point((int)GetPlaybackHeadXPos(), 10)))
+			if (viewportRect.Contains(new Point((int)_prevPlaybackHeadXPos, 10)) && !viewportRect.Contains(new Point((int)GetPlaybackHeadXPos(), 10)))
 			{
 				var scrollOffset =
 					SKMatrix
@@ -433,11 +433,11 @@ namespace KaraokeStudio.Timeline
 					HandleClick(e.Location);
 				}
 			}
-			else if(_uiState == TimelineUIState.Multiselect)
+			else if (_uiState == TimelineUIState.Multiselect)
 			{
 				_timelineCanvas.SelectEventsInRect(CreateInverseMatrix().MapRect(GetCurrentSelectionRect(e.Location)));
 			}
-			else if(_uiState == TimelineUIState.Dragging)
+			else if (_uiState == TimelineUIState.Dragging)
 			{
 				_timelineCanvas.EndDrag();
 			}

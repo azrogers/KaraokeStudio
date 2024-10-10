@@ -1,12 +1,10 @@
-﻿using KaraokeLib.Events;
-using KaraokeLib.Tracks;
-using KaraokeStudio.Commands.Updates;
+﻿using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Project;
 using NLog;
 
 namespace KaraokeStudio.Timeline
 {
-    public partial class TimelineContainerControl : UserControl
+	public partial class TimelineContainerControl : UserControl
 	{
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
@@ -70,7 +68,7 @@ namespace KaraokeStudio.Timeline
 
 		private void RecreateTracks()
 		{
-			foreach(var header in _trackHeaders)
+			foreach (var header in _trackHeaders)
 			{
 				// remove event listeners before destroying
 				header.Click -= OnHeaderClick;

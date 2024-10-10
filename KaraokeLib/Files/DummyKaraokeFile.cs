@@ -3,7 +3,7 @@
 namespace KaraokeLib.Files
 {
 
-    public class DummyKaraokeProvider : IKaraokeProvider
+	public class DummyKaraokeProvider : IKaraokeProvider
 	{
 		public bool CanRead => true;
 

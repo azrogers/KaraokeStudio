@@ -1,14 +1,13 @@
 ﻿using KaraokeLib.Config;
-using KaraokeLib.Events;
 using KaraokeLib.Files.Ksf;
 using KaraokeLib.Tracks;
 
 namespace KaraokeLib.Files
 {
-    /// <summary>
-    /// Represents a single .ksf file.
-    /// </summary>
-    public class KsfKaraokeFile : KaraokeFile<KsfKaraokeProvider>
+	/// <summary>
+	/// Represents a single .ksf file.
+	/// </summary>
+	public class KsfKaraokeFile : KaraokeFile<KsfKaraokeProvider>
 	{
 		/// <summary>
 		/// Sets the given key-value metadata on the file.

@@ -2,7 +2,7 @@
 
 namespace KaraokeLib.Video
 {
-    public class VideoParagraph
+	public class VideoParagraph
 	{
 		private VideoContext _context;
 		private KaraokeEvent[][] _lines;

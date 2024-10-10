@@ -1,13 +1,4 @@
 ﻿using NLog;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace KaraokeStudio
 {
@@ -19,7 +10,7 @@ namespace KaraokeStudio
 		public static void LogEvent(LogEventInfo info, object[] param)
 		{
 			LogString += $"[{info.LoggerName}] <{info.TimeStamp.ToLongTimeString()}> {info.FormattedMessage}" + Environment.NewLine;
-			if(LogString.Length > short.MaxValue)
+			if (LogString.Length > short.MaxValue)
 			{
 				LogString = LogString.Substring(LogString.Length - short.MaxValue, short.MaxValue);
 			}

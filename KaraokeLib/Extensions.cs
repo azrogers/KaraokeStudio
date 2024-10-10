@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace KaraokeLib
 {
@@ -15,7 +11,7 @@ namespace KaraokeLib
 		{
 			var bytes = new List<byte>();
 			byte b;
-			while((b = reader.ReadByte()) != 0)
+			while ((b = reader.ReadByte()) != 0)
 			{
 				bytes.Add(b);
 			}

@@ -40,7 +40,7 @@ namespace KaraokeStudio.Config
 
 		public void ReplaceConfigIfNotChanged(IEditableConfig newConfig)
 		{
-			if(_isDirty)
+			if (_isDirty)
 			{
 				return;
 			}

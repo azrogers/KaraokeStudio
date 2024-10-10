@@ -47,7 +47,7 @@ namespace KaraokeLib.Events
 		{
 			var newLen = end.GetTimeSeconds() - start.GetTimeSeconds();
 			// length is the same - it's just a move, nothing to do
-			if(Math.Abs(newLen - LengthSeconds) <= 0.0001)
+			if (Math.Abs(newLen - LengthSeconds) <= 0.0001)
 			{
 				base.SetTiming(start, end);
 				return;
@@ -68,7 +68,7 @@ namespace KaraokeLib.Events
 
 		private double GetSourceLength()
 		{
-			if(Settings?.AudioFile == null)
+			if (Settings?.AudioFile == null)
 			{
 				return 0;
 			}

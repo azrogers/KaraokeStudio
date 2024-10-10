@@ -4,11 +4,11 @@ using System.Text;
 
 namespace KaraokeStudio.LyricsEditor
 {
-    /// <summary>
-    /// Represents a single section of text within the lyrics editor.
-    /// This is a single line break, single paragraph break, or a word with one or more syllables.
-    /// </summary>
-    internal class LyricsEditorTextElement
+	/// <summary>
+	/// Represents a single section of text within the lyrics editor.
+	/// This is a single line break, single paragraph break, or a word with one or more syllables.
+	/// </summary>
+	internal class LyricsEditorTextElement
 	{
 		private static readonly FastHashes.XxHash32 Hash = new FastHashes.XxHash32();
 
@@ -60,19 +60,19 @@ namespace KaraokeStudio.LyricsEditor
 		{
 			var currentIndex = 0;
 
-			if(index == 0)
+			if (index == 0)
 			{
 				return StartTime;
 			}
 
-			foreach(var ev in _events)
+			foreach (var ev in _events)
 			{
 				var len = 0;
-				if(ev.Type == KaraokeEventType.LineBreak)
+				if (ev.Type == KaraokeEventType.LineBreak)
 				{
 					len = 1;
 				}
-				else if(ev.Type == KaraokeEventType.ParagraphBreak)
+				else if (ev.Type == KaraokeEventType.ParagraphBreak)
 				{
 					len = 2;
 				}
@@ -81,7 +81,7 @@ namespace KaraokeStudio.LyricsEditor
 					len = ev.RawValue?.Length ?? 0;
 				}
 
-				if(index >= currentIndex && index < currentIndex + len)
+				if (index >= currentIndex && index < currentIndex + len)
 				{
 					var normalizedPos = (index - currentIndex) / (double)len;
 					return Utility.Lerp(ev.StartTimeSeconds, ev.EndTimeSeconds, normalizedPos);
@@ -116,7 +116,7 @@ namespace KaraokeStudio.LyricsEditor
 			if (Type == KaraokeEventType.Lyric)
 			{
 				bytes.AddRange(BitConverter.GetBytes(Events.Length));
-				foreach(var ev in Events)
+				foreach (var ev in Events)
 				{
 					bytes.AddRange(Encoding.UTF8.GetBytes(ev.RawValue ?? ""));
 				}

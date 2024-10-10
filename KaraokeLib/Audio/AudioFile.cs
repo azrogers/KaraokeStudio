@@ -1,10 +1,5 @@
 ﻿using FFMediaToolkit.Audio;
 using FFMediaToolkit.Decoding;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FFMediaToolkit.Encoding;
 
 namespace KaraokeLib.Audio
@@ -24,7 +19,7 @@ namespace KaraokeLib.Audio
 			_file = MediaFile.Open(filename);
 			_fileName = filename;
 
-			if(_file.AudioStreams.Length == 0)
+			if (_file.AudioStreams.Length == 0)
 			{
 				throw new InvalidDataException("Audio file must have at least one stream");
 			}
@@ -147,7 +142,7 @@ namespace KaraokeLib.Audio
 		public bool TryGetNextFrame(out AudioData nextFrame)
 		{
 			return _file.Audio.TryGetNextFrame(out nextFrame);
-			if(_position - _startPos > _length)
+			if (_position - _startPos > _length)
 			{
 				nextFrame = new AudioData();
 				return false;
@@ -158,7 +153,7 @@ namespace KaraokeLib.Audio
 				if (_file.Audio.TryGetNextFrame(out nextFrame))
 				{
 					_position += nextFrame.NumSamples / (double)_streamInfo.SampleRate;
-					if(_position >= _startPos)
+					if (_position >= _startPos)
 					{
 						return true;
 					}

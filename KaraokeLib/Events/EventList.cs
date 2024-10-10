@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 
 namespace KaraokeLib.Events
 {
@@ -31,7 +29,8 @@ namespace KaraokeLib.Events
 		/// </summary>
 		public void AddRange(IEnumerable<KaraokeEvent> items)
 		{
-			foreach(var item in items) {
+			foreach (var item in items)
+			{
 				_events.Add(item.StartTimeMilliseconds, item);
 			}
 		}
@@ -76,7 +75,7 @@ namespace KaraokeLib.Events
 		public bool Remove(KaraokeEvent item)
 		{
 			var index = _events.IndexOfValue(item);
-			if(index != -1)
+			if (index != -1)
 			{
 				_events.RemoveAt(index);
 			}

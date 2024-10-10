@@ -7,7 +7,7 @@ using SkiaSharp;
 
 namespace KaraokeStudio.Config
 {
-    internal class ConfigPreviewHandler
+	internal class ConfigPreviewHandler
 	{
 		private const string TEXT = @"Lo-rem ip-sum do-lor sit am-et, con-sect-te-tur ad-ip-is-cing el-it.
 Vest-ib-u-lum vi-tae ar-cu vel el-it sus-ci-pit ul-tri-cies ac quis do-lor. In-te-ger a con-gue la-cus.

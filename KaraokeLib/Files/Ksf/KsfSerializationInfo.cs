@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Reflection;
-using System.Collections;
-using Newtonsoft.Json.Linq;
+﻿using System.Reflection;
 
 namespace KaraokeLib.Files.Ksf
 {
@@ -18,7 +11,7 @@ namespace KaraokeLib.Files.Ksf
 		internal KsfSerializationInfo(Type serializationType)
 		{
 			var attr = serializationType.GetCustomAttribute<KsfSerializableAttribute>();
-			if(attr == null)
+			if (attr == null)
 			{
 				throw new ArgumentException("Type passed to KsfSerializationInfo must have KsfSerializable attribute");
 			}
@@ -34,10 +27,10 @@ namespace KaraokeLib.Files.Ksf
 			var hasBinary = typeof(IKsfBinaryObject).IsAssignableFrom(type);
 			var ksfType = new KsfType(type.Name, serializableAttribute.ObjectType, hasBinary);
 
-			foreach(var f in fields)
+			foreach (var f in fields)
 			{
 				var serializeAttribute = f.GetCustomAttribute<KsfSerializeAttribute>();
-				if(serializeAttribute == null)
+				if (serializeAttribute == null)
 				{
 					// ignore non-serialized field
 					continue;
@@ -47,7 +40,7 @@ namespace KaraokeLib.Files.Ksf
 				ksfType.Values.Add(new KsfFieldInfo(f.Name, f));
 			}
 
-			foreach(var p in properties)
+			foreach (var p in properties)
 			{
 				var serializeAttribute = p.GetCustomAttribute<KsfSerializeAttribute>();
 				if (serializeAttribute == null)

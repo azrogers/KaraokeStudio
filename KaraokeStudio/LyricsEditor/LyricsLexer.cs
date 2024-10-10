@@ -1,36 +1,32 @@
 ﻿using KaraokeLib.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeStudio.LyricsEditor
 {
-    internal class LyricsLexer
+	internal class LyricsLexer
 	{
 		public static IEnumerable<LyricsLexerElement> Process(IEnumerable<LyricsToken> tokens)
 		{
 			var currentTokens = new List<LyricsToken>();
-			foreach(var token in tokens)
+			foreach (var token in tokens)
 			{
-				if(token.Type == LyricsTokenType.Text)
+				if (token.Type == LyricsTokenType.Text)
 				{
 					currentTokens.Add(token);
 					continue;
 				}
 
-				if(currentTokens.Any())
+				if (currentTokens.Any())
 				{
 					yield return new LyricsLexerElement(KaraokeEventType.Lyric, currentTokens.Select(t => t.Value).ToArray());
 					currentTokens.Clear();
 				}
 
-				if(token.Type == LyricsTokenType.LineBreak)
+				if (token.Type == LyricsTokenType.LineBreak)
 				{
 					yield return new LyricsLexerElement(KaraokeEventType.LineBreak);
 				}
-				else if(token.Type == LyricsTokenType.ParagraphBreak)
+				else if (token.Type == LyricsTokenType.ParagraphBreak)
 				{
 					yield return new LyricsLexerElement(KaraokeEventType.ParagraphBreak);
 				}

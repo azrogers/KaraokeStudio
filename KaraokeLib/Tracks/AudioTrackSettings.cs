@@ -1,10 +1,5 @@
 ﻿using KaraokeLib.Config;
 using KaraokeLib.Config.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeLib.Tracks
 {

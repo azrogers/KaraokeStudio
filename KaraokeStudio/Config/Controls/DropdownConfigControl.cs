@@ -1,9 +1,4 @@
-﻿using KaraokeLib.Config;
-using KaraokeStudio.Util;
-using Microsoft.VisualBasic;
-using System.Linq;
-
-namespace KaraokeStudio.Config.Controls
+﻿namespace KaraokeStudio.Config.Controls
 {
 	public partial class DropdownConfigControl : BaseConfigControl
 	{
@@ -57,13 +52,13 @@ namespace KaraokeStudio.Config.Controls
 			foreach (var (name, value) in Field.ConfigDropdown.GetNameValuePairs(configType))
 			{
 				comboBox.Items.Add(new DropdownItem(name, value));
-				if(item != null && value == item.Value)
+				if (item != null && value == item.Value)
 				{
 					selectedIndex = comboBox.Items.Count - 1;
 				}
 			}
 
-			if(comboBox.Items.Count > 0)
+			if (comboBox.Items.Count > 0)
 			{
 				comboBox.SelectedIndex = selectedIndex;
 			}

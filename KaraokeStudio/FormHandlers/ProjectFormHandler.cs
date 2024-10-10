@@ -1,8 +1,6 @@
 ﻿using KaraokeLib.Audio;
-using KaraokeLib.Config;
 using KaraokeLib.Events;
 using KaraokeLib.Files;
-using KaraokeLib.Tracks;
 using KaraokeStudio.Commands;
 using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Project;
@@ -11,8 +9,8 @@ using Ookii.Dialogs.WinForms;
 
 namespace KaraokeStudio.FormHandlers
 {
-    // handles behaviors for the MainForm related to the current project
-    internal class ProjectFormHandler
+	// handles behaviors for the MainForm related to the current project
+	internal class ProjectFormHandler
 	{
 		private KaraokeProject? _loadedProject;
 		private string? _loadedProjectPath = null;
@@ -56,10 +54,10 @@ namespace KaraokeStudio.FormHandlers
 			UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
 			{
 				var idLookup = new HashSet<int>(update.EventIds);
-				if(Project != null)
+				if (Project != null)
 				{
 					var relevantTracks = Project.Tracks.Where(t => t.Events.Any(e => idLookup.Contains(e.Id)));
-					foreach(var track in relevantTracks)
+					foreach (var track in relevantTracks)
 					{
 						track.UpdateEvents();
 					}
@@ -76,7 +74,7 @@ namespace KaraokeStudio.FormHandlers
 
 			UpdateDispatcher.RegisterHandler<ProjectUpdate>(update =>
 			{
-				if(_loadedProject != null)
+				if (_loadedProject != null)
 				{
 					_loadedProject.Dispose();
 				}
@@ -98,7 +96,7 @@ namespace KaraokeStudio.FormHandlers
 
 		public void RecalculateProjectLength()
 		{
-			if(_loadedProject == null)
+			if (_loadedProject == null)
 			{
 				return;
 			}

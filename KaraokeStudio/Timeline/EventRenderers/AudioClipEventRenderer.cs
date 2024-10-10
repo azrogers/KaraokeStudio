@@ -2,11 +2,6 @@
 using KaraokeLib.Events;
 using NAudio.WaveFormRenderer;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeStudio.Timeline.EventRenderers
 {
@@ -27,7 +22,7 @@ namespace KaraokeStudio.Timeline.EventRenderers
 
 		public void RecreateContext()
 		{
-			foreach(var image in _bitmaps)
+			foreach (var image in _bitmaps)
 			{
 				image.Value.Dispose();
 			}
@@ -38,7 +33,7 @@ namespace KaraokeStudio.Timeline.EventRenderers
 		{
 			var clipEvent = (AudioClipKaraokeEvent)ev;
 
-			if(!_bitmaps.ContainsKey(ev.Id))
+			if (!_bitmaps.ContainsKey(ev.Id))
 			{
 				var duration = AudioUtil.GetFileInfo(clipEvent.Settings?.AudioFile ?? "")?.LengthSeconds ?? 0;
 				var widthPixels = TimelineCanvas.PIXELS_PER_SECOND * duration;
@@ -53,9 +48,9 @@ namespace KaraokeStudio.Timeline.EventRenderers
 				settings.BottomPeakShader = _waveformShader;
 
 				var peakProvider = new RmsPeakProvider(2048);
-				using(var stream = clipEvent.Settings?.LoadAudioFile())
+				using (var stream = clipEvent.Settings?.LoadAudioFile())
 				{
-					if(stream != null)
+					if (stream != null)
 					{
 						_bitmaps[ev.Id] = _renderer.Render(stream, peakProvider, settings);
 					}
@@ -65,7 +60,7 @@ namespace KaraokeStudio.Timeline.EventRenderers
 			var offset = -(clipEvent.Settings?.Offset ?? 0) * TimelineCanvas.PIXELS_PER_SECOND;
 			canvas.Save();
 			canvas.ClipRect(rect);
-			
+
 			canvas.Translate(rect.Left + (float)offset, rect.Top);
 			canvas.Scale(1.0f / BITMAP_X_SCALE, 1.0f / BITMAP_Y_SCALE);
 			canvas.DrawBitmap(_bitmaps[ev.Id], new SKPoint(0, 0), _bitmapPaint);

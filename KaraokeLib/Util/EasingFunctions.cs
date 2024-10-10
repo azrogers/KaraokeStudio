@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace KaraokeLib.Util
+﻿namespace KaraokeLib.Util
 {
 	// https://gist.github.com/Kryzarel/bba64622057f21a1d6d44879f9cd7bd4
 	internal class EasingFunctions
 	{
 		private static readonly Dictionary<EasingType, Func<float, float>> _functions = new Dictionary<EasingType, Func<float, float>>()
-		{ 
+		{
 			{ EasingType.Linear, Linear },
 			{ EasingType.InQuad, InQuad },
 			{ EasingType.OutQuad, OutQuad },
@@ -49,7 +43,7 @@ namespace KaraokeLib.Util
 		/// </summary>
 		public static float Evaluate(EasingType type, float t)
 		{
-			if(!_functions.TryGetValue(type, out var func))
+			if (!_functions.TryGetValue(type, out var func))
 			{
 				throw new NotImplementedException();
 			}

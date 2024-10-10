@@ -8,7 +8,7 @@ using SkiaSharp;
 
 namespace KaraokeStudio.Video
 {
-    internal partial class KaraokeVideoControl : UserControl
+	internal partial class KaraokeVideoControl : UserControl
 	{
 		private static SKPaint _notActiveOverlayPaint = new SKPaint()
 		{
@@ -137,9 +137,9 @@ namespace KaraokeStudio.Video
 			}
 
 			// not active - draw a disabled overlay
-			if(_project.PlaybackState.CurrentVideoPlaybackClaim != this)
+			if (_project.PlaybackState.CurrentVideoPlaybackClaim != this)
 			{
-				if(_lastFrame != null)
+				if (_lastFrame != null)
 				{
 					surface.Canvas.DrawImage(_lastFrame, SKPoint.Empty);
 				}
@@ -153,7 +153,7 @@ namespace KaraokeStudio.Video
 				new VideoTimecode(_project.PlaybackState.Position, _project.Config.FrameRate),
 				surface);
 
-			if(_lastFrame != null)
+			if (_lastFrame != null)
 			{
 				_lastFrame.Dispose();
 			}

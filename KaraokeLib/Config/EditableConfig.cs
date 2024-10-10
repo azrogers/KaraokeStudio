@@ -37,7 +37,7 @@ namespace KaraokeLib.Config
 			foreach (var field in typeof(T).GetFields(BindingFlags.Public | BindingFlags.Instance))
 			{
 				var configHide = field.GetCustomAttribute<ConfigHideAttribute>();
-				if(configHide != null)
+				if (configHide != null)
 				{
 					continue;
 				}

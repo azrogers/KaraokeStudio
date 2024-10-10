@@ -54,7 +54,7 @@ namespace KaraokeStudio
 		{
 			get
 			{
-				if(_exportForm == null || _exportForm.IsDisposed)
+				if (_exportForm == null || _exportForm.IsDisposed)
 				{
 					_exportForm = new ExportVideoForm();
 				}
@@ -67,7 +67,7 @@ namespace KaraokeStudio
 		{
 			get
 			{
-				if(_audioSettingsForm == null || _audioSettingsForm.IsDisposed)
+				if (_audioSettingsForm == null || _audioSettingsForm.IsDisposed)
 				{
 					_audioSettingsForm = new GenericConfigEditorForm();
 				}
@@ -89,7 +89,7 @@ namespace KaraokeStudio
 			// when track settings change, replace the settings in any active properties windows unless they're dirty
 			UpdateDispatcher.RegisterHandler<TrackConfigUpdate>(update =>
 			{
-				foreach(var id in update.TrackIds)
+				foreach (var id in update.TrackIds)
 				{
 					if (_trackSettingsEditors.ContainsKey(id) && !_trackSettingsEditors[id].IsDisposed)
 					{
@@ -101,7 +101,7 @@ namespace KaraokeStudio
 
 		internal static void OpenTrackSettingsEditor(KaraokeTrack track)
 		{
-			if(!_trackSettingsEditors.ContainsKey(track.Id) || _trackSettingsEditors[track.Id].IsDisposed)
+			if (!_trackSettingsEditors.ContainsKey(track.Id) || _trackSettingsEditors[track.Id].IsDisposed)
 			{
 				_trackSettingsEditors[track.Id] = new GenericConfigEditorForm();
 			}
@@ -178,7 +178,7 @@ namespace KaraokeStudio
 	{
 		public override void DoExecute(CommandContext context)
 		{
-			if(WindowManager.Console.Visible)
+			if (WindowManager.Console.Visible)
 			{
 				WindowManager.Console.Focus();
 			}
@@ -193,7 +193,7 @@ namespace KaraokeStudio
 	{
 		public override void DoExecute(CommandContext context)
 		{
-			if(WindowManager.Style.Visible)
+			if (WindowManager.Style.Visible)
 			{
 				WindowManager.Style.Focus();
 			}

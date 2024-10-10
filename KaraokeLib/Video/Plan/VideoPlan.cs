@@ -1,9 +1,4 @@
 ﻿using KaraokeLib.Video.Elements;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeLib.Video.Plan
 {
@@ -26,7 +21,7 @@ namespace KaraokeLib.Video.Plan
 		{
 			_finalized = false;
 
-			if(_videoElementLookup.TryGetValue(element, out var frameBounds))
+			if (_videoElementLookup.TryGetValue(element, out var frameBounds))
 			{
 				frameBounds.StartFrame = Math.Min(videoTimecode.FrameNumber, frameBounds.StartFrame);
 				frameBounds.EndFrame = Math.Max(videoTimecode.FrameNumber, frameBounds.EndFrame);
@@ -43,14 +38,14 @@ namespace KaraokeLib.Video.Plan
 		/// </summary>
 		internal void FinalizePlan()
 		{
-			if(_finalized)
+			if (_finalized)
 			{
 				// nothing to do
 				return;
 			}
 
 			_videoElements.Clear();
-			foreach(var kv in _videoElementLookup)
+			foreach (var kv in _videoElementLookup)
 			{
 				_videoElements.Add((kv.Value.StartFrame, kv.Value.EndFrame, kv.Key));
 			}
@@ -65,21 +60,21 @@ namespace KaraokeLib.Video.Plan
 		/// </summary>
 		internal IEnumerable<(VideoTimecode StartTime, VideoTimecode EndTime, IVideoElement Element)> GetElementsForFrame(VideoTimecode frame)
 		{
-			if(!_finalized)
+			if (!_finalized)
 			{
 				FinalizePlan();
 			}
 
-			foreach(var elem in _videoElements)
+			foreach (var elem in _videoElements)
 			{
 				// skip this element, we're not there yet
-				if(elem.EndFrame < frame.FrameNumber)
+				if (elem.EndFrame < frame.FrameNumber)
 				{
 					continue;
 				}
 
 				// this is after the element we need, we're done with all the elements we should consider
-				if(elem.StartFrame > frame.FrameNumber)
+				if (elem.StartFrame > frame.FrameNumber)
 				{
 					break;
 				}

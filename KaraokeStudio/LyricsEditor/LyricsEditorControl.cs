@@ -1,5 +1,4 @@
-﻿using KaraokeLib.Events;
-using KaraokeLib.Tracks;
+﻿using KaraokeLib.Tracks;
 using KaraokeStudio.Commands;
 using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Project;
@@ -8,7 +7,7 @@ using System.Data;
 
 namespace KaraokeStudio.LyricsEditor
 {
-    public partial class LyricsEditorControl : UserControl
+	public partial class LyricsEditorControl : UserControl
 	{
 		private const int LYRIC_STYLE = 11;
 		private const int LYRIC_HIGHLIGHT_STYLE = 12;
@@ -163,13 +162,13 @@ namespace KaraokeStudio.LyricsEditor
 		private void RestyleArea(int highlightIndex, int startIndex, int endIndex)
 		{
 			_scintilla.StartStyling(startIndex);
-			if(highlightIndex > startIndex)
+			if (highlightIndex > startIndex)
 			{
 				var end = Math.Min(highlightIndex, endIndex);
 				_scintilla.SetStyling(end - startIndex, LYRIC_HIGHLIGHT_STYLE);
 			}
 
-			if(highlightIndex < endIndex)
+			if (highlightIndex < endIndex)
 			{
 				var start = Math.Max(highlightIndex, startIndex);
 				_scintilla.SetStyling(endIndex - start, LYRIC_STYLE);

@@ -8,7 +8,7 @@ using Ookii.Dialogs.WinForms;
 
 namespace KaraokeStudio
 {
-    public partial class StyleForm : Form
+	public partial class StyleForm : Form
 	{
 		private KaraokeProject? _currentProject = null;
 		private ConfigPreviewHandler _previewHandler = new ConfigPreviewHandler();

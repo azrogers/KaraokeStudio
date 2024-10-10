@@ -1,5 +1,4 @@
 ﻿using KaraokeLib.Util;
-using Newtonsoft.Json.Linq;
 
 namespace KaraokeStudio.Config.Controls
 {

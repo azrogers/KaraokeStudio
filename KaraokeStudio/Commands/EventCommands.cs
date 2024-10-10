@@ -131,7 +131,7 @@ namespace KaraokeStudio.Commands
 		public IEnumerable<IUpdate> Execute(CommandContext context)
 		{
 			var track = context.Project?.Tracks.FirstOrDefault(t => t.Id == _trackId);
-			if(track == null)
+			if (track == null)
 			{
 				Logger.Warn($"Can't find track ID {_trackId}, giving up");
 				yield break;
@@ -151,7 +151,7 @@ namespace KaraokeStudio.Commands
 				yield break;
 			}
 
-			if(_createdEventId == -1)
+			if (_createdEventId == -1)
 			{
 				Logger.Warn("Tried to undo create audio clip event command, but _createdEventId was -1?");
 				yield break;
@@ -179,7 +179,7 @@ namespace KaraokeStudio.Commands
 
 		public IEnumerable<IUpdate> Execute(CommandContext context)
 		{
-			if(context.Project == null)
+			if (context.Project == null)
 			{
 				// nothing to do
 				yield break;
@@ -201,14 +201,14 @@ namespace KaraokeStudio.Commands
 
 		public IEnumerable<IUpdate> Undo(CommandContext context)
 		{
-			if(context.Project == null)
+			if (context.Project == null)
 			{
 				yield break;
 			}
 
-			foreach(var track in context.Project.Tracks)
+			foreach (var track in context.Project.Tracks)
 			{
-				if(!_removedEvents.ContainsKey(track.Id))
+				if (!_removedEvents.ContainsKey(track.Id))
 				{
 					continue;
 				}

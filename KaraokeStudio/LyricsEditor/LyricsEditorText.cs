@@ -1,13 +1,10 @@
 ﻿using KaraokeLib.Events;
 using KaraokeStudio.Util;
-using Newtonsoft.Json.Linq;
-using ScintillaNET;
 using System.Text;
-using System.Windows.Documents;
 
 namespace KaraokeStudio.LyricsEditor
 {
-    internal static class LyricsEditorText
+	internal static class LyricsEditorText
 	{
 		const float NEW_ELEMENT_SIZE = 0.25f;
 
@@ -118,7 +115,7 @@ namespace KaraokeStudio.LyricsEditor
 					var minSizeNeeded = NEW_ELEMENT_SIZE * item.insertedB;
 					var timeStart = 0.0;
 					var timeEnd = length;
-					if(oldElements.Length > 0)
+					if (oldElements.Length > 0)
 					{
 						// we deleted items, so we can insert the new items in the bounds of the elements we just deleted
 						if (item.deletedA > 0)
@@ -145,7 +142,7 @@ namespace KaraokeStudio.LyricsEditor
 					var totalElem = newElements.Skip(item.StartB).Take(item.insertedB);
 					var totalLen = totalElem.Select(r => r.Type == KaraokeEventType.Lyric ? r.Tokens.Sum(t => t.Length) : 1).Sum();
 					var startPos = 0;
-					if(totalLen > 0)
+					if (totalLen > 0)
 					{
 						// handle all the skipped elements
 						foreach (var elem in totalElem)
@@ -180,19 +177,19 @@ namespace KaraokeStudio.LyricsEditor
 			var lastEndTime = 0.0;
 			KaraokeEvent? lastEvent = null;
 			var createdEvents = new List<KaraokeEvent>();
-			foreach(var element in createdElements)
+			foreach (var element in createdElements)
 			{
-				foreach(var ev in element.Events)
+				foreach (var ev in element.Events)
 				{
-					if(lastEvent != null && lastEndTime > ev.StartTimeSeconds)
+					if (lastEvent != null && lastEndTime > ev.StartTimeSeconds)
 					{
 						// if they overlap but we can move the start time of ev without losing it entirely, let's do that
-						if(lastEndTime < ev.EndTimeSeconds)
+						if (lastEndTime < ev.EndTimeSeconds)
 						{
 							ev.SetTiming(lastEvent.EndTime, ev.EndTime);
 						}
 						// if they overlap but we can move the end time of the last event without losing it entirely, let's do that
-						else if(lastEvent.StartTimeSeconds < ev.StartTimeSeconds)
+						else if (lastEvent.StartTimeSeconds < ev.StartTimeSeconds)
 						{
 							lastEvent.SetTiming(lastEvent.StartTime, ev.StartTime);
 						}
@@ -251,10 +248,10 @@ namespace KaraokeStudio.LyricsEditor
 
 				len = pos - startPos;
 				return new LyricsEditorTextElement(
-					nextElementId++, 
-					elem.Type, 
+					nextElementId++,
+					elem.Type,
 					new KaraokeEvent[] {
-						new KaraokeEvent(elem.Type, nextEventId++, new TimeSpanTimecode(startTime), new TimeSpanTimecode(endTime)) 
+						new KaraokeEvent(elem.Type, nextEventId++, new TimeSpanTimecode(startTime), new TimeSpanTimecode(endTime))
 					});
 			}
 		}

@@ -110,7 +110,7 @@ namespace KaraokeLib.Video.Encoders
 			}
 
 			var pixels = frameBitmap.GetPixelSpan();
-			if(pixels.Length > _buffer.Length)
+			if (pixels.Length > _buffer.Length)
 			{
 				_buffer = new byte[pixels.Length];
 			}
@@ -133,7 +133,7 @@ namespace KaraokeLib.Video.Encoders
 
 			_output.Dispose();
 
-			if(success)
+			if (success)
 			{
 				_currentExporter?.LogMessage($"Combining temp video and audio files into {_outputFile}");
 				FFMpegUtil.MuxVideoAudio(_videoTempFile, _audioTempFile, 0, _length, _outputFile);

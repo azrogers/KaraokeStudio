@@ -1,18 +1,13 @@
 ﻿using KaraokeLib.Events;
 using KaraokeLib.Tracks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeLib.Files
 {
-    /// <summary>
-    /// Keeps track of IDs for events and tracks to make sure they don't overlap.
-    /// This is necessary as event IDs are per-file unique, not per-track unique.
-    /// </summary>
-    public class FileIdTracker
+	/// <summary>
+	/// Keeps track of IDs for events and tracks to make sure they don't overlap.
+	/// This is necessary as event IDs are per-file unique, not per-track unique.
+	/// </summary>
+	public class FileIdTracker
 	{
 		private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -36,7 +31,7 @@ namespace KaraokeLib.Files
 			_events[_nextEventId] = ev;
 			return _nextEventId++;
 		}
-		
+
 		/// <summary>
 		/// Adds the given events to the tracker, reassigning IDs if necessary.
 		/// </summary>
@@ -59,9 +54,9 @@ namespace KaraokeLib.Files
 			{
 				Logger.Debug($"Event with ID {ev.Id} collides with existing event ID - reassigning to ID {_nextEventId}");
 				// remap linked ids
-				foreach(var e in events)
+				foreach (var e in events)
 				{
-					if(e.LinkedId == ev.Id)
+					if (e.LinkedId == ev.Id)
 					{
 						e.LinkedId = _nextEventId;
 					}
@@ -84,9 +79,9 @@ namespace KaraokeLib.Files
 		/// </summary>
 		internal void ReplaceTrack(int trackId, KaraokeTrack newTrack)
 		{
-			if(_trackIdToEventIdMap.ContainsKey(trackId))
+			if (_trackIdToEventIdMap.ContainsKey(trackId))
 			{
-				foreach(var eventId in _trackIdToEventIdMap[trackId])
+				foreach (var eventId in _trackIdToEventIdMap[trackId])
 				{
 					_events.Remove(eventId);
 				}
@@ -110,9 +105,9 @@ namespace KaraokeLib.Files
 			var tracksNeedNewId = new List<KaraokeTrack>();
 			var eventsNeedNewId = new List<KaraokeEvent>();
 
-			foreach(var track in tracks)
+			foreach (var track in tracks)
 			{
-				if(_tracks.ContainsKey(track.Id))
+				if (_tracks.ContainsKey(track.Id))
 				{
 					tracksNeedNewId.Add(track);
 				}
@@ -123,9 +118,9 @@ namespace KaraokeLib.Files
 
 				var events = new HashSet<int>();
 
-				foreach(var ev in track.Events)
+				foreach (var ev in track.Events)
 				{
-					if(_events.ContainsKey(ev.Id))
+					if (_events.ContainsKey(ev.Id))
 					{
 						eventsNeedNewId.Add(ev);
 					}
@@ -139,14 +134,14 @@ namespace KaraokeLib.Files
 			_nextTrackId = _tracks.Any() ? _tracks.Keys.Max() + 1 : 0;
 			_nextEventId = _events.Any() ? _events.Keys.Max() + 1 : 0;
 
-			foreach(var track in tracksNeedNewId)
+			foreach (var track in tracksNeedNewId)
 			{
 				Logger.Warn($"Track with ID {track.Id} collides with existing track ID - reassigning to ID {_nextTrackId}");
 				track.Id = _nextTrackId++;
 				_tracks[track.Id] = track;
 			}
 
-			foreach(var ev in eventsNeedNewId)
+			foreach (var ev in eventsNeedNewId)
 			{
 				Logger.Warn($"Event with ID {ev.Id} collides with existing event ID - reassigning to ID {_nextEventId}");
 				ev.Id = _nextEventId++;
@@ -154,11 +149,11 @@ namespace KaraokeLib.Files
 			}
 
 			// build map for looking up event IDs from track IDs
-			foreach(var track in _tracks.Values)
+			foreach (var track in _tracks.Values)
 			{
 				var events = new HashSet<int>();
 
-				foreach(var ev in track.Events)
+				foreach (var ev in track.Events)
 				{
 					events.Add(ev.Id);
 				}

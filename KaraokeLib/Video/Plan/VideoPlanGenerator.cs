@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace KaraokeLib.Video.Plan
+﻿namespace KaraokeLib.Video.Plan
 {
 	public class VideoPlanGenerator
 	{
@@ -14,13 +8,13 @@ namespace KaraokeLib.Video.Plan
 
 			// dead simple "IsVisible" check for plan for now
 			var naivePlan = new VideoPlan();
-			for(var i = 0; i < context.LastFrameTimecode.FrameNumber; i++)
+			for (var i = 0; i < context.LastFrameTimecode.FrameNumber; i++)
 			{
 				var timecode = new VideoTimecode(i, context.Config.FrameRate);
 				var seconds = timecode.ToSeconds();
-				foreach(var elem in elements)
+				foreach (var elem in elements)
 				{
-					if(elem.StartTimecode.GetTimeSeconds() <= seconds && elem.EndTimecode.GetTimeSeconds() > seconds)
+					if (elem.StartTimecode.GetTimeSeconds() <= seconds && elem.EndTimecode.GetTimeSeconds() > seconds)
 					{
 						naivePlan.RecordElementFrame(elem, timecode);
 					}

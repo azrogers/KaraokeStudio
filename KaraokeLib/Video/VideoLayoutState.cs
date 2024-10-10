@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using KaraokeLib.Events;
+﻿using KaraokeLib.Events;
 using SkiaSharp;
 
 namespace KaraokeLib.Video
 {
 
-    public class VideoLayoutState
+	public class VideoLayoutState
 	{
 		private HashSet<int> _hyphenatedIds = new HashSet<int>();
 

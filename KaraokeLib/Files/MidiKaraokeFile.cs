@@ -5,7 +5,7 @@ using Melanchall.DryWetMidi.Interaction;
 
 namespace KaraokeLib.Files
 {
-    public class MidiKaraokeFile : KaraokeFile<MidiKaraokeProvider>
+	public class MidiKaraokeFile : KaraokeFile<MidiKaraokeProvider>
 	{
 		public MidiKaraokeFile(string filename)
 			: base(new MidiKaraokeProvider(filename)) { }
@@ -47,7 +47,7 @@ namespace KaraokeLib.Files
 		}
 
 		/// <inheritdoc />
-		public KaraokeTrack AddTrack(IKaraokeFile file, KaraokeTrackType type) => 
+		public KaraokeTrack AddTrack(IKaraokeFile file, KaraokeTrackType type) =>
 			throw new NotImplementedException("MidiKaraokeProvider.AddTrack not implemented");
 		/// <inheritdoc />
 		public KaraokeTrack AddTrack(KaraokeTrack track) => throw new NotImplementedException("MidiKaraokeProvider.AddTrack not implemented");

@@ -1,5 +1,4 @@
-﻿using FFMediaToolkit;
-using FFMediaToolkit.Encoding;
+﻿using FFMediaToolkit.Encoding;
 using FFMediaToolkit.Graphics;
 using KaraokeLib.Audio;
 using KaraokeLib.Config;
@@ -10,11 +9,11 @@ using SkiaSharp;
 
 namespace KaraokeLib.Video
 {
-    /// <summary>
-    /// Responsible for rendering a lyrics file into a video.
-    /// This is the entry-level class for using KaraokeLib.
-    /// </summary>
-    public class VideoGenerator
+	/// <summary>
+	/// Responsible for rendering a lyrics file into a video.
+	/// This is the entry-level class for using KaraokeLib.
+	/// </summary>
+	public class VideoGenerator
 	{
 		private KaraokeTrack[] _tracks;
 		private VideoSection[] _sections;

@@ -70,7 +70,7 @@ namespace KaraokeStudio
 			_onDispose.Add(UpdateDispatcher.RegisterHandler<TracksUpdate>(update =>
 			{
 				// track we're syncing was deleted
-				if(!update.Added && update.TrackIds.Any(t => t == _lyricsTrack?.Id))
+				if (!update.Added && update.TrackIds.Any(t => t == _lyricsTrack?.Id))
 				{
 					Hide();
 				}
@@ -320,7 +320,7 @@ namespace KaraokeStudio
 				var frame = _undoContext.Pop();
 				_eventsNeedRepositioning.Clear();
 				_eventIndex = frame.EventIndex;
-				if(_currentProject?.PlaybackState.Position > frame.VideoPosition)
+				if (_currentProject?.PlaybackState.Position > frame.VideoPosition)
 				{
 					_currentProject?.PlaybackState.SeekAbsolute(frame.VideoPosition);
 				}
@@ -388,9 +388,9 @@ namespace KaraokeStudio
 		private void SyncForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			e.Cancel = !OnProjectWillChange();
-			if(!e.Cancel)
+			if (!e.Cancel)
 			{
-				foreach(var d in _onDispose)
+				foreach (var d in _onDispose)
 				{
 					d();
 				}

@@ -20,7 +20,7 @@
 		/// </summary>
 		public EventTree(KaraokeEvent[] events) : this(events.OrderBy(ev => ev.StartTimeMilliseconds).ToArray(), 0)
 		{
-			
+
 		}
 
 		public EventTree(EventTree other)
@@ -90,7 +90,7 @@
 		public (ulong, ulong) Add(KaraokeEvent e)
 		{
 			var (start, end) = (e.StartTimeMilliseconds, e.EndTimeMilliseconds);
-			if(start < Range.Item1 && end >= Range.Item2)
+			if (start < Range.Item1 && end >= Range.Item2)
 			{
 				// this range entirely encasulates the old range
 				// this one should be in charge

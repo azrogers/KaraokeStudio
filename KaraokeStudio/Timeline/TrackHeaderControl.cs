@@ -2,7 +2,6 @@
 using KaraokeLib.Tracks;
 using KaraokeStudio.Commands;
 using KaraokeStudio.Commands.Updates;
-using KaraokeStudio.Config;
 using KaraokeStudio.Project;
 using KaraokeStudio.Util;
 
@@ -41,7 +40,7 @@ namespace KaraokeStudio.Timeline
 
 			_trackSettingsHandle = UpdateDispatcher.RegisterHandler<TrackConfigUpdate>(update =>
 			{
-				foreach(var (button, callback) in _buttonUpdateHandlers)
+				foreach (var (button, callback) in _buttonUpdateHandlers)
 				{
 					callback(button);
 				}
@@ -101,7 +100,7 @@ namespace KaraokeStudio.Timeline
 			{
 				CreateButton("Sync Lyrics", IconChar.Music, (o, e) =>
 				{
-					if(Project != null)
+					if (Project != null)
 					{
 						CommandDispatcher.Dispatch(new OpenSyncFormCommand(Project, Track));
 					}
@@ -141,7 +140,7 @@ namespace KaraokeStudio.Timeline
 			button.Click += _buttonOnClickHandlers[button] = onClick;
 			trackButtonsContainer.Controls.Add(button);
 
-			if(onUpdate != null)
+			if (onUpdate != null)
 			{
 				_buttonUpdateHandlers.Add(button, onUpdate);
 				onUpdate(button);

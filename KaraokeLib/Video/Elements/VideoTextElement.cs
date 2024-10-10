@@ -2,19 +2,15 @@
 using KaraokeLib.Events;
 using KaraokeLib.Video.Transitions;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeLib.Video.Elements
 {
-    /// <summary>
-    /// Represents a bit of timed text on the screen, usually lyrics.
-    /// Can represent one or more LyricsEvents.
-    /// </summary>
-    public class VideoTextElement : IVideoElement
+	/// <summary>
+	/// Represents a bit of timed text on the screen, usually lyrics.
+	/// Can represent one or more LyricsEvents.
+	/// </summary>
+	public class VideoTextElement : IVideoElement
 	{
 		/// <inheritdoc />
 		public VideoElementType Type { get; private set; }
@@ -69,7 +65,8 @@ namespace KaraokeLib.Video.Elements
 			: this(context, layoutState, new KaraokeEvent[]
 			{
 				new KaraokeEvent(KaraokeEventType.Lyric, -1, startTimecode, endTimecode) { RawValue = text }
-			}, 0, id, paragraphId) { }
+			}, 0, id, paragraphId)
+		{ }
 
 		/// <summary>
 		/// Creates a VideoTextElement from at least one event on a single line.
@@ -114,7 +111,7 @@ namespace KaraokeLib.Video.Elements
 			_textBlob = SKTextBlob.Create(_text, _context.Style.Font);
 			_width = totalWidth;
 
-			switch(context.Config.HorizontalAlign)
+			switch (context.Config.HorizontalAlign)
 			{
 				case HorizontalAlignment.Left:
 					Position = (safeArea.Left, yPos);
@@ -138,27 +135,27 @@ namespace KaraokeLib.Video.Elements
 		/// <returns>The index into this element's text. Can be equal to the length of the text, which signifies that it's after the last character.</returns>
 		public int GetCharOffset(float x, float y)
 		{
-			if(x < 0)
+			if (x < 0)
 			{
 				return 0;
 			}
 
-			if(x >= Size.Width)
+			if (x >= Size.Width)
 			{
 				return _text.Length;
 			}
 
 			var width = 0.0f;
-			for(int i = 0; i < _text.Length; i++)
+			for (int i = 0; i < _text.Length; i++)
 			{
 				var ch = _text[i];
 				var chWidth = _context.Style.GetTextWidth(ch.ToString());
-				if(x >= width && x < (width + chWidth * 0.5f))
+				if (x >= width && x < (width + chWidth * 0.5f))
 				{
 					// first half of the char, select before
-					return Math.Max(i -1, 0);
+					return Math.Max(i - 1, 0);
 				}
-				else if(x >= width && x < (width + chWidth))
+				else if (x >= width && x < (width + chWidth))
 				{
 					// second half of the char, select after
 					return i;
@@ -175,12 +172,12 @@ namespace KaraokeLib.Video.Elements
 		/// </summary>
 		public float GetOffsetWidth(int offset)
 		{
-			if(offset == 0)
+			if (offset == 0)
 			{
 				return 0;
 			}
 
-			if(offset >= _text.Length)
+			if (offset >= _text.Length)
 			{
 				return Size.Width;
 			}
@@ -350,7 +347,7 @@ namespace KaraokeLib.Video.Elements
 		{
 			var minSeconds = double.MaxValue;
 			var maxSeconds = double.MinValue;
-			foreach(var ev in events)
+			foreach (var ev in events)
 			{
 				minSeconds = Math.Min(ev.StartTimeSeconds, minSeconds);
 				maxSeconds = Math.Max(ev.EndTimeSeconds, maxSeconds);

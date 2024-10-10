@@ -1,8 +1,6 @@
 ﻿using KaraokeLib.Config;
 using KaraokeStudio.Commands.Updates;
-using KaraokeStudio.FormHandlers;
 using KaraokeStudio.Project;
-using KaraokeStudio.Util;
 using Ookii.Dialogs.WinForms;
 
 namespace KaraokeStudio.Commands

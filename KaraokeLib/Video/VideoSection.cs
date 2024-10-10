@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using KaraokeLib.Events;
+﻿using KaraokeLib.Events;
 using KaraokeLib.Tracks;
 
 namespace KaraokeLib.Video
 {
-    public class VideoSection
+	public class VideoSection
 	{
 		private VideoContext _context;
 		private VideoParagraph[] _paragraphs;
-		
+
 		public VideoSectionType Type { get; private set; }
 
 		public double Start { get; private set; }
@@ -22,9 +17,9 @@ namespace KaraokeLib.Video
 		internal IEnumerable<VideoParagraph> Paragraphs => _paragraphs;
 
 		public VideoSection(
-			VideoContext context, 
-			VideoSectionType type, 
-			double sectionStart, 
+			VideoContext context,
+			VideoSectionType type,
+			double sectionStart,
 			double sectionLength)
 		{
 			_context = context;

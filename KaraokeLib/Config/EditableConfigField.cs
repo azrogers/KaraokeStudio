@@ -1,6 +1,5 @@
 ﻿using KaraokeLib.Config.Attributes;
 using KaraokeLib.Util;
-using System;
 using System.Reflection;
 
 namespace KaraokeLib.Config
@@ -144,7 +143,7 @@ namespace KaraokeLib.Config
 
 		private ConfigControlType GetControlType(Type fieldType)
 		{
-			if(_dropdown != null)
+			if (_dropdown != null)
 			{
 				return ConfigControlType.Dropdown;
 			}

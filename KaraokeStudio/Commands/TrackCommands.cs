@@ -88,7 +88,7 @@ namespace KaraokeStudio.Commands
 
 		public IEnumerable<IUpdate> Execute(CommandContext context)
 		{
-			foreach(var id in _trackIds)
+			foreach (var id in _trackIds)
 			{
 				var track = context.Project?.Tracks.FirstOrDefault(t => t.Id == id);
 				if (track == null)
@@ -100,7 +100,7 @@ namespace KaraokeStudio.Commands
 				_oldTracks[id] = track;
 			}
 
-			foreach(var id in _trackIds)
+			foreach (var id in _trackIds)
 			{
 				context.Project?.RemoveTrack(id);
 			}
@@ -110,7 +110,7 @@ namespace KaraokeStudio.Commands
 
 		public IEnumerable<IUpdate> Undo(CommandContext context)
 		{
-			foreach(var id in _trackIds)
+			foreach (var id in _trackIds)
 			{
 				context.Project?.AddTrack(_oldTracks[id]);
 			}
@@ -143,7 +143,7 @@ namespace KaraokeStudio.Commands
 		public IEnumerable<IUpdate> Execute(CommandContext context)
 		{
 			var track = context.Project?.Tracks.FirstOrDefault(t => t.Id == _trackId);
-			if(track == null)
+			if (track == null)
 			{
 				Logger.Warn($"Can't find track ID {_trackId}, giving up");
 				yield break;
@@ -163,7 +163,7 @@ namespace KaraokeStudio.Commands
 				yield break;
 			}
 
-			if(_oldEvents == null)
+			if (_oldEvents == null)
 			{
 				Logger.Warn("Tried to undo a set track events command but _oldEvents is null?");
 				yield break;

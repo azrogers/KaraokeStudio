@@ -27,7 +27,7 @@ namespace KaraokeLib.Audio
 
 		public long Position
 		{
-			get => _mixer.Position; 
+			get => _mixer.Position;
 			set
 			{
 				_mixer.Position = value;

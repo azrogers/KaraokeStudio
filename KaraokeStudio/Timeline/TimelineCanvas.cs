@@ -715,7 +715,7 @@ namespace KaraokeStudio.Timeline
 				TrackIndex = trackIndex;
 				Events = events;
 				EventTimings = new Dictionary<int, (double Start, double End)>();
-				foreach(var ev in events)
+				foreach (var ev in events)
 				{
 					EventTimings[ev.Id] = (ev.StartTimeSeconds, ev.EndTimeSeconds);
 				}
