@@ -1,10 +1,11 @@
 ﻿using KaraokeLib.Events;
 using KaraokeLib.Tracks;
 using KaraokeStudio.Commands.Updates;
+using KaraokeStudio.Managers;
 
 namespace KaraokeStudio.Commands
 {
-	internal class SetEventTimingsCommand : ICommand
+    internal class SetEventTimingsCommand : ICommand
 	{
 		private static NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 

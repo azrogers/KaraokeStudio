@@ -5,12 +5,13 @@ using KaraokeStudio.Commands;
 using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.FormHandlers;
 using KaraokeStudio.LyricsEditor;
+using KaraokeStudio.Managers;
 using KaraokeStudio.Project;
 using KaraokeStudio.Util;
 
 namespace KaraokeStudio
 {
-	public partial class MainForm : Form
+    public partial class MainForm : Form
 	{
 		private ProjectFormHandler _projectHandler;
 
@@ -231,7 +232,7 @@ namespace KaraokeStudio
 				_projectHandler.Project.PlaybackState.Cleanup();
 			}
 
-			AudioSubsystem.Instance.Cleanup();
+			AudioManager.Instance.Cleanup();
 		}
 		#endregion
 

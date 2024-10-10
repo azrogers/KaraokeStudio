@@ -1,5 +1,7 @@
 ﻿using KaraokeLib.Tracks;
+using KaraokeStudio.Commands;
 using KaraokeStudio.Commands.Updates;
+using KaraokeStudio.Managers;
 using KaraokeStudio.Project;
 using KaraokeStudio.Util;
 using NLog;
@@ -22,6 +24,7 @@ namespace KaraokeStudio.Timeline
 		private const float PADDING_TOP = 5.0f;
 		// width of the playhead for clicking and dragging to scrub
 		private const float SCRUB_AREA = 15.0f;
+		private const double NUDGE_AMOUNT = 0.01;
 
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
@@ -45,6 +48,8 @@ namespace KaraokeStudio.Timeline
 		private UpdateDispatcher.Handle _projectHandle;
 		private UpdateDispatcher.Handle _eventsUpdateHandle;
 		private UpdateDispatcher.Handle _tracksUpdateHandle;
+		private UpdateDispatcher.Handle _deleteKeyHandle;
+		private UpdateDispatcher.Handle _arrowKeyHandle;
 
 		/// <summary>
 		/// Called when the positioning of tracks has changed.
@@ -111,6 +116,37 @@ namespace KaraokeStudio.Timeline
 				RecalculateScrollBars();
 				skiaControl.Invalidate();
 			});
+
+			_deleteKeyHandle = UpdateDispatcher.RegisterHandler<DeleteKeyUpdate>(update =>
+			{
+				if (SelectionManager.SelectedTracks.Any())
+				{
+					CommandDispatcher.Dispatch(new RemoveTracksCommand(SelectionManager.SelectedTracks.ToArray()));
+				}
+
+				if (SelectionManager.SelectedEvents.Any())
+				{
+					CommandDispatcher.Dispatch(new RemoveEventsCommand(SelectionManager.SelectedEvents.Select(ev => ev.Id).ToArray()));
+				}
+			});
+
+			_arrowKeyHandle = UpdateDispatcher.RegisterHandler<ArrowKeyUpdate>(update =>
+			{
+				var amount = update.IsLeft ? -NUDGE_AMOUNT : NUDGE_AMOUNT;
+				if(SelectionManager.SelectedEvents.Any())
+				{
+					var startTime = SelectionManager.SelectedEvents.Select(ev => ev.StartTimeSeconds).OrderBy(f => f).FirstOrDefault();
+					amount = Math.Max(0, startTime + amount) - startTime;
+					var timings = new Dictionary<int, (double, double)>();
+					foreach(var ev in SelectionManager.SelectedEvents)
+					{
+						timings[ev.Id] = (ev.StartTimeSeconds + amount, ev.EndTimeSeconds + amount);
+					}
+
+					var tracks = _currentProject?.Tracks.Where(t => t.Events.Any(ev => timings.ContainsKey(ev.Id))).ToArray() ?? [];
+					CommandDispatcher.Dispatch(new SetEventTimingsCommand(tracks, timings, "Nudge events"));
+				}
+			});
 		}
 
 		private void OnDispose(object? sender, EventArgs e)
@@ -118,6 +154,8 @@ namespace KaraokeStudio.Timeline
 			_eventsUpdateHandle.Release();
 			_tracksUpdateHandle.Release();
 			_projectHandle.Release();
+			_deleteKeyHandle.Release();
+			_arrowKeyHandle.Release();
 
 			_mouseTimer.Dispose();
 			_timelineCanvas.Dispose();

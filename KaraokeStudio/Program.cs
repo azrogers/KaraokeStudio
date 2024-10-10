@@ -1,4 +1,5 @@
 using KaraokeLib.Video;
+using KaraokeStudio.Managers;
 using NLog;
 using System.Drawing.Text;
 using System.Runtime.InteropServices;
@@ -31,7 +32,8 @@ namespace KaraokeStudio
 			config.AddRule(LogLevel.Info, LogLevel.Fatal, logMethodCall);
 
 			NLog.LogManager.Configuration = config;
-			AudioSubsystem.Instance.Initialize();
+
+			AudioManager.Instance.Initialize();
 
 			var form = new MainForm();
 			if (args.Length > 0)
@@ -39,7 +41,11 @@ namespace KaraokeStudio
 				form.LoadProject(args[0]);
 			}
 
+			KeyboardManager.Instance.Initialize(form);
+
 			Application.Run(form);
+
+			KeyboardManager.Instance.Cleanup();
 		}
 
 		private static PrivateFontCollection CreateFontCollection(byte[] file)

@@ -3,6 +3,7 @@ using KaraokeLib.Tracks;
 using KaraokeLib.Util;
 using KaraokeStudio.Commands;
 using KaraokeStudio.Commands.Updates;
+using KaraokeStudio.Managers;
 using KaraokeStudio.Project;
 using KaraokeStudio.Timeline.EventRenderers;
 using KaraokeStudio.Util;
@@ -10,11 +11,11 @@ using SkiaSharp;
 
 namespace KaraokeStudio.Timeline
 {
-	/// <summary>
-	/// The actual canvas that the timeline is drawn to.
-	/// The TimelineControl presents a scrolled view into this canvas.
-	/// </summary>
-	internal class TimelineCanvas : IDisposable
+    /// <summary>
+    /// The actual canvas that the timeline is drawn to.
+    /// The TimelineControl presents a scrolled view into this canvas.
+    /// </summary>
+    internal class TimelineCanvas : IDisposable
 	{
 		// the width of the handles on each side of the event for grabbing, in control space
 		private const float EVENT_HANDLE_WIDTH = 5.0f;

@@ -2,6 +2,7 @@
 using KaraokeLib.Tracks;
 using KaraokeStudio.Commands;
 using KaraokeStudio.Commands.Updates;
+using KaraokeStudio.Managers;
 using KaraokeStudio.Project;
 using KaraokeStudio.Util;
 

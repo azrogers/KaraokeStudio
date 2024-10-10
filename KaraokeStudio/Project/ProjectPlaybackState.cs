@@ -1,14 +1,15 @@
 ﻿using KaraokeLib.Tracks;
 using KaraokeStudio.Commands.Updates;
+using KaraokeStudio.Managers;
 using KaraokeStudio.Util;
 using System.Diagnostics;
 
 namespace KaraokeStudio.Project
 {
-	/// <summary>
-	/// Keeps track of playback position and handles audio playback across the project.
-	/// </summary>
-	internal class ProjectPlaybackState : IDisposable
+    /// <summary>
+    /// Keeps track of playback position and handles audio playback across the project.
+    /// </summary>
+    internal class ProjectPlaybackState : IDisposable
 	{
 		private bool _isPlayingInternal = false;
 
@@ -47,7 +48,7 @@ namespace KaraokeStudio.Project
 				_timer.Enabled = _isPlayingInternal;
 				OnPlayStateChanged?.Invoke(_isPlayingInternal);
 
-				AudioSubsystem.Instance.SetPlaybackState(value);
+				AudioManager.Instance.SetPlaybackState(value);
 			}
 		}
 
@@ -178,7 +179,7 @@ namespace KaraokeStudio.Project
 			position = Math.Clamp(position, 0, _project.Length.TotalSeconds);
 			_position = position;
 			_stopwatch.Restart();
-			AudioSubsystem.Instance.Seek(position);
+			AudioManager.Instance.Seek(position);
 			OnPositionChanged?.Invoke(position);
 		}
 

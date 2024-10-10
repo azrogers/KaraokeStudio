@@ -1,10 +1,11 @@
 ﻿using KaraokeStudio.Commands.Updates;
+using KaraokeStudio.Managers;
 using KaraokeStudio.Project;
 using NLog;
 
 namespace KaraokeStudio.Timeline
 {
-	public partial class TimelineContainerControl : UserControl
+    public partial class TimelineContainerControl : UserControl
 	{
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
