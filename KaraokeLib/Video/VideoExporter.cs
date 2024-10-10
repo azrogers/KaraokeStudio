@@ -73,14 +73,8 @@ namespace KaraokeLib.Video
 			var startTimecode = new VideoTimecode(startSeconds, config.FrameRate);
 			var endTimecode = new VideoTimecode(startSeconds + lengthSeconds, config.FrameRate);
 			var context = new VideoContext(new VideoStyle(config), config, endTimecode);
-			var layoutState = new VideoLayoutState(context);
-			var sections = tracks
-				.Where(t => t.Type == Tracks.KaraokeTrackType.Lyrics)
-				.SelectMany(t => VideoSection.SectionsFromTrack(context, t, layoutState))
-				.ToArray();
 
-			var renderer = new VideoRenderer(context, layoutState, sections);
-			var plan = VideoPlanGenerator.CreateVideoPlan(context, layoutState, sections);
+			var renderer = new VideoRenderer(context, tracks);
 
 			using (var bitmap = new SKBitmap(config.VideoSize.Width, config.VideoSize.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul))
 			using (var canvas = new SKCanvas(bitmap))
@@ -99,7 +93,7 @@ namespace KaraokeLib.Video
 					OnExportProgress?.Invoke((float)Math.Clamp(progressNormalized, 0, 1));
 
 					// render the current frame
-					renderer.RenderFrame(plan, position, canvas);
+					renderer.RenderFrame(position, canvas);
 
 					encoder.RenderFrame(position, bitmap);
 

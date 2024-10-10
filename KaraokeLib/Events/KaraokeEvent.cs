@@ -207,5 +207,8 @@ namespace KaraokeLib.Events
 
 		// audio
 		AudioClip = 15,
+
+		// graphics
+		Image = 30
 	}
 }

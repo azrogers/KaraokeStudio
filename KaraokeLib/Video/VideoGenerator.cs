@@ -16,9 +16,7 @@ namespace KaraokeLib.Video
 	public class VideoGenerator
 	{
 		private KaraokeTrack[] _tracks;
-		private VideoSection[] _sections;
 		private VideoContext _context;
-		private VideoLayoutState _layoutState;
 		private VideoTimecode _endTimecode;
 		private AudioFile _audioFile;
 
@@ -36,8 +34,6 @@ namespace KaraokeLib.Video
 			_tracks = lyricsFile.GetTracks().ToArray();
 			_endTimecode = new VideoTimecode(videoLength < 0 ? audioFile.GetLengthSeconds() : videoLength, KaraokeConfig.Default.FrameRate);
 			_context = new VideoContext(new VideoStyle(KaraokeConfig.Default), KaraokeConfig.Default, _endTimecode);
-			_layoutState = new VideoLayoutState(_context);
-			_sections = _tracks.Any() ? VideoSection.SectionsFromTrack(_context, _tracks[0], _layoutState) : new VideoSection[0];
 			_audioFile = audioFile;
 		}
 
@@ -63,10 +59,7 @@ namespace KaraokeLib.Video
 		/// <summary>
 		/// Renders a video of the given length at the given start position to the given output file.
 		/// </summary>
-		public void RenderVideo(VideoTimecode startTimecode, VideoTimecode endTimecode, string outputFile) =>
-			RenderVideo(startTimecode, endTimecode, outputFile, VideoPlanGenerator.CreateVideoPlan(_context, _layoutState, _sections));
-
-		public void RenderVideo(VideoTimecode startTimecode, VideoTimecode endTimecode, string outputFile, VideoPlan plan)
+		public void RenderVideo(VideoTimecode startTimecode, VideoTimecode endTimecode, string outputFile)
 		{
 			var outputPath = Path.GetFullPath(outputFile);
 			// originally render to a temp file before muxing
@@ -87,7 +80,7 @@ namespace KaraokeLib.Video
 				.CreateContainer(tempOutputPath)
 				.WithVideo(videoSettings);
 
-			var renderer = new VideoRenderer(_context, _layoutState, _sections);
+			var renderer = new VideoRenderer(_context, _tracks);
 
 			using (var bitmap = new SKBitmap(_context.Config.VideoSize.Width, _context.Config.VideoSize.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul))
 			using (var canvas = new SKCanvas(bitmap))
@@ -97,7 +90,7 @@ namespace KaraokeLib.Video
 				while (position <= endTimecode)
 				{
 					// render the current frame
-					renderer.RenderFrame(plan, position, canvas);
+					renderer.RenderFrame(position, canvas);
 
 					var imageData = new ImageData(
 						bitmap.Bytes,
@@ -124,23 +117,20 @@ namespace KaraokeLib.Video
 		/// <summary>
 		/// Renders the frame at the given position to the output file.
 		/// </summary>
-		public void RenderFrameToFile(VideoTimecode videoPosition, string outputFile) =>
-			RenderFrameToFile(videoPosition, outputFile, VideoPlanGenerator.CreateVideoPlan(_context, _layoutState, _sections));
-
-		public void RenderFrameToFile(VideoTimecode videoPosition, string outputFile, VideoPlan plan)
+		public void RenderFrameToFile(VideoTimecode videoPosition, string outputFile)
 		{
 			if (videoPosition < 0 || videoPosition > _endTimecode)
 			{
 				throw new ArgumentOutOfRangeException("Video position out of range");
 			}
 
-			var renderer = new VideoRenderer(_context, _layoutState, _sections);
+			var renderer = new VideoRenderer(_context, _tracks);
 
 			using (var bitmap = new SKBitmap(1920, 1080))
 			{
 				using (var canvas = new SKCanvas(bitmap))
 				{
-					renderer.RenderFrame(plan, videoPosition, canvas);
+					renderer.RenderFrame(videoPosition, canvas);
 				}
 
 				var data = bitmap.Encode(SKEncodedImageFormat.Png, 100);

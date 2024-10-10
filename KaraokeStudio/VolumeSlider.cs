@@ -19,6 +19,7 @@
 		{
 			var n = Math.Clamp(e.Location.X / (float)Size.Width, 0, 1);
 			Volume = n;
+			Invalidate();
 		}
 
 		private void VolumeSlider_Paint(object sender, PaintEventArgs e)
@@ -26,7 +27,7 @@
 			e.Graphics.Clear(BackColor);
 			var contentRect = new Rectangle(0, 0, (int)(Size.Width * Volume), Size.Height);
 			e.Graphics.FillRectangle(_contentBrush, contentRect);
-			e.Graphics.DrawRectangle(Pens.Black, ClientRectangle);
+			e.Graphics.DrawRectangle(Pens.Black, new Rectangle(0, 0, Size.Width - 1, Size.Height - 1));
 			e.Graphics.DrawString(Math.Floor(Volume * 100).ToString() + "%", SystemFonts.DefaultFont, Brushes.Black, ClientRectangle, StringFormat.GenericTypographic);
 		}
 	}

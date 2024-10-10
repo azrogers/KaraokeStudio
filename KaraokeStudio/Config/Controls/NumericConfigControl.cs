@@ -9,15 +9,15 @@
 
 		internal override void UpdateValue(object config)
 		{
+			numericUpDown.ValueChanged -= numericUpDown_ValueChanged;
 			ConfigureRange();
 
 			var val = Field?.GetValue<decimal>(config);
 			if (val != null)
 			{
-				numericUpDown.ValueChanged -= numericUpDown_ValueChanged;
 				numericUpDown.Value = (decimal)val;
-				numericUpDown.ValueChanged += numericUpDown_ValueChanged;
 			}
+			numericUpDown.ValueChanged += numericUpDown_ValueChanged;
 		}
 
 		internal override void SetValue(object config)

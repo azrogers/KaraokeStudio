@@ -1,7 +1,6 @@
 ﻿using KaraokeLib.Config;
 using KaraokeLib.Tracks;
 using KaraokeLib.Video;
-using KaraokeLib.Video.Plan;
 using SkiaSharp;
 
 namespace KaraokeStudio.Video
@@ -15,10 +14,8 @@ namespace KaraokeStudio.Video
 		private VideoContext? _context;
 		private VideoStyle? _style;
 		private VideoRenderer? _renderer;
-		private VideoPlan? _plan;
-		private VideoLayoutState? _layoutState;
 
-		private bool _isPlanStale = false;
+		private bool _isRendererStale = false;
 
 		/// <summary>
 		/// Renders a frame of video.
@@ -33,27 +30,13 @@ namespace KaraokeStudio.Video
 				return;
 			}
 
-			if (_isPlanStale || _renderer == null || _plan == null)
+			if (_isRendererStale || _renderer == null)
 			{
-				_layoutState = new VideoLayoutState(_context);
-
-				VideoSection[] sections;
-				if (tracks.Where(t => t.Type == KaraokeTrackType.Lyrics).Any())
-				{
-					// TODO: support multiple tracks?
-					sections = VideoSection.SectionsFromTrack(_context, tracks.First(), _layoutState);
-				}
-				else
-				{
-					sections = new VideoSection[0];
-				}
-
-				_plan = VideoPlanGenerator.CreateVideoPlan(_context, _layoutState, sections);
-				_renderer = new VideoRenderer(_context, _layoutState, sections);
-				_isPlanStale = false;
+				_renderer = new VideoRenderer(_context, tracks);
+				_isRendererStale = false;
 			}
 
-			_renderer.RenderFrame(_plan, position, surface.Canvas);
+			_renderer.RenderFrame(position, surface.Canvas);
 		}
 
 		/// <summary>
@@ -61,7 +44,7 @@ namespace KaraokeStudio.Video
 		/// </summary>
 		public void InvalidatePlan()
 		{
-			_isPlanStale = true;
+			_isRendererStale = true;
 		}
 
 		/// <summary>
@@ -76,7 +59,7 @@ namespace KaraokeStudio.Video
 			_style = new VideoStyle(config);
 
 			_context = new VideoContext(_style, config, new VideoTimecode(duration, pConfig.FrameRate));
-			_isPlanStale = true;
+			_isRendererStale = true;
 		}
 
 		private KaraokeConfig FromProjectConfig(KaraokeConfig config, (int Width, int Height) outputSize)

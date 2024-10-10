@@ -1,4 +1,5 @@
-﻿using KaraokeLib.Util;
+﻿using KaraokeLib.Tracks;
+using KaraokeLib.Util;
 using KaraokeLib.Video.Elements;
 using KaraokeLib.Video.Plan;
 using KaraokeLib.Video.Transitions;
@@ -8,30 +9,45 @@ namespace KaraokeLib.Video
 {
 	public class VideoRenderer
 	{
+		private VideoPlan[] _plans;
 		private VideoContext _context;
-		private VideoSection[] _sections;
-		private IVideoElement[] _elements;
 
-		public VideoRenderer(VideoContext context, VideoLayoutState layoutState, VideoSection[] sections)
+		public VideoRenderer(VideoContext context, IEnumerable<KaraokeTrack> tracks)
 		{
 			_context = context;
-			_sections = sections;
-			_elements = VideoElementGenerator.Generate(context, layoutState, sections);
+
+			var plans = new List<VideoPlan>();
+			foreach(var track in tracks.Where(t => KaraokeTrackTypeMapping.TrackHasVideoContent(t.Type)))
+			{
+				var layoutState = new VideoLayoutState(context);
+				var sections = VideoSection.SectionsFromTrack(context, track, layoutState);
+				plans.Add(VideoPlanGenerator.CreateVideoPlan(context, layoutState, sections));
+			}
+
+			_plans = plans.ToArray();
 		}
 
-		public void RenderFrame(VideoPlan videoPlan, VideoTimecode videoTimecode, SKCanvas canvas)
+		public void RenderFrame(VideoTimecode timecode, SKCanvas canvas)
 		{
 			// we can ignore clearing because we draw over it anyways
 			canvas.DrawRect(
 				new SKRect(0, 0, _context.Size.Width, _context.Size.Height),
 				_context.Style.BackgroundPaint);
 
+			foreach(var plan in _plans)
+			{
+				RenderPlan(plan, timecode, canvas);
+			}
+		}
+
+		private void RenderPlan(VideoPlan plan, VideoTimecode videoTimecode, SKCanvas canvas)
+		{
 			var posSeconds = videoTimecode.ToSeconds();
 
 			// draw to an intermediate surface for transitions
 			var surface = SKSurface.Create(new SKImageInfo((int)_context.Size.Width, (int)_context.Size.Height));
 
-			var elements = videoPlan.GetElementsForFrame(videoTimecode);
+			var elements = plan.GetElementsForFrame(videoTimecode);
 			foreach (var ev in elements)
 			{
 				var startTime = ev.Element.StartTimecode.GetTimeSeconds();
@@ -88,5 +104,9 @@ namespace KaraokeLib.Video
 			var realT = EasingFunctions.Evaluate(transition.EasingCurve, context.TransitionPosition);
 			TransitionManager.Get(transition.Type).Blit(elem, context);
 		}
+	}
+
+	public class VideoTrackRenderer
+	{
 	}
 }

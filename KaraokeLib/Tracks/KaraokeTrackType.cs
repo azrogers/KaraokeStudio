@@ -15,7 +15,7 @@ namespace KaraokeLib.Tracks
 		{
 			{ KaraokeTrackType.Lyrics, new HashSet<KaraokeEventType>() { KaraokeEventType.Lyric, KaraokeEventType.ParagraphBreak, KaraokeEventType.LineBreak } },
 			{ KaraokeTrackType.Audio, new HashSet<KaraokeEventType>() { KaraokeEventType.AudioClip } },
-			{ KaraokeTrackType.Graphics, new HashSet<KaraokeEventType>() { } }
+			{ KaraokeTrackType.Graphics, new HashSet<KaraokeEventType>() { KaraokeEventType.Image } }
 		};
 
 		private static readonly Dictionary<KaraokeTrackType, Type> _trackSettingsTypes = new Dictionary<KaraokeTrackType, Type>()
@@ -41,6 +41,18 @@ namespace KaraokeLib.Tracks
 		public static Type GetTrackSettingsType(KaraokeTrackType trackType)
 		{
 			return _trackSettingsTypes[trackType];
+		}
+
+		public static bool TrackHasVideoContent(KaraokeTrackType trackType)
+		{
+			switch(trackType)
+			{
+				case KaraokeTrackType.Graphics:
+				case KaraokeTrackType.Lyrics:
+					return true;
+				default:
+					return false;
+			}
 		}
 	}
 }
