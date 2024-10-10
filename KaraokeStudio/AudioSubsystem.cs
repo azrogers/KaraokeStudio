@@ -14,7 +14,7 @@ namespace KaraokeStudio
 
 		private MMDevice? _audioDevice;
 		private ISoundOut? _waveOut;
-		private AudioMixer _mixer = new AudioMixer([], 48000);
+		private PlaybackRateAudioMixer _mixer = new PlaybackRateAudioMixer([], AppSettings.Instance.PlaybackRate, 48000);
 		private IWaveSource _mixerSource;
 		private KaraokeProject? _project;
 		private int _sampleRate;
@@ -25,7 +25,7 @@ namespace KaraokeStudio
 		{
 			UpdateAudioDevice();
 			_mixer?.Dispose();
-			_mixer = new AudioMixer([], _sampleRate);
+			_mixer = new PlaybackRateAudioMixer([], AppSettings.Instance.PlaybackRate, 48000);
 			_mixerSource = _mixer.ToWaveSource();
 			_mixer.SetPosition(TimeSpan.FromSeconds(_project?.PlaybackState.Position ?? 0));
 			UpdateAudioOutput();
@@ -33,10 +33,10 @@ namespace KaraokeStudio
 			UpdateDispatcher.RegisterHandler<ProjectUpdate>(update =>
 			{
 				_project = update.Project;
-				_mixer.RebuildTracks(_project?.Tracks ?? []);
+				_mixer.InternalMixer.RebuildTracks(_project?.Tracks ?? []);
 			});
 
-			UpdateDispatcher.RegisterHandler<TracksUpdate>(update => _mixer?.RebuildTracks(_project?.Tracks ?? []));
+			UpdateDispatcher.RegisterHandler<TracksUpdate>(update => _mixer?.InternalMixer.RebuildTracks(_project?.Tracks ?? []));
 			UpdateDispatcher.RegisterHandler<AudioSettingsUpdate>(update =>
 			{
 				var currentSampleRate = _sampleRate;
@@ -46,12 +46,17 @@ namespace KaraokeStudio
 				if (currentSampleRate != _sampleRate)
 				{
 					_mixer?.Dispose();
-					_mixer = new AudioMixer(_project?.Tracks ?? [], _sampleRate);
+					_mixer = new PlaybackRateAudioMixer(_project?.Tracks ?? [], AppSettings.Instance.PlaybackRate, 48000);
 					_mixer.SetPosition(TimeSpan.FromSeconds(_project?.PlaybackState.Position ?? 0));
 				}
 
 				UpdateAudioOutput();
 			});
+
+			AppSettings.Instance.OnPlaybackRateChanged += rate =>
+			{
+				_mixer.PlaybackRate = rate;
+			};
 
 			AppSettings.Instance.OnVolumeChanged += volume =>
 			{

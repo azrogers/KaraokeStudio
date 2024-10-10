@@ -21,6 +21,11 @@ namespace KaraokeStudio.Util
 		/// </summary>
 		public event Action<float>? OnVolumeChanged;
 
+		/// <summary>
+		/// Called when AppSettings.PlaybackRate is changed.
+		/// </summary>
+		public event Action<float>? OnPlaybackRateChanged;
+
 		[JsonProperty]
 		[ConfigHide]
 		public HashSet<string> RecentFiles { get; private set; } = new HashSet<string>();
@@ -59,6 +64,7 @@ namespace KaraokeStudio.Util
 		{
 			PlaybackRate = rate;
 			Save();
+			OnPlaybackRateChanged?.Invoke(rate);
 		}
 
 		public void SetAudioSettings(AudioSettings settings)

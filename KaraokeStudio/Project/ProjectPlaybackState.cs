@@ -54,6 +54,7 @@ namespace KaraokeStudio.Project
 		public ProjectPlaybackState(KaraokeProject project, IEnumerable<KaraokeTrack> tracks)
 		{
 			_playbackRate = AppSettings.Instance.PlaybackRate;
+			AppSettings.Instance.OnPlaybackRateChanged += OnPlaybackRateChanged;
 
 			_timer = new System.Windows.Forms.Timer();
 			_timer.Enabled = false;
@@ -69,10 +70,16 @@ namespace KaraokeStudio.Project
 			});
 		}
 
+		private void OnPlaybackRateChanged(float rate)
+		{
+			_playbackRate = rate;
+		}
+
 		public void Dispose()
 		{
 			_projectConfigHandle.Release();
 			_timer.Tick -= OnTimerTick;
+			AppSettings.Instance.OnPlaybackRateChanged -= OnPlaybackRateChanged;
 		}
 
 		public void UpdateProjectLength()
@@ -142,11 +149,6 @@ namespace KaraokeStudio.Project
 		public void Pause()
 		{
 			IsPlaying = false;
-		}
-
-		public void UpdateMixer(IEnumerable<KaraokeTrack> tracks, float playbackRate)
-		{
-			_playbackRate = playbackRate;
 		}
 
 		public void OnTick()

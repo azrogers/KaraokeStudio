@@ -66,7 +66,6 @@ namespace KaraokeStudio.FormHandlers
 				}
 
 				RecalculateProjectLength();
-				_loadedProject?.UpdateMixer();
 				IsPendingChanges = true;
 			});
 
@@ -274,7 +273,6 @@ namespace KaraokeStudio.FormHandlers
 			CommandDispatcher.Dispatch(new AddAudioTrackCommand(settings, new TimeSpanTimecode(0), new TimeSpanTimecode(info.LengthSeconds)));
 
 			IsPendingChanges = true;
-			_loadedProject?.UpdateMixer();
 
 			return true;
 		}

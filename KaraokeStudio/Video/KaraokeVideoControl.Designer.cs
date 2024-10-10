@@ -194,7 +194,6 @@
 			this.playbackRateSelector.Name = "playbackRateSelector";
 			this.playbackRateSelector.Size = new System.Drawing.Size(59, 23);
 			this.playbackRateSelector.TabIndex = 8;
-			this.playbackRateSelector.SelectedIndexChanged += new System.EventHandler(this.playbackRateSelector_SelectedIndexChanged);
 			// 
 			// KaraokeVideoControl
 			// 

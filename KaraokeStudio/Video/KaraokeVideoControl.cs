@@ -37,6 +37,16 @@ namespace KaraokeStudio.Video
 			volumeSlider.Volume = AppSettings.Instance.Volume;
 			volumeSlider.OnVolumeChanged += this.volumeSlider_VolumeChanged;
 			playbackRateSelector.SelectedText = AppSettings.Instance.PlaybackRate + "x";
+			playbackRateSelector.SelectedIndexChanged += new EventHandler(playbackRateSelector_SelectedIndexChanged);
+
+			AppSettings.Instance.OnPlaybackRateChanged += OnPlaybackRateChanged;
+		}
+
+		private void OnPlaybackRateChanged(float rate)
+		{
+			playbackRateSelector.SelectedIndexChanged -= new EventHandler(playbackRateSelector_SelectedIndexChanged);
+			playbackRateSelector.SelectedItem = AppSettings.Instance.PlaybackRate + "x";
+			playbackRateSelector.SelectedIndexChanged += new EventHandler(playbackRateSelector_SelectedIndexChanged);
 		}
 
 		private void OnDispose(object? sender, EventArgs e)
@@ -54,6 +64,8 @@ namespace KaraokeStudio.Video
 
 			_projectConfigHandle.Release();
 			volumeSlider.OnVolumeChanged -= this.volumeSlider_VolumeChanged;
+
+			AppSettings.Instance.OnPlaybackRateChanged -= OnPlaybackRateChanged;
 		}
 
 		public void ForceRerender() => videoSkiaControl.Invalidate();
@@ -244,15 +256,11 @@ namespace KaraokeStudio.Video
 			AppSettings.Instance.SetVolume(newVolume);
 		}
 
-		private void playbackRateSelector_SelectedIndexChanged(object sender, EventArgs e)
+		private void playbackRateSelector_SelectedIndexChanged(object? sender, EventArgs e)
 		{
-			var text = playbackRateSelector.SelectedItem.ToString() ?? "1x";
+			var text = playbackRateSelector.SelectedItem?.ToString() ?? "1x";
 			var rate = float.Parse(text.Substring(0, text.Length - 1));
 			AppSettings.Instance.SetPlaybackRate(rate);
-			if (_project != null)
-			{
-				_project.PlaybackState.UpdateMixer(_project.File.GetTracks(), rate);
-			}
 		}
 	}
 }

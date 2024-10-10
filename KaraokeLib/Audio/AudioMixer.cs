@@ -32,10 +32,8 @@ namespace KaraokeLib.Audio
 		public long Length => (long)(_waveFormat.SampleRate * _duration);
 
 		public long Position { get; set; }
-		public double PositionSeconds
-		{
-			get => Position / (double)WaveFormat.SampleRate;
-		}
+
+		public double PositionSeconds => Position / (double)WaveFormat.SampleRate;
 
 		public bool CanSeek => throw new NotImplementedException();
 
