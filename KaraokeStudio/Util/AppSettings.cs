@@ -1,4 +1,5 @@
-﻿using KaraokeLib.Config;
+﻿using KaraokeLib.Audio;
+using KaraokeLib.Config;
 using KaraokeLib.Config.Attributes;
 using Newtonsoft.Json;
 
@@ -32,6 +33,10 @@ namespace KaraokeStudio.Util
 		[ConfigHide]
 		public float PlaybackRate { get; private set; } = 1.0f;
 
+		[JsonProperty]
+		[ConfigHide]
+		public AudioSettings AudioSettings { get; private set; } = new AudioSettings();
+
 		public void AddRecentFile(string file)
 		{
 			RecentFiles.Add(file);
@@ -53,6 +58,12 @@ namespace KaraokeStudio.Util
 		public void SetPlaybackRate(float rate)
 		{
 			PlaybackRate = rate;
+			Save();
+		}
+
+		public void SetAudioSettings(AudioSettings settings)
+		{
+			AudioSettings = settings;
 			Save();
 		}
 

@@ -1,8 +1,8 @@
-﻿using FFMediaToolkit.Encoding;
+﻿using CSCore;
+using FFMediaToolkit.Encoding;
 using FFMediaToolkit.Graphics;
 using KaraokeLib.Config;
 using KaraokeLib.Config.Attributes;
-using NAudio.Wave;
 using SkiaSharp;
 
 namespace KaraokeLib.Video.Encoders
@@ -45,7 +45,7 @@ namespace KaraokeLib.Video.Encoders
 			return new string[0];
 		}
 
-		public void StartRender(string outFile, WaveStream audio, int width, int height, int frameRate, double length)
+		public void StartRender(string outFile, IWaveSource audio, int width, int height, int frameRate, double length)
 		{
 			if (_hasStartedRender)
 			{
@@ -70,7 +70,7 @@ namespace KaraokeLib.Video.Encoders
 			_audioTempFile = Path.Combine(outputDir, outputFilename + "-temp.wav");
 
 			_currentExporter?.LogMessage($"Writing temp audio file to {_audioTempFile}");
-			WaveFileWriter.CreateWaveFile(_audioTempFile, audio);
+			audio.WriteToFile(_audioTempFile);
 
 			var codec = _settings.GetCodec();
 

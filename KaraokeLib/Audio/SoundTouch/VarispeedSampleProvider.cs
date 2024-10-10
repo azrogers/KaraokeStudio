@@ -1,11 +1,11 @@
-﻿using NAudio.Wave;
+﻿using CSCore;
 
 namespace KaraokeLib.Audio.SoundTouch
 {
 	// obtained from https://github.com/naudio/varispeed-sample
-	class VarispeedSampleProvider : ISampleProvider, IDisposable
+	class VarispeedSampleProvider : ISampleSource, IDisposable
 	{
-		private readonly ISampleProvider sourceProvider;
+		private readonly ISampleSource sourceProvider;
 		private readonly SoundTouch soundTouch;
 		private readonly float[] sourceReadBuffer;
 		private readonly float[] soundTouchReadBuffer;
@@ -14,7 +14,7 @@ namespace KaraokeLib.Audio.SoundTouch
 		private SoundTouchProfile? currentSoundTouchProfile;
 		private bool repositionRequested;
 
-		public VarispeedSampleProvider(ISampleProvider sourceProvider, int readDurationMilliseconds, SoundTouchProfile soundTouchProfile)
+		public VarispeedSampleProvider(ISampleSource sourceProvider, int readDurationMilliseconds, SoundTouchProfile soundTouchProfile)
 		{
 			soundTouch = new SoundTouch();
 			// explore what the default values are before we change them:
@@ -96,6 +96,12 @@ namespace KaraokeLib.Audio.SoundTouch
 				}
 			}
 		}
+
+		public bool CanSeek => true;
+
+		public long Position { get => 0; set => throw new NotImplementedException(); }
+
+		public long Length => 0;
 
 		private void UpdatePlaybackRate(float value)
 		{

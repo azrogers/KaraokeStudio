@@ -1,5 +1,5 @@
-﻿using KaraokeLib.Config;
-using NAudio.Wave;
+﻿using CSCore;
+using KaraokeLib.Config;
 using SkiaSharp;
 
 namespace KaraokeLib.Video.Encoders
@@ -46,7 +46,7 @@ namespace KaraokeLib.Video.Encoders
 		/// <summary>
 		/// Begins the render.
 		/// </summary>
-		void StartRender(string outFile, WaveStream audio, int width, int height, int frameRate, double length);
+		void StartRender(string outFile, IWaveSource audio, int width, int height, int frameRate, double length);
 
 		/// <summary>
 		/// Renders a single frame of video.
@@ -54,7 +54,7 @@ namespace KaraokeLib.Video.Encoders
 		void RenderFrame(VideoTimecode timecode, SKBitmap frameBitmap);
 
 		/// <summary>
-		/// Ends a render started with <see cref="StartRender(string, WaveStream, int, int, int, double)"/>.
+		/// Ends a render started with <see cref="StartRender(string, IWaveSource, int, int, int, double)"/>.
 		/// </summary>
 		void EndRender(bool success);
 	}

@@ -1,9 +1,11 @@
-﻿using KaraokeLib.Events;
+﻿using KaraokeLib.Audio;
+using KaraokeLib.Events;
 using KaraokeLib.Tracks;
 using KaraokeStudio.Commands;
 using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Config;
 using KaraokeStudio.Project;
+using KaraokeStudio.Util;
 
 namespace KaraokeStudio
 {
@@ -61,10 +63,24 @@ namespace KaraokeStudio
 			}
 		}
 
+		public static GenericConfigEditorForm AudioSettings
+		{
+			get
+			{
+				if(_audioSettingsForm == null || _audioSettingsForm.IsDisposed)
+				{
+					_audioSettingsForm = new GenericConfigEditorForm();
+				}
+
+				return _audioSettingsForm;
+			}
+		}
+
 		private static SyncForm? _syncForm = null;
 		private static ConsoleForm? _consoleForm = null;
 		private static StyleForm? _styleForm = null;
 		private static ExportVideoForm? _exportForm = null;
+		private static GenericConfigEditorForm? _audioSettingsForm = null;
 
 		private static Dictionary<int, GenericConfigEditorForm> _trackSettingsEditors = new Dictionary<int, GenericConfigEditorForm>();
 
@@ -199,6 +215,24 @@ namespace KaraokeStudio
 			else
 			{
 				WindowManager.Export.Open(context.Project);
+			}
+		}
+	}
+
+	internal class OpenAudioSettingsCommand : UndolessCommand
+	{
+		public override void DoExecute(CommandContext context)
+		{
+			if (WindowManager.AudioSettings.Visible)
+			{
+				WindowManager.AudioSettings.Focus();
+			}
+			else
+			{
+				WindowManager.AudioSettings.Open(AppSettings.Instance.AudioSettings, settings =>
+				{
+					CommandDispatcher.Dispatch(new SetAudioSettingsCommand((AudioSettings)settings));
+				});
 			}
 		}
 	}

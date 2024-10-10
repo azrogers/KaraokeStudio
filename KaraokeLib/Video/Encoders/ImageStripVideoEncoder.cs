@@ -1,6 +1,6 @@
-﻿using KaraokeLib.Config;
+﻿using CSCore;
+using KaraokeLib.Config;
 using KaraokeLib.Config.Attributes;
-using NAudio.Wave;
 using SkiaSharp;
 
 namespace KaraokeLib.Video.Encoders
@@ -22,7 +22,7 @@ namespace KaraokeLib.Video.Encoders
 
 		public string[] ValidateConfigObject(IEditableConfig config) => new string[0];
 
-		public void StartRender(string outFile, WaveStream audio, int width, int height, int frameRate, double length)
+		public void StartRender(string outFile, IWaveSource audio, int width, int height, int frameRate, double length)
 		{
 			if (_hasStartedRender)
 			{
@@ -32,7 +32,7 @@ namespace KaraokeLib.Video.Encoders
 			_hasStartedRender = true;
 			_currentOutDir = outFile;
 
-			WaveFileWriter.CreateWaveFile(Path.Combine(_currentOutDir, "output.wav"), audio);
+			audio.WriteToFile(Path.Combine(_currentOutDir, "output.wav"));
 		}
 
 		public void RenderFrame(VideoTimecode timecode, SKBitmap frameBitmap)

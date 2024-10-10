@@ -1,4 +1,5 @@
-﻿using KaraokeLib.Audio;
+﻿using CSCore;
+using KaraokeLib.Audio;
 using KaraokeLib.Config;
 using KaraokeLib.Files;
 using KaraokeLib.Video.Encoders;
@@ -63,9 +64,9 @@ namespace KaraokeLib.Video
 		private void DoExport(IKaraokeFile file, KaraokeConfig config, IVideoEncoder encoder, string outFile, double startSeconds, double lengthSeconds)
 		{
 			encoder.SetExporterObject(this);
-			using (var mixer = new AudioMixer(file.GetTracks().Where(t => t.Type == Tracks.KaraokeTrackType.Audio)))
+			using (var mixer = new AudioMixer(file.GetTracks().Where(t => t.Type == Tracks.KaraokeTrackType.Audio), 48000))
 			{
-				encoder.StartRender(outFile, mixer, config.VideoSize.Width, config.VideoSize.Height, config.FrameRate, lengthSeconds);
+				encoder.StartRender(outFile, mixer.ToWaveSource(), config.VideoSize.Width, config.VideoSize.Height, config.FrameRate, lengthSeconds);
 			}
 
 			var tracks = file.GetTracks().ToArray();

@@ -1,11 +1,6 @@
 ﻿using KaraokeLib.Events;
 using KaraokeLib.Tracks;
 using KaraokeStudio.Commands.Updates;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KaraokeStudio
 {
@@ -46,7 +41,7 @@ namespace KaraokeStudio
 				{
 					_selectedEvents.RemoveAll(ev => idsLookup.Contains(ev.Id));
 				}
-				else if(update.Type == EventsUpdate.UpdateType.Replace)
+				else if (update.Type == EventsUpdate.UpdateType.Replace)
 				{
 					_selectedEvents.RemoveAll(ev => !idsLookup.Contains(ev.Id));
 				}
@@ -54,7 +49,7 @@ namespace KaraokeStudio
 
 			UpdateDispatcher.RegisterHandler<TracksUpdate>(update =>
 			{
-				foreach(var id in update.TrackIds)
+				foreach (var id in update.TrackIds)
 				{
 					_selectedTracks.RemoveAll(t => t.Id == id);
 				}
@@ -71,11 +66,11 @@ namespace KaraokeStudio
 			_selectedEvents.Clear();
 			_selectedTracks.Clear();
 
-			if(hadEvents)
+			if (hadEvents)
 			{
 				OnSelectedEventsChanged?.Invoke();
 			}
-			if(hadTracks)
+			if (hadTracks)
 			{
 				OnSelectedTracksChanged?.Invoke();
 			}
@@ -84,7 +79,7 @@ namespace KaraokeStudio
 		public static void Select(KaraokeTrack track, bool replace)
 		{
 			DeselectEvents();
-			if(replace)
+			if (replace)
 			{
 				DeselectTracks();
 			}
@@ -96,7 +91,7 @@ namespace KaraokeStudio
 		public static void Select(KaraokeEvent ev, bool replace)
 		{
 			DeselectTracks();
-			if(replace)
+			if (replace)
 			{
 				DeselectEvents();
 			}
@@ -108,7 +103,7 @@ namespace KaraokeStudio
 		public static void Select(IEnumerable<KaraokeEvent> evs, bool replace)
 		{
 			DeselectTracks();
-			if(replace)
+			if (replace)
 			{
 				DeselectEvents();
 			}
@@ -128,7 +123,7 @@ namespace KaraokeStudio
 
 		private static void DeselectEvents()
 		{
-			if(_selectedEvents.Any())
+			if (_selectedEvents.Any())
 			{
 				_selectedEvents.Clear();
 				OnSelectedEventsChanged?.Invoke();

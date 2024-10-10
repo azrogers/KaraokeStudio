@@ -142,13 +142,17 @@ namespace KaraokeStudio.LyricsEditor
 						}
 					}
 
-					var totalLen = newElements.Skip(item.StartB).Take(item.insertedB).Select(r => r.Tokens.Sum(t => t.Length)).Sum();
+					var totalElem = newElements.Skip(item.StartB).Take(item.insertedB);
+					var totalLen = totalElem.Select(r => r.Type == KaraokeEventType.Lyric ? r.Tokens.Sum(t => t.Length) : 1).Sum();
 					var startPos = 0;
-					// handle all the skipped elements
-					foreach (var elem in newElements.Skip(item.StartB).Take(item.insertedB))
+					if(totalLen > 0)
 					{
-						createdElements.Add(ToTextElement(elem, timeStart, timeEnd, startPos, totalLen, nextEventId: ref nextEventId, nextElementId: ref nextElementId, out var len));
-						startPos += len;
+						// handle all the skipped elements
+						foreach (var elem in totalElem)
+						{
+							createdElements.Add(ToTextElement(elem, timeStart, timeEnd, startPos, totalLen, nextEventId: ref nextEventId, nextElementId: ref nextElementId, out var len));
+							startPos += len;
+						}
 					}
 
 					oldIndex += item.deletedA;

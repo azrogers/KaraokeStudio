@@ -253,12 +253,12 @@ namespace KaraokeStudio.FormHandlers
 
 		public bool AddNewAudioTrack()
 		{
-			if (_loadedProjectPath == null || _loadedProject == null)
+			if (_loadedProject == null)
 			{
 				return false;
 			}
 
-			var audioFile = ProjectUtil.OpenAudioFile(_loadedProjectPath);
+			var audioFile = ProjectUtil.OpenAudioFile(_loadedProjectPath ?? Environment.CurrentDirectory);
 			if (audioFile == null)
 			{
 				return false;

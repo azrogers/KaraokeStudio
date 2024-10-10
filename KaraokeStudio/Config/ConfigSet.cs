@@ -23,18 +23,22 @@ namespace KaraokeStudio.Config
 			Func<object, T> getValue,
 			Action<object, T> setValue,
 			bool isDecimal = false,
-			ConfigRangeAttribute? configRange = null)
+			ConfigRangeAttribute? configRange = null,
+			ConfigDropdownAttribute? configDropdown = null)
 		{
-			_fields.Add(new CallbackConfigField<T>(name, controlType, getValue, setValue, isDecimal, configRange));
+			_fields.Add(new CallbackConfigField<T>(name, controlType, getValue, setValue, isDecimal, configRange, configDropdown));
 		}
 
 		internal class CallbackConfigField<T> : IConfigField
 		{
 			public string Name { get; private set; }
 
+			public string? FriendlyName { get; private set; }
+
 			public ConfigControlType ControlType { get; private set; }
 
 			public ConfigRangeAttribute? ConfigRange { get; private set; }
+			public ConfigDropdownAttribute? ConfigDropdown { get; private set; }
 
 			public bool IsDecimal { get; private set; }
 
@@ -49,13 +53,15 @@ namespace KaraokeStudio.Config
 				Func<object, T> getValueCallback,
 				Action<object, T> setValueCallback,
 				bool isDecimal = false,
-				ConfigRangeAttribute? configRange = null)
+				ConfigRangeAttribute? configRange = null,
+				ConfigDropdownAttribute? configDropdown = null)
 			{
 				Name = name;
 				ControlType = controlType;
 				FieldType = typeof(T);
 				IsDecimal = isDecimal;
 				ConfigRange = configRange;
+				ConfigDropdown = ConfigDropdown;
 				_getValueCallback = getValueCallback;
 				_setValueCallback = setValueCallback;
 			}

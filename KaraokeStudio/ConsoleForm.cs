@@ -45,12 +45,15 @@ namespace KaraokeStudio
 
 		private void ConsoleForm_OnLogUpdate(string obj)
 		{
-			logBox.Text = LogString;
-			if(logBox.SelectionLength <= 0)
+			Invoke(() =>
 			{
-				logBox.SelectionStart = logBox.Text.Length;
-				logBox.ScrollToCaret();
-			}
+				logBox.Text = LogString;
+				if (logBox.SelectionLength <= 0)
+				{
+					logBox.SelectionStart = logBox.Text.Length;
+					logBox.ScrollToCaret();
+				}
+			});
 		}
 
 		private void ConsoleForm_FormClosed(object sender, FormClosedEventArgs e)

@@ -1,4 +1,5 @@
-﻿using KaraokeLib.Config;
+﻿using KaraokeLib.Audio;
+using KaraokeLib.Config;
 using KaraokeStudio.Project;
 
 namespace KaraokeStudio.Commands.Updates
@@ -91,6 +92,19 @@ namespace KaraokeStudio.Commands.Updates
 		{
 			TrackIds = new int[] { trackId };
 			NewConfig = newConfig;
+		}
+	}
+
+	/// <summary>
+	/// An update denoting that audio settings have changed.
+	/// </summary>
+	internal class AudioSettingsUpdate : IUpdate
+	{
+		public AudioSettings Settings;
+
+		public AudioSettingsUpdate(AudioSettings settings)
+		{
+			Settings = settings;
 		}
 	}
 }

@@ -108,6 +108,8 @@ namespace KaraokeStudio
 
 		private void lRCFileToolStripMenuItem_Click(object sender, EventArgs e) => _projectHandler.ExportLrcFile();
 
+		private void audioSettingsToolStripMenuItem_Click(object sender, EventArgs e) => CommandDispatcher.Dispatch(new OpenAudioSettingsCommand());
+
 		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			Close();
@@ -166,19 +168,19 @@ namespace KaraokeStudio
 		private void addAudioClipToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			var track = SelectionManager.SelectedTracks.FirstOrDefault(t => t.Type == KaraokeTrackType.Audio);
-			if(track == null)
+			if (track == null)
 			{
 				return;
 			}
 
 			var audioClip = ProjectUtil.OpenAudioFile(_projectHandler.ProjectPath);
-			if(audioClip == null)
+			if (audioClip == null)
 			{
 				return;
 			}
 
 			var audioInfo = AudioUtil.GetFileInfo(audioClip);
-			if(audioInfo == null)
+			if (audioInfo == null)
 			{
 				MessageBox.Show("Failed to obtain info from audio file - not a supported format?", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return;
@@ -191,7 +193,7 @@ namespace KaraokeStudio
 
 		private void removeEventToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if(!SelectionManager.SelectedEvents.Any())
+			if (!SelectionManager.SelectedEvents.Any())
 			{
 				return;
 			}
@@ -228,6 +230,8 @@ namespace KaraokeStudio
 			{
 				_projectHandler.Project.PlaybackState.Cleanup();
 			}
+
+			AudioSubsystem.Instance.Cleanup();
 		}
 		#endregion
 

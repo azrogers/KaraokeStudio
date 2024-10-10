@@ -31,7 +31,7 @@
 			this.videoPanel = new System.Windows.Forms.Panel();
 			this.videoSkiaControl = new SkiaSharp.Views.Desktop.SKGLControl();
 			this.controlsPanel = new System.Windows.Forms.Panel();
-			this.volumeSlider = new NAudio.Gui.VolumeSlider();
+			this.volumeSlider = new VolumeSlider();
 			this.currentPosLabel = new System.Windows.Forms.Label();
 			this.endPosLabel = new System.Windows.Forms.Label();
 			this.startPosLabel = new System.Windows.Forms.Label();
@@ -91,7 +91,6 @@
 			this.volumeSlider.Name = "volumeSlider";
 			this.volumeSlider.Size = new System.Drawing.Size(75, 23);
 			this.volumeSlider.TabIndex = 7;
-			this.volumeSlider.VolumeChanged += new System.EventHandler(this.volumeSlider_VolumeChanged);
 			// 
 			// currentPosLabel
 			// 
@@ -225,7 +224,7 @@
 		private Label endPosLabel;
 		private Label startPosLabel;
 		private SkiaSharp.Views.Desktop.SKGLControl videoSkiaControl;
-		private NAudio.Gui.VolumeSlider volumeSlider;
+		private VolumeSlider volumeSlider;
 		private ComboBox playbackRateSelector;
 	}
 }

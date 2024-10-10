@@ -65,9 +65,10 @@ namespace KaraokeLib.Files.Ksf
 
 		private void MaybeBuildTypeInformation(Type t)
 		{
-			if (t.GetInterface(nameof(IEnumerable)) != null)
+			var enumerable = t.GetInterface("IEnumerable`1");
+			if (enumerable != null)
 			{
-				t = t.GetGenericArguments()[0];
+				t = enumerable.GetGenericArguments()[0];
 			}
 
 			// if this contains a serializable type, get its type info too

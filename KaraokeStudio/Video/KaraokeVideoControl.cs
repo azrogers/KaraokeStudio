@@ -35,6 +35,7 @@ namespace KaraokeStudio.Video
 			});
 
 			volumeSlider.Volume = AppSettings.Instance.Volume;
+			volumeSlider.OnVolumeChanged += this.volumeSlider_VolumeChanged;
 			playbackRateSelector.SelectedText = AppSettings.Instance.PlaybackRate + "x";
 		}
 
@@ -52,6 +53,7 @@ namespace KaraokeStudio.Video
 			}
 
 			_projectConfigHandle.Release();
+			volumeSlider.OnVolumeChanged -= this.volumeSlider_VolumeChanged;
 		}
 
 		public void ForceRerender() => videoSkiaControl.Invalidate();
@@ -237,9 +239,9 @@ namespace KaraokeStudio.Video
 			UpdateState();
 		}
 
-		private void volumeSlider_VolumeChanged(object sender, EventArgs e)
+		private void volumeSlider_VolumeChanged(float newVolume)
 		{
-			AppSettings.Instance.SetVolume(volumeSlider.Volume);
+			AppSettings.Instance.SetVolume(newVolume);
 		}
 
 		private void playbackRateSelector_SelectedIndexChanged(object sender, EventArgs e)

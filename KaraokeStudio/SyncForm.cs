@@ -231,7 +231,7 @@ namespace KaraokeStudio
 
 		private void HandleSync()
 		{
-			if (_eventIndex == -1 || _currentProject == null)
+			if (_eventIndex == -1 || _currentProject == null || _eventIndex >= _events.Length)
 			{
 				return;
 			}
@@ -320,7 +320,10 @@ namespace KaraokeStudio
 				var frame = _undoContext.Pop();
 				_eventsNeedRepositioning.Clear();
 				_eventIndex = frame.EventIndex;
-				_currentProject?.PlaybackState.SeekAbsolute(frame.VideoPosition);
+				if(_currentProject?.PlaybackState.Position > frame.VideoPosition)
+				{
+					_currentProject?.PlaybackState.SeekAbsolute(frame.VideoPosition);
+				}
 				// undo line context no longer valid
 				if (_undoLineContext.Any() && frame.EventIndex <= _undoLineContext.Peek().EventIndex)
 				{
@@ -341,7 +344,10 @@ namespace KaraokeStudio
 				_eventIndex = frame.EventIndex;
 				// undo context no longer valid
 				while (_undoContext.Any() && _undoContext.Peek().EventIndex >= _eventIndex) { _undoContext.Pop(); }
-				_currentProject?.PlaybackState.SeekAbsolute(frame.VideoPosition);
+				if (_currentProject?.PlaybackState.Position > frame.VideoPosition)
+				{
+					_currentProject?.PlaybackState.SeekAbsolute(frame.VideoPosition);
+				}
 				_finishedLastSyllable = true;
 				UpdateButtons();
 				video.ForceRerender();

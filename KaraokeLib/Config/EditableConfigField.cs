@@ -13,6 +13,11 @@ namespace KaraokeLib.Config
 		string Name { get; }
 
 		/// <summary>
+		/// The friendly name of the config field, if there is one.
+		/// </summary>
+		string? FriendlyName { get; }
+
+		/// <summary>
 		/// The type of control to use for this field.
 		/// </summary>
 		ConfigControlType ControlType { get; }
@@ -21,6 +26,11 @@ namespace KaraokeLib.Config
 		/// The ConfigRangeAttribute specified on this field, if present.
 		/// </summary>
 		ConfigRangeAttribute? ConfigRange { get; }
+
+		/// <summary>
+		/// The ConfigDropdownAttribute specified on this field, if present.
+		/// </summary>
+		public ConfigDropdownAttribute? ConfigDropdown { get; }
 
 		/// <summary>
 		/// Is this field a decimal type?
@@ -57,6 +67,11 @@ namespace KaraokeLib.Config
 		/// </summary>
 		public string Name { get; private set; }
 
+		/// <summary>
+		/// The friendly name of the field, if there is one.
+		/// </summary>
+		public string? FriendlyName { get; private set; }
+
 		/// <inheritdoc />
 		public ConfigControlType ControlType { get; private set; }
 
@@ -64,6 +79,11 @@ namespace KaraokeLib.Config
 		/// The ConfigRangeAttribute specified on this field, if present.
 		/// </summary>
 		public ConfigRangeAttribute? ConfigRange => _range;
+
+		/// <summary>
+		/// The ConfigDropdownAttribute specified on this field, if present.
+		/// </summary>
+		public ConfigDropdownAttribute? ConfigDropdown => _dropdown;
 
 		/// <inheritdoc />
 		public bool IsDecimal
@@ -85,6 +105,7 @@ namespace KaraokeLib.Config
 
 		private FieldInfo _field;
 		private ConfigRangeAttribute? _range;
+		private ConfigDropdownAttribute? _dropdown;
 		private Type _fieldType;
 
 		/// <summary>
@@ -95,8 +116,10 @@ namespace KaraokeLib.Config
 			_field = field;
 			_fieldType = field.FieldType;
 			_range = field.GetCustomAttribute<ConfigRangeAttribute>();
+			_dropdown = field.GetCustomAttribute<ConfigDropdownAttribute>();
 
 			Name = field.Name;
+			FriendlyName = field.GetCustomAttribute<ConfigDisplayAttribute>()?.FriendlyName;
 			ControlType = GetControlType(_fieldType);
 		}
 
@@ -121,6 +144,11 @@ namespace KaraokeLib.Config
 
 		private ConfigControlType GetControlType(Type fieldType)
 		{
+			if(_dropdown != null)
+			{
+				return ConfigControlType.Dropdown;
+			}
+
 			if (fieldType.IsEnum)
 			{
 				return ConfigControlType.Enum;
@@ -194,6 +222,7 @@ namespace KaraokeLib.Config
 		Color,
 		Font,
 		Enum,
+		Dropdown,
 		Bool,
 		Padding,
 		String

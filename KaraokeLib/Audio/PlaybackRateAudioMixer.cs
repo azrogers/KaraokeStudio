@@ -1,35 +1,41 @@
-﻿using KaraokeLib.Audio.SoundTouch;
+﻿using CSCore;
+using KaraokeLib.Audio.SoundTouch;
 using KaraokeLib.Tracks;
-using NAudio.Wave;
 
 namespace KaraokeLib.Audio
 {
 	/// <summary>
 	/// Wrapper for <see cref="AudioMixer"/> allowing for playback rate to be changed.
 	/// </summary>
-	public class PlaybackRateAudioMixer : WaveStream
+	public class PlaybackRateAudioMixer : IWaveSource
 	{
 		private VarispeedSampleProvider _provider;
 		private AudioMixer _mixer;
 
-		public PlaybackRateAudioMixer(IEnumerable<KaraokeTrack> tracks, float playbackRate)
+		public PlaybackRateAudioMixer(IEnumerable<KaraokeTrack> tracks, float playbackRate, int sampleRate)
 		{
-			_mixer = new AudioMixer(tracks);
-			var lengthMs = (int)(_mixer.Length / (double)_mixer.WaveFormat.SampleRate * 1000.0);
-
-			_provider = new VarispeedSampleProvider(_mixer.ToSampleProvider(), 100, new SoundTouchProfile(true, true));
+			_mixer = new AudioMixer(tracks, sampleRate);
+			_provider = new VarispeedSampleProvider(_mixer, 1000, new SoundTouchProfile(true, true));
 			_provider.PlaybackRate = playbackRate;
 		}
 
-		public override WaveFormat WaveFormat => _mixer.WaveFormat;
+		public WaveFormat WaveFormat => _mixer.WaveFormat;
 
-		public override long Length => _mixer.Length;
+		public long Length => _mixer.Length;
 
-		public override long Position { get => _mixer.Position; set => _mixer.Position = value; }
+		public long Position { get => _mixer.Position; set => _mixer.Position = value; }
 
-		public override int Read(byte[] buffer, int offset, int count)
+		public bool CanSeek => true;
+
+		public void Dispose()
 		{
-			return _provider.ToWaveProvider().Read(buffer, offset, count);
+			_provider.Dispose();
+			_mixer.Dispose();
+		}
+
+		public int Read(byte[] buffer, int offset, int count)
+		{
+			return _mixer.ToWaveSource().Read(buffer, offset, count);
 		}
 	}
 }

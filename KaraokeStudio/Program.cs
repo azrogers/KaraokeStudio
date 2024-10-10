@@ -31,6 +31,7 @@ namespace KaraokeStudio
 			config.AddRule(LogLevel.Info, LogLevel.Fatal, logMethodCall);
 
 			NLog.LogManager.Configuration = config;
+			AudioSubsystem.Instance.Initialize();
 
 			var form = new MainForm();
 			if (args.Length > 0)

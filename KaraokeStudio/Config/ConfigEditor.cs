@@ -90,22 +90,25 @@ namespace KaraokeStudio.Config
 				switch (field.ControlType)
 				{
 					case ConfigControlType.Size:
-						AddField(field.Name, new SizeConfigControl() { Field = field });
+						AddField<SizeConfigControl>(field);
 						break;
 					case ConfigControlType.Numeric:
-						AddField(field.Name, new NumericConfigControl() { Field = field });
+						AddField<NumericConfigControl>(field);
 						break;
 					case ConfigControlType.Range:
-						AddField(field.Name, new RangeConfigControl() { Field = field });
+						AddField<RangeConfigControl>(field);
 						break;
 					case ConfigControlType.Color:
-						AddField(field.Name, new ColorConfigControl() { Field = field });
+						AddField<ColorConfigControl>(field);
 						break;
 					case ConfigControlType.Font:
-						AddField(field.Name, new FontConfigControl() { Field = field });
+						AddField<FontConfigControl>(field);
 						break;
 					case ConfigControlType.Enum:
-						AddField(field.Name, new EnumConfigControl() { Field = field });
+						AddField<EnumConfigControl>(field);
+						break;
+					case ConfigControlType.Dropdown:
+						AddField<DropdownConfigControl>(field);
 						break;
 				}
 			}
@@ -113,8 +116,10 @@ namespace KaraokeStudio.Config
 			configContainer.ResumeLayout(true);
 		}
 
-		private void AddField(string name, BaseConfigControl control)
+		private void AddField<T>(IConfigField field) where T : BaseConfigControl
 		{
+			var control = Activator.CreateInstance<T>();
+			control.Field = field;
 			control.Dock = DockStyle.Fill;
 			control.AutoSize = true;
 			control.AutoSizeMode = AutoSizeMode.GrowAndShrink;
@@ -133,7 +138,7 @@ namespace KaraokeStudio.Config
 			var labelWidth = configContainer.ColumnStyles[0].Width;
 
 			var label = new Label();
-			label.Text = Utility.HumanizeCamelCase(name);
+			label.Text = field.FriendlyName ?? Utility.HumanizeCamelCase(field.Name);
 			label.Size = new Size((int)labelWidth, 15);
 			label.AutoSize = true;
 
