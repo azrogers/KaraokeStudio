@@ -155,7 +155,7 @@ namespace KaraokeLib.Events
 			}
 		}
 
-		public object Read(BinaryReader reader)
+		public object Read(BinaryReader reader, byte version)
 		{
 			var infoByte = reader.ReadByte();
 			var hasLinkedId = ((infoByte >> 0) & 1) == 1;

@@ -11,7 +11,7 @@ using KaraokeStudio.Util;
 
 namespace KaraokeStudio
 {
-    public partial class MainForm : Form
+	public partial class MainForm : Form
 	{
 		private ProjectFormHandler _projectHandler;
 
@@ -217,6 +217,56 @@ namespace KaraokeStudio
 			CommandDispatcher.Dispatch(new OpenTrackSettingsCommand(SelectionManager.SelectedTracks.First()));
 		}
 
+		private void moveUpToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (!SelectionManager.SelectedTracks.Any())
+			{
+				return;
+			}
+
+			var orderedTracks = _projectHandler.Project?.Tracks.OrderBy(t => t.Order).ToArray() ?? [];
+			var selectedIds = new HashSet<int>(SelectionManager.SelectedTracks.Select(t => t.Id));
+			var indexAbove = -1;
+			for(var i = 0; i < orderedTracks.Length; i++)
+			{
+				if (selectedIds.Contains(orderedTracks[i].Id))
+				{
+					indexAbove = i - 1;
+					break;
+				}
+			}
+
+            if (indexAbove >= 0)
+            {
+				CommandDispatcher.Dispatch(new RepositionTracksCommand(SelectionManager.SelectedTracks.ToArray(), indexAbove));
+            }
+        }
+
+		private void moveDownToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (!SelectionManager.SelectedTracks.Any())
+			{
+				return;
+			}
+
+			var orderedTracks = _projectHandler.Project?.Tracks.OrderBy(t => t.Order).ToArray() ?? [];
+			var selectedIds = new HashSet<int>(SelectionManager.SelectedTracks.Select(t => t.Id));
+			var indexBelow = -1;
+			for (var i = orderedTracks.Length - 1; i >= 0; i--)
+			{
+				if (selectedIds.Contains(orderedTracks[i].Id))
+				{
+					indexBelow = i + 1;
+					break;
+				}
+			}
+
+			if (indexBelow >= 0)
+			{
+				CommandDispatcher.Dispatch(new RepositionTracksCommand(SelectionManager.SelectedTracks.ToArray(), indexBelow));
+			}
+		}
+
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			if (!_projectHandler.AlertPendingChanges())
@@ -280,6 +330,9 @@ namespace KaraokeStudio
 
 			redoToolStripMenuItem.Enabled = UndoHandler.CurrentRedoItem != null;
 			redoToolStripMenuItem.Text = UndoHandler.CurrentRedoItem == null ? "Redo" : "Redo " + UndoHandler.CurrentRedoItem.Value.Action;
+
+			moveUpToolStripMenuItem.Enabled = SelectionManager.SelectedTracks.Any();
+			moveDownToolStripMenuItem.Enabled = SelectionManager.SelectedTracks.Any();
 		}
 	}
 }

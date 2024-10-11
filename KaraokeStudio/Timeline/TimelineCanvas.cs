@@ -52,14 +52,14 @@ namespace KaraokeStudio.Timeline
 		private bool _isDragging = false;
 		private SKPoint? _dragStartPoint;
 
-		private Dictionary<string, SKRect> _textBounds = new Dictionary<string, SKRect>();
+		private Dictionary<string, SKRect> _textBounds = [];
 
 		// the clickable items for each track
-		private ClickableItem[][] _clickableItems = new ClickableItem[0][];
-		private Dictionary<int, ClickableItem> _eventClickableItems = new Dictionary<int, ClickableItem>();
+		private ClickableItem[][] _clickableItems = [];
+		private Dictionary<int, ClickableItem> _eventClickableItems = [];
 
-		private Dictionary<KaraokeEventType, SKPaint> _eventTypePaints = new Dictionary<KaraokeEventType, SKPaint>();
-		private Dictionary<int, KaraokeEvent> _events = new Dictionary<int, KaraokeEvent>();
+		private Dictionary<KaraokeEventType, SKPaint> _eventTypePaints = [];
+		private Dictionary<int, KaraokeEvent> _events = [];
 
 		private UpdateDispatcher.Handle _projectHandle;
 		private UpdateDispatcher.Handle _eventsUpdateHandle;
@@ -585,7 +585,7 @@ namespace KaraokeStudio.Timeline
 				return;
 			}
 
-			var projectTracks = _project.Tracks.OrderBy(t => t.Id).ToArray();
+			var projectTracks = _project.Tracks.OrderBy(t => t.Order).ToArray();
 
 			if (_clickableItems.GetLength(0) != projectTracks.Length)
 			{

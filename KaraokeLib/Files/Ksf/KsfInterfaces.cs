@@ -6,7 +6,7 @@
 	internal interface IKsfBinaryObject
 	{
 		void Write(BinaryWriter writer);
-		object Read(BinaryReader reader);
+		object Read(BinaryReader reader, byte version);
 	}
 
 	/// <summary>

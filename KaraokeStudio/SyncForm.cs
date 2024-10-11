@@ -70,7 +70,7 @@ namespace KaraokeStudio
 			_onDispose.Add(UpdateDispatcher.RegisterHandler<TracksUpdate>(update =>
 			{
 				// track we're syncing was deleted
-				if (!update.Added && update.TrackIds.Any(t => t == _lyricsTrack?.Id))
+				if (update.Type == TracksUpdate.UpdateType.Removed && update.TrackIds.Any(t => t == _lyricsTrack?.Id))
 				{
 					Hide();
 				}

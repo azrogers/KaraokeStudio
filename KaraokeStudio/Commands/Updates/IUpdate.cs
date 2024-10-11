@@ -60,23 +60,30 @@ namespace KaraokeStudio.Commands.Updates
 	}
 
 	/// <summary>
-	/// An update denoting that one or more tracks were added or removed.
+	/// An update denoting that the list of tracks has changed, indicating either adding, removing, or reordering tracks.
 	/// </summary>
 	internal class TracksUpdate : IUpdate
 	{
 		public int[] TrackIds;
-		public bool Added;
+		public UpdateType Type;
 
-		public TracksUpdate(int[] trackIds, bool added = true)
+		public TracksUpdate(int[] trackIds, UpdateType type = UpdateType.Added)
 		{
 			TrackIds = trackIds;
-			Added = added;
+			Type = type;
 		}
 
-		public TracksUpdate(int trackId, bool added = true)
+		public TracksUpdate(int trackId, UpdateType type = UpdateType.Added)
 		{
-			TrackIds = new int[] { trackId };
-			Added = added;
+			TrackIds = [trackId];
+			Type = type;
+		}
+
+		public enum UpdateType
+		{
+			Added,
+			Removed,
+			Reordered
 		}
 	}
 

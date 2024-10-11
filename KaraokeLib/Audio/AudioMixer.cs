@@ -32,6 +32,11 @@ namespace KaraokeLib.Audio
 
 		public bool CanSeek => throw new NotImplementedException();
 
+		public void FlushTrackCache()
+		{
+			_loadedStreams.Clear();
+		}
+
 		/// <summary>
 		/// Rebuilds the internal cache of audio tracks and loaded audio streams.
 		/// </summary>
@@ -44,6 +49,11 @@ namespace KaraokeLib.Audio
 			{
 				foreach (var ev in track.Events.Where(ev => ev.Type == KaraokeEventType.AudioClip))
 				{
+					if(_loadedStreams.ContainsKey(ev.Id))
+					{
+						continue;
+					}
+
 					var audioClipEvent = (AudioClipKaraokeEvent)ev;
 					var audioFile = audioClipEvent?.Settings?.LoadAudioFile();
 					if (audioFile != null)

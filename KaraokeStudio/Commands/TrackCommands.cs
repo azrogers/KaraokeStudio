@@ -36,7 +36,7 @@ namespace KaraokeStudio.Commands
 			_onCreate(track);
 			_createdTrackId = track.Id;
 
-			yield return new TracksUpdate(track.Id, true);
+			yield return new TracksUpdate(track.Id, TracksUpdate.UpdateType.Added);
 		}
 
 		public IEnumerable<IUpdate> Undo(CommandContext context)
@@ -55,7 +55,7 @@ namespace KaraokeStudio.Commands
 
 			context.Project.RemoveTrack(_createdTrackId.Value);
 
-			yield return new TracksUpdate(_createdTrackId.Value, false);
+			yield return new TracksUpdate(_createdTrackId.Value, TracksUpdate.UpdateType.Removed);
 		}
 	}
 
@@ -105,7 +105,7 @@ namespace KaraokeStudio.Commands
 				context.Project?.RemoveTrack(id);
 			}
 
-			yield return new TracksUpdate(_trackIds, false);
+			yield return new TracksUpdate(_trackIds, TracksUpdate.UpdateType.Removed);
 		}
 
 		public IEnumerable<IUpdate> Undo(CommandContext context)
@@ -115,7 +115,7 @@ namespace KaraokeStudio.Commands
 				context.Project?.AddTrack(_oldTracks[id]);
 			}
 
-			yield return new TracksUpdate(_trackIds, true);
+			yield return new TracksUpdate(_trackIds, TracksUpdate.UpdateType.Added);
 		}
 	}
 
@@ -225,6 +225,66 @@ namespace KaraokeStudio.Commands
 
 			track.SetTrackConfig(_oldConfig);
 			yield return new TrackConfigUpdate(track.Id, _oldConfig);
+		}
+	}
+
+	internal class RepositionTracksCommand : ICommand
+	{
+		private static NLog.Logger Logger = LogManager.GetCurrentClassLogger();
+
+		public string Description => "Reposition tracks";
+
+		public bool CanUndo => true;
+
+		private HashSet<int> _trackIds;
+		private int _newPosition;
+		private Dictionary<int, int> _oldPositions = [];
+
+		public RepositionTracksCommand(KaraokeTrack[] tracks, int newPosition)
+		{
+			_trackIds = new(tracks.Select(t => t.Id));
+			_newPosition = newPosition;
+		}
+
+		public IEnumerable<IUpdate> Execute(CommandContext context)
+		{
+			if (context.Project == null)
+			{
+				yield break;
+			}
+
+			_oldPositions = new(context.Project.Tracks.Select(t => new KeyValuePair<int, int>(t.Id, t.Order)));
+			var newOrder = context.Project.Tracks.Where(t => !_trackIds.Contains(t.Id)).ToList();
+			if(_newPosition > newOrder.Count)
+			{
+				newOrder.AddRange(context.Project.Tracks.Where(t => _trackIds.Contains(t.Id)));
+			}
+			else
+			{
+				newOrder.InsertRange(_newPosition, context.Project.Tracks.Where(t => _trackIds.Contains(t.Id)));
+			}
+			for (var i = 0; i < newOrder.Count; i++)
+			{
+				newOrder[i].Order = i;
+			}
+
+			yield return new TracksUpdate(context.Project.Tracks.Select(t => t.Id).ToArray(), TracksUpdate.UpdateType.Reordered);
+		}
+
+		public IEnumerable<IUpdate> Undo(CommandContext context)
+		{
+			foreach (var track in context.Project?.Tracks ?? [])
+			{
+				if (!_oldPositions.ContainsKey(track.Id))
+				{
+					Logger.Warn($"Attempted to undo a track repositioning but no previous order for track {track.Id} found.");
+					yield break;
+				}
+
+				track.Order = _oldPositions[track.Id];
+			}
+
+			yield return new TracksUpdate(context.Project?.Tracks.Select(t => t.Id).ToArray() ?? [], TracksUpdate.UpdateType.Reordered);
 		}
 	}
 }

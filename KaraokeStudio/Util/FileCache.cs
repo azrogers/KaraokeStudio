@@ -18,7 +18,7 @@ namespace KaraokeStudio.Util
 
 		public static void UpdateFileUsed(string filename)
 		{
-			_manifest[filename] = DateTime.Now + TimeSpan.FromDays(30);
+			_manifest[filename] = DateTime.Now.AddDays(30);
 			File.WriteAllText(CacheManifestPath, JsonConvert.SerializeObject(_manifest));
 		}
 
@@ -30,11 +30,12 @@ namespace KaraokeStudio.Util
 			}
 
 			_manifest = LoadManifest();
-			var files = Directory.EnumerateFiles(CacheDir).Where(f => Path.GetFileName(f) != MANIFEST_FILENAME);
+			var files = Directory.EnumerateFiles(CacheDir).Where(f => Path.GetFileName(f) != MANIFEST_FILENAME).Select(f => Path.GetFileName(f));
 			var toDelete = PruneCache(files);
 			foreach (var f in toDelete)
 			{
-				File.Delete(f);
+				File.Delete(Path.Combine(CacheDir, f));
+				_manifest.Remove(f);
 			}
 		}
 

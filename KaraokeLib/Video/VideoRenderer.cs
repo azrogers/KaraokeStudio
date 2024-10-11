@@ -17,7 +17,7 @@ namespace KaraokeLib.Video
 			_context = context;
 
 			var plans = new List<VideoPlan>();
-			foreach(var track in tracks.Where(t => KaraokeTrackTypeMapping.TrackHasVideoContent(t.Type)))
+			foreach(var track in tracks.OrderByDescending(t => t.Order).Where(t => KaraokeTrackTypeMapping.TrackHasVideoContent(t.Type)))
 			{
 				var layoutState = new VideoLayoutState(context);
 				var sections = VideoSection.SectionsFromTrack(context, track, layoutState);

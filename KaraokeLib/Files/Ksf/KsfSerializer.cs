@@ -10,7 +10,7 @@ namespace KaraokeLib.Files.Ksf
 	{
 		// = "KSPF"
 		private const uint MAGIC_NUMBER = 0x4650534B;
-		private const byte VERSION = 0;
+		private const byte VERSION = 1;
 
 		private Stream _stream;
 		private KsfSerializationInfo _serializationInfo;
@@ -136,11 +136,11 @@ namespace KaraokeLib.Files.Ksf
 					throw new Exception($"Missing type info for KsfFileObject?");
 				}
 
-				return (KsfFileObject)Read(reader, info);
+				return (KsfFileObject)Read(reader, info, version);
 			}
 		}
 
-		private object Read(BinaryReader reader, KsfSerializationInfo.KsfType type)
+		private object Read(BinaryReader reader, KsfSerializationInfo.KsfType type, byte version)
 		{
 			var infoByte = reader.ReadByte();
 			var hasBinary = ((infoByte >> 0) & 1) == 1;
@@ -159,7 +159,7 @@ namespace KaraokeLib.Files.Ksf
 
 			if (hasBinary)
 			{
-				newObj = ((IKsfBinaryObject)newObj).Read(reader);
+				newObj = ((IKsfBinaryObject)newObj).Read(reader, version);
 			}
 
 			if (hasValues)
@@ -182,7 +182,7 @@ namespace KaraokeLib.Files.Ksf
 						var values = new List<object>();
 						for (var j = 0; j < arrayCount; j++)
 						{
-							values.Add(ReadValue(reader, arrayType));
+							values.Add(ReadValue(reader, arrayType, version));
 						}
 
 						// if it's an array, we can set directly more or less
@@ -212,7 +212,7 @@ namespace KaraokeLib.Files.Ksf
 					}
 					else
 					{
-						valueInfo.SetValue(newObj, ReadValue(reader, valueType));
+						valueInfo.SetValue(newObj, ReadValue(reader, valueType, version));
 					}
 				}
 			}
@@ -220,12 +220,12 @@ namespace KaraokeLib.Files.Ksf
 			return newObj;
 		}
 
-		private object ReadValue(BinaryReader reader, Type type)
+		private object ReadValue(BinaryReader reader, Type type, byte version)
 		{
 			var typeInfo = _serializationInfo.GetTypeInfo(type.Name);
 			if (typeInfo != null)
 			{
-				return Read(reader, typeInfo);
+				return Read(reader, typeInfo, version);
 			}
 
 			var str = reader.ReadNullTerminatedString();

@@ -1,5 +1,6 @@
 ﻿using KaraokeLib.Audio;
 using KaraokeLib.Events;
+using KaraokeStudio.Util;
 using NAudio.WaveFormRenderer;
 using SkiaSharp;
 
@@ -35,24 +36,39 @@ namespace KaraokeStudio.Timeline.EventRenderers
 
 			if (!_bitmaps.ContainsKey(ev.Id))
 			{
-				var duration = AudioUtil.GetFileInfo(clipEvent.Settings?.AudioFile ?? "")?.LengthSeconds ?? 0;
-				var widthPixels = TimelineCanvas.PIXELS_PER_SECOND * duration;
+				var bitmapPath = FileCache.GetTempFilePath(Utility.Sha256Hash(clipEvent.Settings?.AudioFile ?? "") + ".png");
 
-				var settings = new StandardWaveFormRendererSettings();
-				settings.Width = (int)(widthPixels * BITMAP_X_SCALE);
-				settings.TopHeight = (int)(rect.Height / 2 * BITMAP_Y_SCALE);
-				settings.BottomHeight = (int)(rect.Height / 2 * BITMAP_Y_SCALE);
-				settings.DecibelScale = true;
-				settings.BackgroundColor = SKColor.Empty;
-				settings.TopPeakShader = _waveformShader;
-				settings.BottomPeakShader = _waveformShader;
-
-				var peakProvider = new RmsPeakProvider(2048);
-				using (var stream = clipEvent.Settings?.LoadAudioFile())
+				if(File.Exists(bitmapPath))
 				{
-					if (stream != null)
+					_bitmaps[ev.Id] = SKBitmap.Decode(bitmapPath);
+				}
+				else
+				{
+					var duration = AudioUtil.GetFileInfo(clipEvent.Settings?.AudioFile ?? "")?.LengthSeconds ?? 0;
+					var widthPixels = TimelineCanvas.PIXELS_PER_SECOND * duration;
+
+					var settings = new StandardWaveFormRendererSettings();
+					settings.Width = (int)(widthPixels * BITMAP_X_SCALE);
+					settings.TopHeight = (int)(rect.Height / 2 * BITMAP_Y_SCALE);
+					settings.BottomHeight = (int)(rect.Height / 2 * BITMAP_Y_SCALE);
+					settings.DecibelScale = true;
+					settings.BackgroundColor = SKColor.Empty;
+					settings.TopPeakShader = _waveformShader;
+					settings.BottomPeakShader = _waveformShader;
+
+					var peakProvider = new RmsPeakProvider(2048);
+					using (var stream = clipEvent.Settings?.LoadAudioFile())
 					{
-						_bitmaps[ev.Id] = _renderer.Render(stream, peakProvider, settings);
+						if (stream != null)
+						{
+							_bitmaps[ev.Id] = _renderer.Render(stream, peakProvider, settings);
+							using (var data = _bitmaps[ev.Id].Encode(SKEncodedImageFormat.Png, 100))
+							using (var output = File.OpenWrite(bitmapPath))
+							{
+								data.SaveTo(output);
+							}
+							
+						}
 					}
 				}
 			}

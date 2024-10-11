@@ -1,4 +1,5 @@
 ﻿using SkiaSharp;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace KaraokeStudio.Util
@@ -99,6 +100,18 @@ namespace KaraokeStudio.Util
 		public static double Lerp(double a, double b, double t)
 		{
 			return (b - a) * t + a;
+		}
+
+		/// <summary>
+		/// Computes a SHA256 hash from the input text.
+		/// </summary>
+		public static string Sha256Hash(string text)
+		{
+			using (var sha256 = SHA256.Create())
+			{
+				var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(text));
+				return BitConverter.ToString(bytes).Replace("-", string.Empty).ToLower();
+			}
 		}
 	}
 }

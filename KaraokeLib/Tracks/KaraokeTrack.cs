@@ -33,6 +33,11 @@ namespace KaraokeLib.Tracks
 		/// </summary>
 		public int Id { get; internal set; }
 
+		/// <summary>
+		/// The order of this track for positioning alongside others.
+		/// </summary>
+		public int Order { get; set; }
+
 		private IKaraokeFile? _karaokeFile;
 
 		// used for serialization
@@ -46,6 +51,7 @@ namespace KaraokeLib.Tracks
 			_events = new List<KaraokeEvent>();
 			Type = type;
 			Id = id;
+			Order = id;
 		}
 
 		internal KaraokeTrack(int id, KaraokeTrackType type, IEnumerable<KaraokeEvent> events)
@@ -53,6 +59,7 @@ namespace KaraokeLib.Tracks
 			_events = events.ToList();
 			Type = type;
 			Id = id;
+			Order = id;
 		}
 
 		public KaraokeTrack(IKaraokeFile file, KaraokeTrackType type)
@@ -61,6 +68,7 @@ namespace KaraokeLib.Tracks
 			_events = new List<KaraokeEvent>();
 			Type = type;
 			Id = _karaokeFile.IdTracker.AddNewTrack(this);
+			Order = _karaokeFile.GetTracks().Max(t => t.Order) + 1;
 		}
 
 		public KaraokeTrack(IKaraokeFile file, KaraokeTrackType type, IEnumerable<KaraokeEvent> events)
@@ -69,6 +77,7 @@ namespace KaraokeLib.Tracks
 			_events = new List<KaraokeEvent>(events);
 			Type = type;
 			Id = _karaokeFile.IdTracker.AddNewTrack(this);
+			Order = _karaokeFile.GetTracks().Max(t => t.Order) + 1;
 		}
 
 		/// <summary>
@@ -192,13 +201,23 @@ namespace KaraokeLib.Tracks
 		{
 			writer.Write(Id);
 			writer.Write((byte)Type);
+			writer.Write(Order);
 			writer.WriteNullTerminatedString(JsonConvert.SerializeObject(GetTrackConfig()));
 		}
 
-		public object Read(BinaryReader reader)
+		public object Read(BinaryReader reader, byte version)
 		{
 			Id = reader.ReadInt32();
 			Type = (KaraokeTrackType)reader.ReadByte();
+			if(version >= 1)
+			{
+				Order = reader.ReadInt32();
+			}
+			else
+			{
+				Order = Id;
+			}
+
 			var trackConfigType = KaraokeTrackTypeMapping.GetTrackSettingsType(Type);
 			_trackConfig = (IEditableConfig?)JsonConvert.DeserializeObject(reader.ReadNullTerminatedString(), trackConfigType);
 			return this;

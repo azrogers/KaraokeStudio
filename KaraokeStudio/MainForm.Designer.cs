@@ -70,6 +70,11 @@ namespace KaraokeStudio
 			videoSplit = new SplitContainer();
 			video = new Video.KaraokeVideoControl();
 			timelineContainer = new TimelineContainerControl();
+			toolStripSeparator5 = new ToolStripSeparator();
+			moveUpToolStripMenuItem = new ToolStripMenuItem();
+			moveDownToolStripMenuItem = new ToolStripMenuItem();
+			toolStripSeparator6 = new ToolStripSeparator();
+			editToolStripMenuItem1 = new ToolStripMenuItem();
 			menuStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)verticalSplit).BeginInit();
 			verticalSplit.Panel1.SuspendLayout();
@@ -91,7 +96,7 @@ namespace KaraokeStudio
 			// 
 			// fileToolStripMenuItem
 			// 
-			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { newToolStripMenuItem, openToolStripMenuItem, openRecentToolStripMenuItem, saveToolStripMenuItem, saveAsToolStripMenuItem, toolStripSeparator1, importToolStripMenuItem, exportToolStripMenuItem, toolStripSeparator2, settingsMenuItem, exitToolStripMenuItem });
+			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { newToolStripMenuItem, openToolStripMenuItem, openRecentToolStripMenuItem, saveToolStripMenuItem, saveAsToolStripMenuItem, toolStripSeparator1, importToolStripMenuItem, exportToolStripMenuItem, toolStripSeparator2, settingsMenuItem, exitToolStripMenuItem, editToolStripMenuItem1 });
 			fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			fileToolStripMenuItem.Size = new Size(37, 20);
 			fileToolStripMenuItem.Text = "File";
@@ -218,20 +223,20 @@ namespace KaraokeStudio
 			// 
 			editStyleToolStripMenuItem.Name = "editStyleToolStripMenuItem";
 			editStyleToolStripMenuItem.ShortcutKeys = Keys.Alt | Keys.S;
-			editStyleToolStripMenuItem.Size = new Size(144, 22);
+			editStyleToolStripMenuItem.Size = new Size(180, 22);
 			editStyleToolStripMenuItem.Text = "Style...";
 			editStyleToolStripMenuItem.Click += editStyleToolStripMenuItem_Click;
 			// 
 			// toolStripSeparator3
 			// 
 			toolStripSeparator3.Name = "toolStripSeparator3";
-			toolStripSeparator3.Size = new Size(141, 6);
+			toolStripSeparator3.Size = new Size(177, 6);
 			// 
 			// undoToolStripMenuItem
 			// 
 			undoToolStripMenuItem.Name = "undoToolStripMenuItem";
 			undoToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.Z;
-			undoToolStripMenuItem.Size = new Size(144, 22);
+			undoToolStripMenuItem.Size = new Size(180, 22);
 			undoToolStripMenuItem.Text = "Undo";
 			undoToolStripMenuItem.Click += undoToolStripMenuItem_Click;
 			// 
@@ -239,13 +244,13 @@ namespace KaraokeStudio
 			// 
 			redoToolStripMenuItem.Name = "redoToolStripMenuItem";
 			redoToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.Y;
-			redoToolStripMenuItem.Size = new Size(144, 22);
+			redoToolStripMenuItem.Size = new Size(180, 22);
 			redoToolStripMenuItem.Text = "Redo";
 			redoToolStripMenuItem.Click += redoToolStripMenuItem_Click;
 			// 
 			// trackToolStripMenuItem
 			// 
-			trackToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { addTrackToolStripMenuItem, removeTrackToolStripMenuItem, syncLyricsToolStripMenuItem, trackPropertiesToolStripMenuItem });
+			trackToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { addTrackToolStripMenuItem, removeTrackToolStripMenuItem, trackPropertiesToolStripMenuItem, toolStripSeparator5, moveUpToolStripMenuItem, moveDownToolStripMenuItem, toolStripSeparator6, syncLyricsToolStripMenuItem });
 			trackToolStripMenuItem.Name = "trackToolStripMenuItem";
 			trackToolStripMenuItem.Size = new Size(46, 20);
 			trackToolStripMenuItem.Text = "Track";
@@ -254,7 +259,7 @@ namespace KaraokeStudio
 			// 
 			addTrackToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { addAudioTrackToolStripMenuItem });
 			addTrackToolStripMenuItem.Name = "addTrackToolStripMenuItem";
-			addTrackToolStripMenuItem.Size = new Size(173, 22);
+			addTrackToolStripMenuItem.Size = new Size(180, 22);
 			addTrackToolStripMenuItem.Text = "Add";
 			// 
 			// addAudioTrackToolStripMenuItem
@@ -268,7 +273,7 @@ namespace KaraokeStudio
 			// 
 			removeTrackToolStripMenuItem.Name = "removeTrackToolStripMenuItem";
 			removeTrackToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.Delete;
-			removeTrackToolStripMenuItem.Size = new Size(173, 22);
+			removeTrackToolStripMenuItem.Size = new Size(180, 22);
 			removeTrackToolStripMenuItem.Text = "Remove";
 			removeTrackToolStripMenuItem.Click += removeTrackToolStripMenuItem_Click;
 			// 
@@ -276,7 +281,7 @@ namespace KaraokeStudio
 			// 
 			syncLyricsToolStripMenuItem.Name = "syncLyricsToolStripMenuItem";
 			syncLyricsToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D;
-			syncLyricsToolStripMenuItem.Size = new Size(173, 22);
+			syncLyricsToolStripMenuItem.Size = new Size(180, 22);
 			syncLyricsToolStripMenuItem.Text = "Sync Lyrics";
 			syncLyricsToolStripMenuItem.Click += syncLyricsToolStripMenuItem_Click;
 			// 
@@ -284,7 +289,7 @@ namespace KaraokeStudio
 			// 
 			trackPropertiesToolStripMenuItem.Name = "trackPropertiesToolStripMenuItem";
 			trackPropertiesToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.T;
-			trackPropertiesToolStripMenuItem.Size = new Size(173, 22);
+			trackPropertiesToolStripMenuItem.Size = new Size(180, 22);
 			trackPropertiesToolStripMenuItem.Text = "Properties";
 			trackPropertiesToolStripMenuItem.Click += trackPropertiesToolStripMenuItem_Click;
 			// 
@@ -391,6 +396,36 @@ namespace KaraokeStudio
 			timelineContainer.Size = new Size(882, 121);
 			timelineContainer.TabIndex = 0;
 			// 
+			// toolStripSeparator5
+			// 
+			toolStripSeparator5.Name = "toolStripSeparator5";
+			toolStripSeparator5.Size = new Size(177, 6);
+			// 
+			// moveUpToolStripMenuItem
+			// 
+			moveUpToolStripMenuItem.Name = "moveUpToolStripMenuItem";
+			moveUpToolStripMenuItem.Size = new Size(180, 22);
+			moveUpToolStripMenuItem.Text = "Move Up";
+			moveUpToolStripMenuItem.Click += moveUpToolStripMenuItem_Click;
+			// 
+			// moveDownToolStripMenuItem
+			// 
+			moveDownToolStripMenuItem.Name = "moveDownToolStripMenuItem";
+			moveDownToolStripMenuItem.Size = new Size(180, 22);
+			moveDownToolStripMenuItem.Text = "Move Down";
+			moveDownToolStripMenuItem.Click += moveDownToolStripMenuItem_Click;
+			// 
+			// toolStripSeparator6
+			// 
+			toolStripSeparator6.Name = "toolStripSeparator6";
+			toolStripSeparator6.Size = new Size(177, 6);
+			// 
+			// editToolStripMenuItem1
+			// 
+			editToolStripMenuItem1.Name = "editToolStripMenuItem1";
+			editToolStripMenuItem1.Size = new Size(193, 22);
+			editToolStripMenuItem1.Text = "Edit";
+			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
@@ -459,5 +494,10 @@ namespace KaraokeStudio
 		private ToolStripMenuItem redoToolStripMenuItem;
 		private ToolStripMenuItem settingsMenuItem;
 		private ToolStripMenuItem audioSettingsToolStripMenuItem;
+		private ToolStripMenuItem editToolStripMenuItem1;
+		private ToolStripSeparator toolStripSeparator5;
+		private ToolStripMenuItem moveUpToolStripMenuItem;
+		private ToolStripMenuItem moveDownToolStripMenuItem;
+		private ToolStripSeparator toolStripSeparator6;
 	}
 }

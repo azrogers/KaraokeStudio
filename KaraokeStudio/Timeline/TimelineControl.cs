@@ -92,7 +92,7 @@ namespace KaraokeStudio.Timeline
 
 			_tracksUpdateHandle = UpdateDispatcher.RegisterHandler<TracksUpdate>(update =>
 			{
-				_tracks = _currentProject?.Tracks.OrderBy(t => t.Id).ToArray() ?? new KaraokeTrack[0];
+				_tracks = _currentProject?.Tracks.OrderBy(t => t.Order).ToArray() ?? [];
 				RecalculateScrollBars();
 				skiaControl.Invalidate();
 			});
@@ -196,7 +196,7 @@ namespace KaraokeStudio.Timeline
 
 		internal void OnProjectEventsChanged(KaraokeProject? project)
 		{
-			_tracks = project?.Tracks.OrderBy(t => t.Id).ToArray() ?? new KaraokeTrack[0];
+			_tracks = project?.Tracks.OrderBy(t => t.Order).ToArray() ?? new KaraokeTrack[0];
 			_timelineCanvas.OnProjectEventsChanged();
 			RecalculateScrollBars();
 			skiaControl.Invalidate();
