@@ -20,6 +20,9 @@ namespace KaraokeStudio
 		// designer doesn't like handling this one itself so we set it up manually
 		private LyricsEditorControl lyricsEditor;
 
+		private ContextMenuStrip _trackRightClickMenu;
+		private ContextMenuStrip _eventRightClickMenu;
+
 		public static MainForm? Instance { get; private set; } = null;
 
 		public MainForm()
@@ -31,6 +34,12 @@ namespace KaraokeStudio
 			}
 
 			InitializeComponent();
+
+			_trackRightClickMenu = new ContextMenuStrip();
+			_trackRightClickMenu.Items.AddRange(trackToolStripMenuItem.DropDownItems);
+
+			_eventRightClickMenu = new ContextMenuStrip();
+			_eventRightClickMenu.Items.AddRange(eventToolStripMenuItem.DropDownItems);
 
 			lyricsEditor = new LyricsEditorControl();
 			videoSplit.Panel1.Controls.Add(lyricsEditor);
@@ -74,6 +83,18 @@ namespace KaraokeStudio
 		public void LoadProject(string path)
 		{
 			_projectHandler.OpenProject(path);
+		}
+
+		public void OpenRightClickMenu(RightClickMenu menu)
+		{
+			if(menu == RightClickMenu.Track)
+			{
+				_trackRightClickMenu.Show(Cursor.Position);
+			}
+			else if(menu == RightClickMenu.Event)
+			{
+				_eventRightClickMenu.Show(Cursor.Position);
+			}
 		}
 
 		private void OnUndoItemsChanged()
@@ -277,6 +298,8 @@ namespace KaraokeStudio
 
 		private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
 		{
+			_eventUpdateHandle.Release();
+
 			if (_projectHandler.Project != null)
 			{
 				_projectHandler.Project.PlaybackState.Cleanup();
@@ -333,6 +356,12 @@ namespace KaraokeStudio
 
 			moveUpToolStripMenuItem.Enabled = SelectionManager.SelectedTracks.Any();
 			moveDownToolStripMenuItem.Enabled = SelectionManager.SelectedTracks.Any();
+		}
+
+		public enum RightClickMenu
+		{
+			Track,
+			Event
 		}
 	}
 }

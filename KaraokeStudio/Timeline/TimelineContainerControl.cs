@@ -73,6 +73,7 @@ namespace KaraokeStudio.Timeline
 			{
 				// remove event listeners before destroying
 				header.Click -= OnHeaderClick;
+				header.MouseDown -= OnHeaderMouseDown;
 			}
 
 			headersContainer.Controls.Clear();
@@ -89,6 +90,7 @@ namespace KaraokeStudio.Timeline
 				control.Track = track;
 				control.Project = _currentProject;
 				control.Click += OnHeaderClick;
+				control.MouseDown += OnHeaderMouseDown;
 				headersContainer.Controls.Add(control);
 				_trackHeaders.Add(control);
 			}
@@ -106,6 +108,17 @@ namespace KaraokeStudio.Timeline
 			}
 
 			SelectionManager.Select(headerControl.Track, !ModifierKeys.HasFlag(Keys.Shift));
+		}
+
+		private void OnHeaderMouseDown(object? sender, MouseEventArgs e)
+		{
+			if(e.Button != MouseButtons.Right)
+			{
+				return;
+			}
+
+			OnHeaderClick(sender, e);
+			MainForm.Instance?.OpenRightClickMenu(MainForm.RightClickMenu.Track);
 		}
 
 		private void RepositionTracks()

@@ -330,8 +330,9 @@ namespace KaraokeStudio.Timeline
 				return;
 			}
 
-			var posToRestore = 0.0;
 			var playbackXPos = GetPlaybackHeadXPos();
+
+			double posToRestore;
 			// if the playback head is on screen, use that as the center of our zoom
 			if (playbackXPos >= 0 && playbackXPos < ClientSize.Width)
 			{
@@ -441,6 +442,15 @@ namespace KaraokeStudio.Timeline
 
 		private void skiaControl_MouseDown(object sender, MouseEventArgs e)
 		{
+			if(e.Button == MouseButtons.Right) {
+				if(SelectEventAtPosition(e.Location))
+				{
+					MainForm.Instance?.OpenRightClickMenu(MainForm.RightClickMenu.Event);
+				}
+
+				return;
+			}
+
 			_uiState = TimelineUIState.Pending;
 			_lastMouseDownEventArgs = e;
 			_mouseTimer.Stop();
@@ -463,6 +473,11 @@ namespace KaraokeStudio.Timeline
 
 		private void skiaControl_MouseUp(object sender, MouseEventArgs e)
 		{
+			if(e.Button != MouseButtons.Left)
+			{
+				return;
+			}
+
 			if (_uiState == TimelineUIState.Pending)
 			{
 				var dist = new SKPoint(e.X - _selectionStartPoint.X, e.Y - _selectionStartPoint.Y).Length;

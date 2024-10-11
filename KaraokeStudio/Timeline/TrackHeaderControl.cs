@@ -179,6 +179,21 @@ namespace KaraokeStudio.Timeline
 		{
 			OnClick(e);
 		}
+
+		private void trackTitleLabel_MouseDown(object sender, MouseEventArgs e)
+		{
+			OnMouseDown(e);
+		}
+
+		private void trackTypeLabel_MouseDown(object sender, MouseEventArgs e)
+		{
+			OnMouseDown(e);
+		}
+
+		private void trackButtonsContainer_MouseDown(object sender, MouseEventArgs e)
+		{
+			OnMouseDown(e);
+		}
 		#endregion
 	}
 }

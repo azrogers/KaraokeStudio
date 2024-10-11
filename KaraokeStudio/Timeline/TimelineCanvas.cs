@@ -146,6 +146,14 @@ namespace KaraokeStudio.Timeline
 			_eventsUpdateHandle.Release();
 			_tracksUpdateHandle.Release();
 			_projectHandle.Release();
+
+			foreach (var (type, renderer) in _eventRenderers)
+			{
+				renderer.RecreateContext();
+			}
+
+			_picture?.Dispose();
+			_pictureRecorder.Dispose();
 		}
 
 		/// <summary>
@@ -241,7 +249,7 @@ namespace KaraokeStudio.Timeline
 		/// <returns>True if an event was selected, false if not.</returns>
 		public bool SelectEventAtPoint(SKPoint point)
 		{
-			var ev = FindEventAtPoint(point);
+			var ev = FindClickableItemAtPoint(point);
 			var isShiftDown = System.Windows.Forms.Control.ModifierKeys.HasFlag(Keys.Shift);
 			if (ev != null)
 			{
@@ -320,6 +328,17 @@ namespace KaraokeStudio.Timeline
 			RecreateCanvas(_size);
 		}
 
+		public KaraokeEvent? FindEventAtPoint(SKPoint point)
+		{
+			var clickableItem = FindClickableItemAtPoint(point);
+			if(clickableItem != null)
+			{
+				return _events[clickableItem.Value.EventId];
+			}
+
+			return null;
+		}
+
 		/// <summary>
 		/// Updates the timeline canvas based on the position of the mouse.
 		/// </summary>fon
@@ -349,7 +368,7 @@ namespace KaraokeStudio.Timeline
 				return;
 			}
 
-			var item = FindEventAtPoint(mousePosCanvas);
+			var item = FindClickableItemAtPoint(mousePosCanvas);
 			if (item == null)
 			{
 				return;
@@ -498,7 +517,7 @@ namespace KaraokeStudio.Timeline
 		/// <summary>
 		/// Returns an event on the timeline at the given (X, Y) position, if any.
 		/// </summary>
-		private ClickableItem? FindEventAtPoint(SKPoint point)
+		private ClickableItem? FindClickableItemAtPoint(SKPoint point)
 		{
 			if (_project == null)
 			{
