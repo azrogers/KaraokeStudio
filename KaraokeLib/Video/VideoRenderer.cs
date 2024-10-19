@@ -7,7 +7,7 @@ using SkiaSharp;
 
 namespace KaraokeLib.Video
 {
-	public class VideoRenderer
+	public class VideoRenderer : IDisposable
 	{
 		private VideoPlan[] _plans;
 		private VideoContext _context;
@@ -20,11 +20,18 @@ namespace KaraokeLib.Video
 			foreach(var track in tracks.OrderByDescending(t => t.Order).Where(t => KaraokeTrackTypeMapping.TrackHasVideoContent(t.Type)))
 			{
 				var layoutState = new VideoLayoutState(context);
-				var sections = VideoSection.SectionsFromTrack(context, track, layoutState);
-				plans.Add(VideoPlanGenerator.CreateVideoPlan(context, layoutState, sections));
+				if(track.Type == KaraokeTrackType.Lyrics)
+				{
+					var sections = VideoSection.SectionsFromTrack(context, track, layoutState);
+					plans.Add(VideoPlanGenerator.CreatePlanFromSections(context, layoutState, sections));
+				}
+				else
+				{
+					plans.Add(VideoPlanGenerator.CreatePlanFromElements(context, VideoElementGenerator.GenerateFromEvents(context, track.Events)));
+				}
 			}
 
-			_plans = plans.ToArray();
+			_plans = [.. plans];
 		}
 
 		public void RenderFrame(VideoTimecode timecode, SKCanvas canvas)
@@ -104,9 +111,15 @@ namespace KaraokeLib.Video
 			var realT = EasingFunctions.Evaluate(transition.EasingCurve, context.TransitionPosition);
 			TransitionManager.Get(transition.Type).Blit(elem, context);
 		}
-	}
 
-	public class VideoTrackRenderer
-	{
+		public void Dispose()
+		{
+			foreach(var plan in _plans)
+			{
+				plan.Dispose();
+			}
+
+			_plans = [];
+		}
 	}
 }

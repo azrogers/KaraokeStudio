@@ -4,7 +4,7 @@ using SkiaSharp;
 
 namespace KaraokeStudio.Video
 {
-	internal interface IVideoGenerator
+	internal interface IVideoGenerator: IDisposable
 	{
 		void UpdateContext(KaraokeProject project, Size videoSize);
 

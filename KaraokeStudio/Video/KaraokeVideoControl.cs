@@ -63,6 +63,7 @@ namespace KaraokeStudio.Video
 			}
 
 			_projectConfigHandle.Release();
+			_videoGenerator.Dispose();
 			volumeSlider.OnVolumeChanged -= this.volumeSlider_VolumeChanged;
 
 			AppSettings.Instance.OnPlaybackRateChanged -= OnPlaybackRateChanged;

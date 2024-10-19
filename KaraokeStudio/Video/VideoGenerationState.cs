@@ -9,7 +9,7 @@ namespace KaraokeStudio.Video
 	/// Contains the contexts required to generate video frames from a given set of events.
 	/// Handles regenerating video data when lyrics change.
 	/// </summary>
-	internal class VideoGenerationState
+	internal class VideoGenerationState : IDisposable
 	{
 		private VideoContext? _context;
 		private VideoStyle? _style;
@@ -32,6 +32,7 @@ namespace KaraokeStudio.Video
 
 			if (_isRendererStale || _renderer == null)
 			{
+				_renderer?.Dispose();
 				_renderer = new VideoRenderer(_context, tracks);
 				_isRendererStale = false;
 			}
@@ -73,6 +74,11 @@ namespace KaraokeStudio.Video
 			kConfig.StrokeWidth = (float)(config.StrokeWidth * scaleFactor);
 
 			return kConfig;
+		}
+
+		public void Dispose()
+		{
+			_renderer?.Dispose();
 		}
 	}
 }

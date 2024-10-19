@@ -356,5 +356,10 @@ namespace KaraokeLib.Video.Elements
 			minTime = new TimeSpanTimecode(minSeconds);
 			maxTime = new TimeSpanTimecode(maxSeconds);
 		}
+
+		public void Dispose()
+		{
+			_textBlob.Dispose();
+		}
 	}
 }

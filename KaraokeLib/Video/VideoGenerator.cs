@@ -80,8 +80,7 @@ namespace KaraokeLib.Video
 				.CreateContainer(tempOutputPath)
 				.WithVideo(videoSettings);
 
-			var renderer = new VideoRenderer(_context, _tracks);
-
+			using (var renderer = new VideoRenderer(_context, _tracks))
 			using (var bitmap = new SKBitmap(_context.Config.VideoSize.Width, _context.Config.VideoSize.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul))
 			using (var canvas = new SKCanvas(bitmap))
 			using (var file = builder.Create())
@@ -124,8 +123,7 @@ namespace KaraokeLib.Video
 				throw new ArgumentOutOfRangeException("Video position out of range");
 			}
 
-			var renderer = new VideoRenderer(_context, _tracks);
-
+			using (var renderer = new VideoRenderer(_context, _tracks))
 			using (var bitmap = new SKBitmap(1920, 1080))
 			{
 				using (var canvas = new SKCanvas(bitmap))

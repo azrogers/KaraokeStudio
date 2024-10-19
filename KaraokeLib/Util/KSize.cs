@@ -24,5 +24,6 @@ namespace KaraokeLib.Util
 		public static implicit operator SKSize(KSize s) => new SKSize(s.Width, s.Height);
 		public static implicit operator Size(KSize s) => new Size(s.Width, s.Height);
 		public static implicit operator KSize(Size s) => new KSize(s.Width, s.Height);
+		public static implicit operator SKPoint(KSize s) => new SKPoint(s.Width, s.Height);
 	}
 }

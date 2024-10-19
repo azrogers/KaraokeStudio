@@ -592,5 +592,10 @@ namespace KaraokeStudio
 
 			return _elements[_elements.Length - 1];
 		}
+
+		public void Dispose()
+		{
+
+		}
 	}
 }

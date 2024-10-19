@@ -5,7 +5,7 @@ using SkiaSharp;
 namespace KaraokeLib.Video.Elements
 {
 	// a single element in the video (a renderable bit of text, an intermission, etc)
-	public interface IVideoElement
+	public interface IVideoElement : IDisposable
 	{
 		/// <summary>
 		/// The type of element this class implements.
@@ -78,5 +78,6 @@ namespace KaraokeLib.Video.Elements
 	public enum VideoElementType
 	{
 		Text,
+		Image
 	}
 }

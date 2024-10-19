@@ -7,16 +7,15 @@ namespace KaraokeLib.Util
 	/// </summary>
 	public enum KAnchor : byte
 	{
-		None = 0,
-		TopLeft = 1,
-		MiddleLeft = 2,
-		BottomLeft = 3,
-		TopCenter = 4,
-		MiddleCenter = 5,
-		BottomCenter = 6,
-		TopRight = 7,
-		MiddleRight = 8,
-		BottomRight = 9
+		TopLeft = 0,
+		MiddleLeft = 1,
+		BottomLeft = 2,
+		TopCenter = 3,
+		MiddleCenter = 4,
+		BottomCenter = 5,
+		TopRight = 6,
+		MiddleRight = 7,
+		BottomRight = 8
 	}
 
 	public static class KAnchorExtensions

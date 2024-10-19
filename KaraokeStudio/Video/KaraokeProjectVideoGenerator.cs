@@ -8,6 +8,11 @@ namespace KaraokeStudio.Video
 	{
 		private VideoGenerationState _generationState = new VideoGenerationState();
 
+		public void Dispose()
+		{
+			_generationState.Dispose();
+		}
+
 		public void Invalidate() => _generationState.InvalidatePlan();
 
 		public void Render(KaraokeProject project, VideoTimecode timecode, SKSurface surface)

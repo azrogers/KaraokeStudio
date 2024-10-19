@@ -42,6 +42,7 @@ namespace KaraokeStudio
 		private void OnDispose(object? sender, EventArgs e)
 		{
 			_projectHandle.Release();
+			_previewHandler.Dispose();
 		}
 
 		private void OnProjectChanged(KaraokeProject? project)

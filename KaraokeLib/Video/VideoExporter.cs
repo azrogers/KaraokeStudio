@@ -74,8 +74,7 @@ namespace KaraokeLib.Video
 			var endTimecode = new VideoTimecode(startSeconds + lengthSeconds, config.FrameRate);
 			var context = new VideoContext(new VideoStyle(config), config, endTimecode);
 
-			var renderer = new VideoRenderer(context, tracks);
-
+			using (var renderer = new VideoRenderer(context, tracks))
 			using (var bitmap = new SKBitmap(config.VideoSize.Width, config.VideoSize.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul))
 			using (var canvas = new SKCanvas(bitmap))
 			{

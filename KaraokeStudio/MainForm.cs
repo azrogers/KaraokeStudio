@@ -16,6 +16,7 @@ namespace KaraokeStudio
 		private ProjectFormHandler _projectHandler;
 
 		private UpdateDispatcher.Handle _eventUpdateHandle;
+		private UpdateDispatcher.Handle _eventConfigUpdateHandle;
 
 		// designer doesn't like handling this one itself so we set it up manually
 		private LyricsEditorControl lyricsEditor;
@@ -64,6 +65,11 @@ namespace KaraokeStudio
 			_projectHandler.OnProjectWillChangeCallback = WindowManager.OnProjectWillChange;
 
 			_eventUpdateHandle = UpdateDispatcher.RegisterHandler<EventsUpdate>(update =>
+			{
+				video.OnProjectEventsChanged(_projectHandler.Project);
+			});
+
+			_eventConfigUpdateHandle = UpdateDispatcher.RegisterHandler<EventsConfigUpdate>(update =>
 			{
 				video.OnProjectEventsChanged(_projectHandler.Project);
 			});
@@ -344,6 +350,7 @@ namespace KaraokeStudio
 		private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
 		{
 			_eventUpdateHandle.Release();
+			_eventConfigUpdateHandle.Release();
 
 			if (_projectHandler.Project != null)
 			{

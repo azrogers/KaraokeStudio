@@ -1,11 +1,11 @@
-﻿namespace KaraokeLib.Video.Plan
+﻿using KaraokeLib.Video.Elements;
+
+namespace KaraokeLib.Video.Plan
 {
 	public class VideoPlanGenerator
 	{
-		public static VideoPlan CreateVideoPlan(VideoContext context, VideoLayoutState layoutState, VideoSection[] sections)
+		public static VideoPlan CreatePlanFromElements(VideoContext context, IVideoElement[] elements)
 		{
-			var elements = VideoElementGenerator.Generate(context, layoutState, sections);
-
 			// dead simple "IsVisible" check for plan for now
 			var naivePlan = new VideoPlan();
 			for (var i = 0; i < context.LastFrameTimecode.FrameNumber; i++)
@@ -22,6 +22,12 @@
 			}
 			naivePlan.FinalizePlan();
 			return naivePlan;
+		}
+
+		public static VideoPlan CreatePlanFromSections(VideoContext context, VideoLayoutState layoutState, VideoSection[] sections)
+		{
+			var elements = VideoElementGenerator.GenerateFromSections(context, layoutState, sections);
+			return CreatePlanFromElements(context, elements);
 		}
 	}
 }

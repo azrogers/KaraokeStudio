@@ -9,7 +9,26 @@ namespace KaraokeLib.Video
 	/// </summary>
 	public class VideoElementGenerator
 	{
-		public static IVideoElement[] Generate(VideoContext context, VideoLayoutState layoutState, VideoSection[] sections)
+		/// <summary>
+		/// Generates an array of video elements out of an IEnumerable of non-lyrics events.
+		/// </summary>
+		public static IVideoElement[] GenerateFromEvents(VideoContext context, IEnumerable<KaraokeEvent> events)
+		{
+			var elements = new List<IVideoElement>();
+			foreach (var ev in events)
+			{
+				switch (ev)
+				{
+					case ImageKaraokeEvent e:
+						elements.Add(new VideoImageElement(context, e));
+						break;
+				}
+			}
+
+			return elements.ToArray();
+		}
+
+		public static IVideoElement[] GenerateFromSections(VideoContext context, VideoLayoutState layoutState, VideoSection[] sections)
 		{
 			var elements = new List<IVideoElement>();
 			var lineElements = new Dictionary<int, List<IVideoElement>>();

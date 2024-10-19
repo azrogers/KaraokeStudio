@@ -76,7 +76,7 @@ namespace KaraokeLib.Events
 		/// <summary>
 		/// The position of this element's (0, 0) point relative to the frame.
 		/// </summary>
-		public KAnchor Alignment = KAnchor.None;
+		public KAnchor Alignment = KAnchor.TopLeft;
 
 		/// <summary>
 		/// The offset of this element's (0, 0) point relative to its origin and alignment.

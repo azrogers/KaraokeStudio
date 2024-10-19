@@ -5,7 +5,7 @@ namespace KaraokeLib.Video.Plan
 	/// <summary>
 	///	Records when each element starts and stops being displayed for an entire video.
 	/// </summary>
-	public class VideoPlan
+	public class VideoPlan : IDisposable
 	{
 		private Dictionary<IVideoElement, (uint StartFrame, uint EndFrame)> _videoElementLookup = new Dictionary<IVideoElement, (uint, uint)>();
 
@@ -81,6 +81,17 @@ namespace KaraokeLib.Video.Plan
 
 				yield return (new VideoTimecode(elem.StartFrame, frame.FrameRate), new VideoTimecode(elem.EndFrame, frame.FrameRate), elem.Element);
 			}
+		}
+
+		public void Dispose()
+		{
+			_videoElementLookup.Clear();
+			foreach (var (_, _, elem) in _videoElements)
+			{
+				elem.Dispose();
+			}
+
+			_videoElements.Clear();
 		}
 	}
 }
