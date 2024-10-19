@@ -1,7 +1,10 @@
 ﻿using KaraokeLib.Config;
+using KaraokeLib.Config.Attributes;
+using KaraokeLib.Events;
 using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Project;
 using Ookii.Dialogs.WinForms;
+using System.Reflection;
 
 namespace KaraokeStudio.Commands
 {
@@ -147,18 +150,45 @@ namespace KaraokeStudio.Commands
 	{
 		internal static string? OpenAudioFile(string? baseDir)
 		{
-			var dialog = new VistaOpenFileDialog();
-			dialog.CheckFileExists = true;
-			dialog.Multiselect = false;
-			dialog.Title = "Open audio file";
-			dialog.Filter = "Audio file|*.mp3;*.ogg;*.wav|All files|*.*";
-			dialog.InitialDirectory = baseDir;
+			return OpenFile<AudioClipSettings>(baseDir, "Open audio file", "Audio files", nameof(AudioClipSettings.AudioFile));
+		}
+
+		internal static string? OpenImageFile(string? baseDir)
+		{
+			return OpenFile<ImageSettings>(baseDir, "Open image file", "Image files", nameof(ImageSettings.File));
+		}
+
+		private static string? OpenFile<T>(string? baseDir, string title, string displayName, string fieldName) where T : IEditableConfig
+		{
+			var dialog = new VistaOpenFileDialog
+			{
+				CheckFileExists = true,
+				Multiselect = false,
+				Title = title,
+				Filter = GetConfigFilter<T>(displayName, fieldName),
+				InitialDirectory = baseDir
+			};
+
 			if (dialog.ShowDialog() != DialogResult.OK || !File.Exists(dialog.FileName))
 			{
 				return null;
 			}
 
 			return dialog.FileName;
+		}
+
+		private static string GetConfigFilter<T>(string displayName, string fieldName) where T: IEditableConfig
+		{
+			var fieldInfo = typeof(T).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+			var extensions = fieldInfo?.GetCustomAttribute<ConfigFileAttribute>()?.AllowedExtensions ?? [];
+			if (!extensions.Any())
+			{
+				return "All files (*.*)|*.*";
+			}
+			else
+			{
+				return $"${displayName} ({string.Join(", ", extensions.Select(e => "*." + e))})|{string.Join(";", extensions.Select(e => "*." + e))}|All files (*.*)|*.*";
+			}
 		}
 	}
 }

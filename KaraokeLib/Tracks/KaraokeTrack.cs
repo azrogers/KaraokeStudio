@@ -105,6 +105,16 @@ namespace KaraokeLib.Tracks
 		}
 
 		/// <summary>
+		/// Adds a new event to this track of type KaraokeEventType.Image.
+		/// </summary>
+		public ImageKaraokeEvent AddImageEvent(ImageSettings settings, IEventTimecode start, IEventTimecode end)
+		{
+			var ev = new ImageKaraokeEvent(settings, CreateEvent(KaraokeEventType.Image, start, end));
+			_events.Add(ev);
+			return ev;
+		}
+
+		/// <summary>
 		/// Adds the given events to this track.
 		/// </summary>
 		/// <remarks>
@@ -209,7 +219,7 @@ namespace KaraokeLib.Tracks
 		{
 			Id = reader.ReadInt32();
 			Type = (KaraokeTrackType)reader.ReadByte();
-			if(version >= 1)
+			if (version >= 1)
 			{
 				Order = reader.ReadInt32();
 			}

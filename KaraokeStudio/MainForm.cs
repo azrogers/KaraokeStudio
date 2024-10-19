@@ -41,6 +41,10 @@ namespace KaraokeStudio
 			_eventRightClickMenu = new ContextMenuStrip();
 			_eventRightClickMenu.Items.AddRange(eventToolStripMenuItem.DropDownItems);
 
+			// hack to copy the right-click menu items
+			Controls.Clear();
+			InitializeComponent();
+
 			lyricsEditor = new LyricsEditorControl();
 			videoSplit.Panel1.Controls.Add(lyricsEditor);
 			lyricsEditor.Dock = DockStyle.Fill;
@@ -87,11 +91,11 @@ namespace KaraokeStudio
 
 		public void OpenRightClickMenu(RightClickMenu menu)
 		{
-			if(menu == RightClickMenu.Track)
+			if (menu == RightClickMenu.Track)
 			{
 				_trackRightClickMenu.Show(Cursor.Position);
 			}
-			else if(menu == RightClickMenu.Event)
+			else if (menu == RightClickMenu.Event)
 			{
 				_eventRightClickMenu.Show(Cursor.Position);
 			}
@@ -157,6 +161,16 @@ namespace KaraokeStudio
 			_projectHandler.AddNewAudioTrack();
 		}
 
+		private void graphicsToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			CommandDispatcher.Dispatch(new AddTrackCommand(KaraokeTrackType.Graphics, "Add graphics track", null));
+		}
+
+		private void lyricsToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			CommandDispatcher.Dispatch(new AddTrackCommand(KaraokeTrackType.Lyrics, "Add lyrics track", null));
+		}
+
 		private void removeTrackToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (_projectHandler.Project == null || !SelectionManager.SelectedTracks.Any())
@@ -213,6 +227,32 @@ namespace KaraokeStudio
 			CommandDispatcher.Dispatch(new AddAudioClipEventCommand(track, new AudioClipSettings(audioClip), start, end));
 		}
 
+		private void imageToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var track = SelectionManager.SelectedTracks.FirstOrDefault(t => t.Type == KaraokeTrackType.Graphics);
+			if (track == null)
+			{
+				return;
+			}
+
+			var image = ProjectUtil.OpenImageFile(_projectHandler.ProjectPath);
+			if (image == null)
+			{
+				return;
+			}
+
+			var imageSize = ImageUtil.GetImageSize(image);
+			if (imageSize == null)
+			{
+				MessageBox.Show("Failed to obtain read image - not a supported format?", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
+
+			var start = new TimeSpanTimecode(_projectHandler.Project?.PlaybackState.Position ?? 0);
+			var end = new TimeSpanTimecode(start.GetTimeSeconds() + 5.0);
+			CommandDispatcher.Dispatch(new AddImageEventCommand(track, new ImageSettings(image, imageSize.Value), start, end));
+		}
+
 		private void removeEventToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (!SelectionManager.SelectedEvents.Any())
@@ -225,7 +265,12 @@ namespace KaraokeStudio
 
 		private void eventPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			if (!SelectionManager.SelectedEvents.Any(ev => ev.GetEventConfig() != null))
+			{
+				return;
+			}
 
+			CommandDispatcher.Dispatch(new OpenEventSettingsCommand(SelectionManager.SelectedEvents.First(ev => ev.GetEventConfig() != null)));
 		}
 
 		private void trackPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -248,7 +293,7 @@ namespace KaraokeStudio
 			var orderedTracks = _projectHandler.Project?.Tracks.OrderBy(t => t.Order).ToArray() ?? [];
 			var selectedIds = new HashSet<int>(SelectionManager.SelectedTracks.Select(t => t.Id));
 			var indexAbove = -1;
-			for(var i = 0; i < orderedTracks.Length; i++)
+			for (var i = 0; i < orderedTracks.Length; i++)
 			{
 				if (selectedIds.Contains(orderedTracks[i].Id))
 				{
@@ -257,11 +302,11 @@ namespace KaraokeStudio
 				}
 			}
 
-            if (indexAbove >= 0)
-            {
+			if (indexAbove >= 0)
+			{
 				CommandDispatcher.Dispatch(new RepositionTracksCommand(SelectionManager.SelectedTracks.ToArray(), indexAbove));
-            }
-        }
+			}
+		}
 
 		private void moveDownToolStripMenuItem_Click(object sender, EventArgs e)
 		{
@@ -346,7 +391,7 @@ namespace KaraokeStudio
 
 			addAudioClipToolStripMenuItem.Enabled = SelectionManager.SelectedTracks.Any(t => t.Type == KaraokeTrackType.Audio);
 			removeEventToolStripMenuItem.Enabled = SelectionManager.SelectedEvents.Any();
-			eventPropertiesToolStripMenuItem.Enabled = SelectionManager.SelectedEvents.Any();
+			eventPropertiesToolStripMenuItem.Enabled = SelectionManager.SelectedEvents.Any(ev => ev.GetEventConfig() != null);
 
 			undoToolStripMenuItem.Enabled = UndoHandler.CurrentItem != null;
 			undoToolStripMenuItem.Text = UndoHandler.CurrentItem == null ? "Undo" : "Undo " + UndoHandler.CurrentItem.Value.Action;

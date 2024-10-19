@@ -39,6 +39,7 @@ namespace KaraokeStudio.Config
 
 			public ConfigRangeAttribute? ConfigRange { get; private set; }
 			public ConfigDropdownAttribute? ConfigDropdown { get; private set; }
+			public ConfigFileAttribute? ConfigFile { get; private set; }
 
 			public bool IsDecimal { get; private set; }
 

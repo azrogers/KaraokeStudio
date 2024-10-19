@@ -6,22 +6,24 @@ using NLog;
 
 namespace KaraokeStudio.Commands
 {
-	internal abstract class AddTrackCommand : ICommand
+	internal class AddTrackCommand : ICommand
 	{
-		private static NLog.Logger Logger = LogManager.GetCurrentClassLogger();
+		private static Logger Logger = LogManager.GetCurrentClassLogger();
 
-		public abstract string Description { get; }
+		public string Description => _description;
 
 		public bool CanUndo => true;
 
-		private Action<KaraokeTrack> _onCreate;
+		private Action<KaraokeTrack>? _onCreate;
 		private KaraokeTrackType _type;
 		private int? _createdTrackId = null;
+		private string _description;
 
-		public AddTrackCommand(KaraokeTrackType type, Action<KaraokeTrack> onCreate)
+		public AddTrackCommand(KaraokeTrackType type, string description, Action<KaraokeTrack>? onCreate)
 		{
 			_type = type;
 			_onCreate = onCreate;
+			_description = description;
 		}
 
 		public IEnumerable<IUpdate> Execute(CommandContext context)
@@ -33,7 +35,7 @@ namespace KaraokeStudio.Commands
 			}
 
 			var track = context.Project.AddTrack(_type);
-			_onCreate(track);
+			_onCreate?.Invoke(track);
 			_createdTrackId = track.Id;
 
 			yield return new TracksUpdate(track.Id, TracksUpdate.UpdateType.Added);
@@ -61,10 +63,8 @@ namespace KaraokeStudio.Commands
 
 	internal class AddAudioTrackCommand : AddTrackCommand
 	{
-		public override string Description => "Add audio track";
-
 		public AddAudioTrackCommand(AudioClipSettings settings, IEventTimecode start, IEventTimecode end)
-			: base(KaraokeTrackType.Audio, track => track.AddAudioClipEvent(settings, start, end))
+			: base(KaraokeTrackType.Audio, "Add audio track", track => track.AddAudioClipEvent(settings, start, end))
 		{
 
 		}
@@ -255,7 +255,7 @@ namespace KaraokeStudio.Commands
 
 			_oldPositions = new(context.Project.Tracks.Select(t => new KeyValuePair<int, int>(t.Id, t.Order)));
 			var newOrder = context.Project.Tracks.Where(t => !_trackIds.Contains(t.Id)).ToList();
-			if(_newPosition > newOrder.Count)
+			if (_newPosition > newOrder.Count)
 			{
 				newOrder.AddRange(context.Project.Tracks.Where(t => _trackIds.Contains(t.Id)));
 			}

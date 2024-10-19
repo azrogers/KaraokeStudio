@@ -22,12 +22,13 @@ namespace KaraokeStudio
 			{ KaraokeEventType.LineBreak, Color.FromArgb(117, 166,51) },
 			{ KaraokeEventType.ParagraphBreak, Color.FromArgb(166, 76, 105) },
 			{ KaraokeEventType.AudioClip, Color.FromArgb(1, 117, 106) },
+			{ KaraokeEventType.Image, Color.FromArgb(64, 151, 202) },
 		};
 
 		public static readonly Dictionary<KaraokeTrackType, Color> TrackColors = new Dictionary<KaraokeTrackType, Color>()
 		{
 			{KaraokeTrackType.Lyrics, Color.FromArgb(150, 76, 166) },
-			{KaraokeTrackType.Graphics, Color.FromArgb(255, 0, 0) },
+			{KaraokeTrackType.Graphics, Color.FromArgb(64, 151, 202) },
 			{KaraokeTrackType.Audio, Color.FromArgb(1, 117, 106)  }
 		};
 

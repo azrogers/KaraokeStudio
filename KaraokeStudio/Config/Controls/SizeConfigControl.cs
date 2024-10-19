@@ -10,6 +10,10 @@ namespace KaraokeStudio.Config.Controls
 		public SizeConfigControl()
 		{
 			InitializeComponent();
+			widthControl.Minimum = 0;
+			heightControl.Minimum = 0;
+			widthControl.Maximum = decimal.MaxValue;
+			heightControl.Maximum = decimal.MaxValue;
 		}
 
 		private void widthControl_ValueChanged(object? sender, EventArgs e)

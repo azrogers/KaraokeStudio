@@ -2,6 +2,7 @@
 using CSCore.Codecs;
 using KaraokeLib.Audio;
 using KaraokeLib.Config;
+using KaraokeLib.Config.Attributes;
 using KaraokeLib.Video;
 using Newtonsoft.Json;
 
@@ -66,6 +67,16 @@ namespace KaraokeLib.Events
 			Settings = settings;
 		}
 
+		public override IEditableConfig? GetEventConfig()
+		{
+			return Settings;
+		}
+
+		public override void SetEventConfig(IEditableConfig? config)
+		{
+			Settings = config as AudioClipSettings;
+		}
+
 		private double GetSourceLength()
 		{
 			if (Settings?.AudioFile == null)
@@ -83,11 +94,13 @@ namespace KaraokeLib.Events
 		/// <summary>
 		/// The offset in seconds from the start of the audio file that this clip starts at.
 		/// </summary>
+		[ConfigHide]
 		public double Offset;
 
 		/// <summary>
 		/// The audio file this clip refers to.
 		/// </summary>
+		[ConfigFile(AllowedExtensions = ["mp3", "wav", "flac", "aac", "ac3", "wma", "ogg", "opus"])]
 		public string AudioFile;
 
 		public AudioClipSettings(string audioFile)

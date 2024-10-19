@@ -1,4 +1,5 @@
-﻿using KaraokeLib.Files;
+﻿using KaraokeLib.Config;
+using KaraokeLib.Files;
 using KaraokeLib.Files.Ksf;
 using KaraokeLib.Tracks;
 using KaraokeLib.Video;
@@ -182,8 +183,22 @@ namespace KaraokeLib.Events
 			{
 				return new AudioClipKaraokeEvent(this);
 			}
+			else if (_type == KaraokeEventType.Image)
+			{
+				return new ImageKaraokeEvent(this);
+			}
 
 			return this;
+		}
+
+		public virtual IEditableConfig? GetEventConfig()
+		{
+			return null;
+		}
+
+		public virtual void SetEventConfig(IEditableConfig? config)
+		{
+
 		}
 
 		public override string ToString()

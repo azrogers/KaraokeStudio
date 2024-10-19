@@ -19,6 +19,7 @@
 		<PackageReference Include="Cyotek.Windows.Forms.ColorPicker" Version="1.7.2" />
 		<PackageReference Include="FastHashes" Version="3.5.0" />
 		<PackageReference Include="FontAwesome.Sharp" Version="6.6.0" />
+		<PackageReference Include="ImGui.NET" Version="1.91.0.1" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="NLog" Version="5.3.4" />
 		<PackageReference Include="Ookii.Dialogs.WinForms" Version="4.0.0" />
@@ -34,6 +35,9 @@
 
 	<ItemGroup>
 		<Compile Update="Config\Controls\DropdownConfigControl.cs">
+		  <SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="Config\Controls\FileConfigControl.cs">
 		  <SubType>UserControl</SubType>
 		</Compile>
 		<Compile Update="Properties\Resources.Designer.cs">

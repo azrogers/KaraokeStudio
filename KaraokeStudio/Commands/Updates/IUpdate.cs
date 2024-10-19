@@ -60,6 +60,21 @@ namespace KaraokeStudio.Commands.Updates
 	}
 
 	/// <summary>
+	/// An update denoting that one or more tracks have had their settings changed.
+	/// </summary>
+	internal class EventsConfigUpdate : IUpdate
+	{
+		public int[] EventIds;
+		public IEditableConfig NewConfig;
+
+		public EventsConfigUpdate(int eventId, IEditableConfig newConfig)
+		{
+			EventIds = [eventId];
+			NewConfig = newConfig;
+		}
+	}
+
+	/// <summary>
 	/// An update denoting that the list of tracks has changed, indicating either adding, removing, or reordering tracks.
 	/// </summary>
 	internal class TracksUpdate : IUpdate

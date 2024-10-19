@@ -1,13 +1,15 @@
-﻿using KaraokeLib.Events;
+﻿using KaraokeLib.Config;
+using KaraokeLib.Events;
 using KaraokeLib.Tracks;
 using KaraokeStudio.Commands.Updates;
 using KaraokeStudio.Managers;
+using NLog;
 
 namespace KaraokeStudio.Commands
 {
-    internal class SetEventTimingsCommand : ICommand
+	internal class SetEventTimingsCommand : ICommand
 	{
-		private static NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+		private static Logger Logger = LogManager.GetCurrentClassLogger();
 
 		private int[] _trackIds;
 		private string _eventString;
@@ -109,7 +111,7 @@ namespace KaraokeStudio.Commands
 
 	internal class AddAudioClipEventCommand : ICommand
 	{
-		private static NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+		private static Logger Logger = LogManager.GetCurrentClassLogger();
 
 		public string Description => "Add audio clip event";
 
@@ -140,7 +142,7 @@ namespace KaraokeStudio.Commands
 
 			var ev = track.AddAudioClipEvent(_settings, _start, _end);
 			_createdEventId = ev.Id;
-			yield return new EventsUpdate(new int[] { _createdEventId }, EventsUpdate.UpdateType.Add);
+			yield return new EventsUpdate([_createdEventId], EventsUpdate.UpdateType.Add);
 		}
 
 		public IEnumerable<IUpdate> Undo(CommandContext context)
@@ -159,7 +161,63 @@ namespace KaraokeStudio.Commands
 			}
 
 			track.ReplaceEvents(track.Events.Where(e => e.Id != _createdEventId));
-			yield return new EventsUpdate(new int[] { _createdEventId }, EventsUpdate.UpdateType.Remove);
+			yield return new EventsUpdate([_createdEventId], EventsUpdate.UpdateType.Remove);
+		}
+	}
+
+	internal class AddImageEventCommand : ICommand
+	{
+		private static Logger Logger = LogManager.GetCurrentClassLogger();
+
+		public string Description => "Add image event";
+
+		public bool CanUndo => true;
+
+		private int _trackId;
+		private ImageSettings _settings;
+		private int _createdEventId = -1;
+		private IEventTimecode _start;
+		private IEventTimecode _end;
+
+		public AddImageEventCommand(KaraokeTrack track, ImageSettings clipSettings, IEventTimecode start, IEventTimecode end)
+		{
+			_trackId = track.Id;
+			_settings = clipSettings;
+			_start = start;
+			_end = end;
+		}
+
+		public IEnumerable<IUpdate> Execute(CommandContext context)
+		{
+			var track = context.Project?.Tracks.FirstOrDefault(t => t.Id == _trackId);
+			if (track == null)
+			{
+				Logger.Warn($"Can't find track ID {_trackId}, giving up");
+				yield break;
+			}
+
+			var ev = track.AddImageEvent(_settings, _start, _end);
+			_createdEventId = ev.Id;
+			yield return new EventsUpdate([_createdEventId], EventsUpdate.UpdateType.Add);
+		}
+
+		public IEnumerable<IUpdate> Undo(CommandContext context)
+		{
+			var track = context.Project?.Tracks.FirstOrDefault(t => t.Id == _trackId);
+			if (track == null)
+			{
+				Logger.Warn($"Can't find track ID {_trackId}, giving up");
+				yield break;
+			}
+
+			if (_createdEventId == -1)
+			{
+				Logger.Warn("Tried to undo create image event command, but _createdEventId was -1?");
+				yield break;
+			}
+
+			track.ReplaceEvents(track.Events.Where(e => e.Id != _createdEventId));
+			yield return new EventsUpdate([_createdEventId], EventsUpdate.UpdateType.Remove);
 		}
 	}
 
@@ -170,7 +228,7 @@ namespace KaraokeStudio.Commands
 		public bool CanUndo => true;
 
 		private int[] _eventIdsToRemove;
-		private int[] _selectedIds = new int[0];
+		private int[] _selectedIds = [];
 		private Dictionary<int, KaraokeEvent[]> _removedEvents = new Dictionary<int, KaraokeEvent[]>();
 
 		public RemoveEventsCommand(int[] eventIds)
@@ -222,6 +280,61 @@ namespace KaraokeStudio.Commands
 			SelectionManager.Select(selectedEvents, false);
 
 			yield return new EventsUpdate(_eventIdsToRemove, EventsUpdate.UpdateType.Add);
+		}
+	}
+
+	internal class SetEventSettingsCommand : ICommand
+	{
+		private static Logger Logger = LogManager.GetCurrentClassLogger();
+
+		public string Description => _actionString;
+
+		public bool CanUndo => true;
+
+		private IEditableConfig? _oldConfig = null;
+		private IEditableConfig _newConfig;
+		private string _actionString;
+		private int _eventId;
+
+		public SetEventSettingsCommand(KaraokeEvent ev, IEditableConfig config, string actionString = "Change event properties")
+		{
+			_eventId = ev.Id;
+			_newConfig = config;
+			_actionString = actionString;
+		}
+
+		public IEnumerable<IUpdate> Execute(CommandContext context)
+		{
+			var ev = context.Project?.Tracks.SelectMany(t => t.Events).Where(e => e.Id == _eventId).FirstOrDefault();
+
+			if (ev == null)
+			{
+				Logger.Warn($"Can't find event ID {_eventId}, giving up");
+				yield break;
+			}
+
+			_oldConfig = ev.GetEventConfig()?.Copy();
+			ev.SetEventConfig(_newConfig);
+			yield return new EventsConfigUpdate(ev.Id, _newConfig);
+		}
+
+		public IEnumerable<IUpdate> Undo(CommandContext context)
+		{
+			var ev = context.Project?.Tracks.SelectMany(t => t.Events).Where(e => e.Id == _eventId).FirstOrDefault();
+			if (ev == null)
+			{
+				Logger.Warn($"Can't find event ID {_eventId}, giving up");
+				yield break;
+			}
+
+			if (_oldConfig == null)
+			{
+				Logger.Warn("Attempted to undo a event settings change but _oldConfig was null, giving up");
+				yield break;
+			}
+
+			ev.SetEventConfig(_oldConfig);
+			yield return new EventsConfigUpdate(ev.Id, _oldConfig);
 		}
 	}
 }

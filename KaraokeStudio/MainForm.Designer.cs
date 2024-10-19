@@ -57,6 +57,8 @@ namespace KaraokeStudio
 			trackToolStripMenuItem = new ToolStripMenuItem();
 			addTrackToolStripMenuItem = new ToolStripMenuItem();
 			addAudioTrackToolStripMenuItem = new ToolStripMenuItem();
+			graphicsToolStripMenuItem = new ToolStripMenuItem();
+			lyricsToolStripMenuItem = new ToolStripMenuItem();
 			removeTrackToolStripMenuItem = new ToolStripMenuItem();
 			trackPropertiesToolStripMenuItem = new ToolStripMenuItem();
 			toolStripSeparator5 = new ToolStripSeparator();
@@ -75,6 +77,7 @@ namespace KaraokeStudio
 			videoSplit = new SplitContainer();
 			video = new Video.KaraokeVideoControl();
 			timelineContainer = new TimelineContainerControl();
+			imageToolStripMenuItem = new ToolStripMenuItem();
 			menuStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)verticalSplit).BeginInit();
 			verticalSplit.Panel1.SuspendLayout();
@@ -263,23 +266,37 @@ namespace KaraokeStudio
 			// 
 			// addTrackToolStripMenuItem
 			// 
-			addTrackToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { addAudioTrackToolStripMenuItem });
+			addTrackToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { addAudioTrackToolStripMenuItem, graphicsToolStripMenuItem, lyricsToolStripMenuItem });
 			addTrackToolStripMenuItem.Name = "addTrackToolStripMenuItem";
-			addTrackToolStripMenuItem.Size = new Size(180, 22);
+			addTrackToolStripMenuItem.Size = new Size(203, 22);
 			addTrackToolStripMenuItem.Text = "Add";
 			// 
 			// addAudioTrackToolStripMenuItem
 			// 
 			addAudioTrackToolStripMenuItem.Name = "addAudioTrackToolStripMenuItem";
-			addAudioTrackToolStripMenuItem.Size = new Size(115, 22);
+			addAudioTrackToolStripMenuItem.Size = new Size(120, 22);
 			addAudioTrackToolStripMenuItem.Text = "Audio...";
 			addAudioTrackToolStripMenuItem.Click += audioToolStripMenuItem_Click;
+			// 
+			// graphicsToolStripMenuItem
+			// 
+			graphicsToolStripMenuItem.Name = "graphicsToolStripMenuItem";
+			graphicsToolStripMenuItem.Size = new Size(120, 22);
+			graphicsToolStripMenuItem.Text = "Graphics";
+			graphicsToolStripMenuItem.Click += graphicsToolStripMenuItem_Click;
+			// 
+			// lyricsToolStripMenuItem
+			// 
+			lyricsToolStripMenuItem.Name = "lyricsToolStripMenuItem";
+			lyricsToolStripMenuItem.Size = new Size(120, 22);
+			lyricsToolStripMenuItem.Text = "Lyrics";
+			lyricsToolStripMenuItem.Click += lyricsToolStripMenuItem_Click;
 			// 
 			// removeTrackToolStripMenuItem
 			// 
 			removeTrackToolStripMenuItem.Name = "removeTrackToolStripMenuItem";
 			removeTrackToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.Delete;
-			removeTrackToolStripMenuItem.Size = new Size(180, 22);
+			removeTrackToolStripMenuItem.Size = new Size(203, 22);
 			removeTrackToolStripMenuItem.Text = "Remove";
 			removeTrackToolStripMenuItem.Click += removeTrackToolStripMenuItem_Click;
 			// 
@@ -287,20 +304,20 @@ namespace KaraokeStudio
 			// 
 			trackPropertiesToolStripMenuItem.Name = "trackPropertiesToolStripMenuItem";
 			trackPropertiesToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.T;
-			trackPropertiesToolStripMenuItem.Size = new Size(180, 22);
+			trackPropertiesToolStripMenuItem.Size = new Size(203, 22);
 			trackPropertiesToolStripMenuItem.Text = "Properties";
 			trackPropertiesToolStripMenuItem.Click += trackPropertiesToolStripMenuItem_Click;
 			// 
 			// toolStripSeparator5
 			// 
 			toolStripSeparator5.Name = "toolStripSeparator5";
-			toolStripSeparator5.Size = new Size(177, 6);
+			toolStripSeparator5.Size = new Size(200, 6);
 			// 
 			// moveUpToolStripMenuItem
 			// 
 			moveUpToolStripMenuItem.Name = "moveUpToolStripMenuItem";
 			moveUpToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.Up;
-			moveUpToolStripMenuItem.Size = new Size(180, 22);
+			moveUpToolStripMenuItem.Size = new Size(203, 22);
 			moveUpToolStripMenuItem.Text = "Move Up";
 			moveUpToolStripMenuItem.Click += moveUpToolStripMenuItem_Click;
 			// 
@@ -315,13 +332,13 @@ namespace KaraokeStudio
 			// toolStripSeparator6
 			// 
 			toolStripSeparator6.Name = "toolStripSeparator6";
-			toolStripSeparator6.Size = new Size(177, 6);
+			toolStripSeparator6.Size = new Size(200, 6);
 			// 
 			// syncLyricsToolStripMenuItem
 			// 
 			syncLyricsToolStripMenuItem.Name = "syncLyricsToolStripMenuItem";
 			syncLyricsToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D;
-			syncLyricsToolStripMenuItem.Size = new Size(180, 22);
+			syncLyricsToolStripMenuItem.Size = new Size(203, 22);
 			syncLyricsToolStripMenuItem.Text = "Sync Lyrics";
 			syncLyricsToolStripMenuItem.Click += syncLyricsToolStripMenuItem_Click;
 			// 
@@ -334,15 +351,15 @@ namespace KaraokeStudio
 			// 
 			// addEventToolStripMenuItem
 			// 
-			addEventToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { addAudioClipToolStripMenuItem });
+			addEventToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { addAudioClipToolStripMenuItem, imageToolStripMenuItem });
 			addEventToolStripMenuItem.Name = "addEventToolStripMenuItem";
-			addEventToolStripMenuItem.Size = new Size(167, 22);
+			addEventToolStripMenuItem.Size = new Size(180, 22);
 			addEventToolStripMenuItem.Text = "Add";
 			// 
 			// addAudioClipToolStripMenuItem
 			// 
 			addAudioClipToolStripMenuItem.Name = "addAudioClipToolStripMenuItem";
-			addAudioClipToolStripMenuItem.Size = new Size(139, 22);
+			addAudioClipToolStripMenuItem.Size = new Size(180, 22);
 			addAudioClipToolStripMenuItem.Text = "Audio Clip...";
 			addAudioClipToolStripMenuItem.Click += addAudioClipToolStripMenuItem_Click;
 			// 
@@ -350,7 +367,7 @@ namespace KaraokeStudio
 			// 
 			removeEventToolStripMenuItem.Name = "removeEventToolStripMenuItem";
 			removeEventToolStripMenuItem.ShortcutKeys = Keys.Delete;
-			removeEventToolStripMenuItem.Size = new Size(167, 22);
+			removeEventToolStripMenuItem.Size = new Size(180, 22);
 			removeEventToolStripMenuItem.Text = "Remove";
 			removeEventToolStripMenuItem.Click += removeEventToolStripMenuItem_Click;
 			// 
@@ -358,7 +375,7 @@ namespace KaraokeStudio
 			// 
 			eventPropertiesToolStripMenuItem.Name = "eventPropertiesToolStripMenuItem";
 			eventPropertiesToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.E;
-			eventPropertiesToolStripMenuItem.Size = new Size(167, 22);
+			eventPropertiesToolStripMenuItem.Size = new Size(180, 22);
 			eventPropertiesToolStripMenuItem.Text = "Properties";
 			eventPropertiesToolStripMenuItem.Click += eventPropertiesToolStripMenuItem_Click;
 			// 
@@ -427,6 +444,13 @@ namespace KaraokeStudio
 			timelineContainer.Name = "timelineContainer";
 			timelineContainer.Size = new Size(882, 121);
 			timelineContainer.TabIndex = 0;
+			// 
+			// imageToolStripMenuItem
+			// 
+			imageToolStripMenuItem.Name = "imageToolStripMenuItem";
+			imageToolStripMenuItem.Size = new Size(180, 22);
+			imageToolStripMenuItem.Text = "Image...";
+			imageToolStripMenuItem.Click += imageToolStripMenuItem_Click;
 			// 
 			// MainForm
 			// 
@@ -501,5 +525,8 @@ namespace KaraokeStudio
 		private ToolStripMenuItem moveUpToolStripMenuItem;
 		private ToolStripMenuItem moveDownToolStripMenuItem;
 		private ToolStripSeparator toolStripSeparator6;
+		private ToolStripMenuItem graphicsToolStripMenuItem;
+		private ToolStripMenuItem lyricsToolStripMenuItem;
+		private ToolStripMenuItem imageToolStripMenuItem;
 	}
 }

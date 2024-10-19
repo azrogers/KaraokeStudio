@@ -29,7 +29,12 @@ namespace KaraokeLib.Config
 		/// <summary>
 		/// The ConfigDropdownAttribute specified on this field, if present.
 		/// </summary>
-		public ConfigDropdownAttribute? ConfigDropdown { get; }
+		ConfigDropdownAttribute? ConfigDropdown { get; }
+
+		/// <summary>
+		/// The ConfigFileAttribute specified on this field, if present.
+		/// </summary>
+		ConfigFileAttribute? ConfigFile { get; }
 
 		/// <summary>
 		/// Is this field a decimal type?
@@ -84,6 +89,11 @@ namespace KaraokeLib.Config
 		/// </summary>
 		public ConfigDropdownAttribute? ConfigDropdown => _dropdown;
 
+		/// <summary>
+		/// The ConfigFileAttribute specified on this field, if present.
+		/// </summary>
+		public ConfigFileAttribute? ConfigFile => _file;
+
 		/// <inheritdoc />
 		public bool IsDecimal
 		{
@@ -105,6 +115,7 @@ namespace KaraokeLib.Config
 		private FieldInfo _field;
 		private ConfigRangeAttribute? _range;
 		private ConfigDropdownAttribute? _dropdown;
+		private ConfigFileAttribute? _file;
 		private Type _fieldType;
 
 		/// <summary>
@@ -116,6 +127,7 @@ namespace KaraokeLib.Config
 			_fieldType = field.FieldType;
 			_range = field.GetCustomAttribute<ConfigRangeAttribute>();
 			_dropdown = field.GetCustomAttribute<ConfigDropdownAttribute>();
+			_file = field.GetCustomAttribute<ConfigFileAttribute>();
 
 			Name = field.Name;
 			FriendlyName = field.GetCustomAttribute<ConfigDisplayAttribute>()?.FriendlyName;
@@ -146,6 +158,11 @@ namespace KaraokeLib.Config
 			if (_dropdown != null)
 			{
 				return ConfigControlType.Dropdown;
+			}
+
+			if (_file != null)
+			{
+				return ConfigControlType.File;
 			}
 
 			if (fieldType.IsEnum)
@@ -224,6 +241,7 @@ namespace KaraokeLib.Config
 		Dropdown,
 		Bool,
 		Padding,
-		String
+		String,
+		File
 	}
 }
