@@ -244,7 +244,7 @@ namespace KaraokeStudio
 			var imageSize = ImageUtil.GetImageSize(image);
 			if (imageSize == null)
 			{
-				MessageBox.Show("Failed to obtain read image - not a supported format?", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("Failed to read image - not a supported format?", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return;
 			}
 

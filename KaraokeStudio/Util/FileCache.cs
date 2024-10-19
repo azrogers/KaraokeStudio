@@ -10,13 +10,34 @@ namespace KaraokeStudio.Util
 		private static string CacheManifestPath => Path.Combine(CacheDir, MANIFEST_FILENAME);
 		private static Dictionary<string, DateTime> _manifest;
 
-		public static string GetTempFilePath(string filename)
+		public static string Get(ICacheRequest request)
+		{
+			var localPath = Path.Combine(request.Category, Utility.Sha256Hash(request.Key));
+			var categoryDir = Path.Combine(CacheDir, request.Category);
+			if (!Directory.Exists(categoryDir))
+			{
+				Directory.CreateDirectory(categoryDir);
+			}
+
+			var path = GetTempFilePath(localPath);
+			if (!File.Exists(path))
+			{
+				using (var output = File.OpenWrite(path))
+				{
+					request.Create(output);
+				}
+			}
+
+			return path;
+		}
+
+		private static string GetTempFilePath(string filename)
 		{
 			UpdateFileUsed(filename);
 			return Path.Combine(CacheDir, filename);
 		}
 
-		public static void UpdateFileUsed(string filename)
+		private static void UpdateFileUsed(string filename)
 		{
 			_manifest[filename] = DateTime.Now.AddDays(30);
 			File.WriteAllText(CacheManifestPath, JsonConvert.SerializeObject(_manifest));
@@ -75,5 +96,13 @@ namespace KaraokeStudio.Util
 
 			return filesInFolder.Where(f => !manifest.ContainsKey(f) || manifest[f] < DateTime.Now);
 		}
+	}
+
+	internal interface ICacheRequest
+	{
+		string Key { get; }
+		string Category { get; }
+
+		void Create(Stream output);
 	}
 }

@@ -11,11 +11,11 @@ using SkiaSharp;
 
 namespace KaraokeStudio.Timeline
 {
-    /// <summary>
-    /// The actual canvas that the timeline is drawn to.
-    /// The TimelineControl presents a scrolled view into this canvas.
-    /// </summary>
-    internal class TimelineCanvas : IDisposable
+	/// <summary>
+	/// The actual canvas that the timeline is drawn to.
+	/// The TimelineControl presents a scrolled view into this canvas.
+	/// </summary>
+	internal class TimelineCanvas : IDisposable
 	{
 		// the width of the handles on each side of the event for grabbing, in control space
 		private const float EVENT_HANDLE_WIDTH = 5.0f;
@@ -41,7 +41,8 @@ namespace KaraokeStudio.Timeline
 
 		private Dictionary<KaraokeEventType, ICustomEventRenderer> _eventRenderers = new Dictionary<KaraokeEventType, ICustomEventRenderer>()
 		{
-			{KaraokeEventType.AudioClip, new AudioClipEventRenderer() }
+			{ KaraokeEventType.AudioClip, new AudioClipEventRenderer() },
+			{ KaraokeEventType.Image, new ImageEventRenderer() }
 		};
 
 		private SKFont _font;
@@ -331,7 +332,7 @@ namespace KaraokeStudio.Timeline
 		public KaraokeEvent? FindEventAtPoint(SKPoint point)
 		{
 			var clickableItem = FindClickableItemAtPoint(point);
-			if(clickableItem != null)
+			if (clickableItem != null)
 			{
 				return _events[clickableItem.Value.EventId];
 			}
