@@ -83,12 +83,12 @@ namespace KaraokeLib.Files
                 WriteUsizeString(writer, "{}");
 
                 writer.Write((ulong)_tracks.Count);
-                foreach(var track in _tracks)
+                foreach (var track in _tracks)
                 {
                     var id = Guid.NewGuid();
                     writer.Write(id.ToByteArray());
                     writer.Write((uint)track.Order);
-                    switch(track.Type)
+                    switch (track.Type)
                     {
                         case KaraokeTrackType.Lyrics:
                             writer.Write((byte)0);
@@ -97,9 +97,13 @@ namespace KaraokeLib.Files
                         case KaraokeTrackType.Audio:
                             writer.Write((byte)1);
                             var config = track.GetTrackConfig<AudioTrackSettings>();
-                            var json = JsonConvert.SerializeObject(config, new JsonSerializerSettings
+                            var json = JsonConvert.SerializeObject(new
                             {
-                                ContractResolver = new CamelCasePropertyNamesContractResolver()
+                                Audio = new
+                                {
+                                    muted = config.Muted,
+                                    volume = config.Volume
+                                }
                             });
                             WriteUsizeString(writer, json);
                             break;
@@ -109,26 +113,28 @@ namespace KaraokeLib.Files
 
                     writer.Write((ulong)track.Events.Count);
                     var trackEventIds = new Dictionary<int, Guid>();
-                    foreach(var ev in track.Events)
+                    foreach (var ev in track.Events)
                     {
                         var evId = Guid.NewGuid();
-                        if(trackEventIds.ContainsKey(ev.Id))
+                        if (trackEventIds.ContainsKey(ev.Id))
                         {
                             evId = trackEventIds[ev.Id];
-                        } else
+                        }
+                        else
                         {
                             trackEventIds.Add(ev.Id, evId);
                         }
-                        
+
                         writer.Write(evId.ToByteArray());
                         writer.Write(ev.LinkedId != -1);
-                        if(ev.LinkedId != -1)
+                        if (ev.LinkedId != -1)
                         {
                             var linkedId = Guid.NewGuid();
-                            if(trackEventIds.ContainsKey(ev.LinkedId))
+                            if (trackEventIds.ContainsKey(ev.LinkedId))
                             {
                                 linkedId = trackEventIds[ev.LinkedId];
-                            } else
+                            }
+                            else
                             {
                                 trackEventIds.Add(ev.LinkedId, linkedId);
                             }
@@ -138,11 +144,11 @@ namespace KaraokeLib.Files
 
                         writer.Write((uint)ev.StartTimeMilliseconds);
                         writer.Write((uint)ev.EndTimeMilliseconds);
-                        switch(ev.Type)
+                        switch (ev.Type)
                         {
                             case KaraokeEventType.Lyric:
                                 writer.Write((byte)0);
-                                WriteUsizeString(writer, JsonConvert.SerializeObject(new { text = ev.RawValue }));
+                                WriteUsizeString(writer, JsonConvert.SerializeObject(new { Lyric = new { text = ev.RawValue } }));
                                 break;
                             case KaraokeEventType.LineBreak:
                                 writer.Write((byte)1);
@@ -156,21 +162,24 @@ namespace KaraokeLib.Files
                                 writer.Write((byte)8);
                                 var audioEv = (AudioClipKaraokeEvent)ev;
                                 var settings = audioEv.Settings ?? default;
-                                if(settings == null)
+                                if (settings == null)
                                 {
                                     throw new InvalidDataException();
                                 }
                                 var audioInfo = AudioUtil.GetFileInfo(settings.AudioFile);
                                 WriteUsizeString(writer, JsonConvert.SerializeObject(new
                                 {
-                                    offset = (uint)Math.Floor(settings.Offset * 1000),
-                                    file = new
+                                    AudioClip = new
                                     {
-                                        id = Guid.NewGuid(),
-                                        file_type = AudioFileTypeStr(audioInfo.FormatType),
-                                        source = new
+                                        offset = (uint)Math.Floor(settings.Offset * 1000),
+                                        file = new
                                         {
-                                            Path = settings.AudioFile
+                                            id = Guid.NewGuid(),
+                                            file_type = AudioFileTypeStr(audioInfo.FormatType),
+                                            source = new
+                                            {
+                                                Path = settings.AudioFile
+                                            }
                                         }
                                     }
                                 }));
@@ -190,7 +199,7 @@ namespace KaraokeLib.Files
 
         private string AudioFileTypeStr(AudioUtil.AudioFormatType formatType)
         {
-            switch(formatType)
+            switch (formatType)
             {
                 case AudioUtil.AudioFormatType.Mp3:
                     return "Mp3";
