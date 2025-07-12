@@ -181,10 +181,33 @@ namespace KaraokeStudio.FormHandlers
 			{
 				lrcFile.Save(output);
 			}
-		}
+        }
 
-		// returns true if we can continue, or false if we're cancelling the operation after alerting of pending changes
-		public bool AlertPendingChanges()
+        public void ExportKsngFile()
+        {
+            if (_loadedProject == null)
+            {
+                return;
+            }
+
+            var dialog = new VistaSaveFileDialog();
+            dialog.Title = "Export Ksng file";
+            dialog.Filter = "Ksng Project File|*.kpj|All files|*.*";
+            if (dialog.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            var outPath = dialog.FileName;
+            var ksngFile = new KsngKaraokeFile(_loadedProject.Tracks);
+            using (var output = File.OpenWrite(outPath))
+            {
+                ksngFile.Save(output);
+            }
+        }
+
+        // returns true if we can continue, or false if we're cancelling the operation after alerting of pending changes
+        public bool AlertPendingChanges()
 		{
 			if (!OnProjectWillChangeCallback?.Invoke() ?? false)
 			{

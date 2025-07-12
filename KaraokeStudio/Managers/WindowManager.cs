@@ -84,7 +84,7 @@ namespace KaraokeStudio.Managers
 		private static GenericConfigEditorForm? _audioSettingsForm = null;
 
 		private static Dictionary<int, GenericConfigEditorForm> _trackSettingsEditors = new();
-		private static Dictionary<int, GenericConfigEditorForm> _eventSettingsEditors = new();
+		private static Dictionary<int, BlazorConfigEditorForm> _eventSettingsEditors = new();
 
 		static WindowManager()
 		{
@@ -136,7 +136,7 @@ namespace KaraokeStudio.Managers
 		{
 			if (!_eventSettingsEditors.ContainsKey(ev.Id) || _eventSettingsEditors[ev.Id].IsDisposed)
 			{
-				_eventSettingsEditors[ev.Id] = new GenericConfigEditorForm();
+				_eventSettingsEditors[ev.Id] = new BlazorConfigEditorForm();
 			}
 
 			IEditableConfig? config = ev.GetEventConfig();

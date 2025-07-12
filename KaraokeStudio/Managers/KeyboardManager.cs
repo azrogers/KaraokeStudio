@@ -1,4 +1,5 @@
 ﻿using KaraokeStudio.Commands.Updates;
+using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 using ScintillaNET;
 using SharpHook;
 using SharpHook.Native;
@@ -59,7 +60,8 @@ namespace KaraokeStudio.Managers
 			if (currentControlType == typeof(Scintilla) || 
 				currentControlType == typeof(TextBox) || 
 				currentControlType == typeof(NumericUpDown) || 
-				currentControlType == typeof(ComboBox))
+				currentControlType == typeof(ComboBox) ||
+				currentControlType == typeof(BlazorWebView))
 			{
 				return true;
 			}

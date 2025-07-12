@@ -68,7 +68,7 @@ namespace KaraokeLib.Tracks
 			_events = new List<KaraokeEvent>();
 			Type = type;
 			Id = _karaokeFile.IdTracker.AddNewTrack(this);
-			Order = _karaokeFile.GetTracks().Max(t => t.Order) + 1;
+			Order = _karaokeFile.GetTracks().Any() ? _karaokeFile.GetTracks().Max(t => t.Order) + 1 : 1;
 		}
 
 		public KaraokeTrack(IKaraokeFile file, KaraokeTrackType type, IEnumerable<KaraokeEvent> events)

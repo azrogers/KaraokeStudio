@@ -64,9 +64,10 @@ namespace KaraokeLib.Video
 		private void DoExport(IKaraokeFile file, KaraokeConfig config, IVideoEncoder encoder, string outFile, double startSeconds, double lengthSeconds)
 		{
 			encoder.SetExporterObject(this);
-			using (var mixer = new AudioMixer(file.GetTracks().Where(t => t.Type == Tracks.KaraokeTrackType.Audio), 48000))
+			using (var mixer = new AudioMixer(file.GetTracks().Where(t => t.Type == Tracks.KaraokeTrackType.Audio), 48000, isExportMode: true))
+			using (var waveSource = mixer.ToWaveSource())
 			{
-				encoder.StartRender(outFile, mixer.ToWaveSource(), config.VideoSize.Width, config.VideoSize.Height, config.FrameRate, lengthSeconds);
+				encoder.StartRender(outFile, waveSource, config.VideoSize.Width, config.VideoSize.Height, config.FrameRate, lengthSeconds);
 			}
 
 			var tracks = file.GetTracks().ToArray();
